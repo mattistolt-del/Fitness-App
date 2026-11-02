@@ -197,6 +197,35 @@
   .stepper button { width: 48px; height: 48px; border-radius: 12px; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 24px; font-weight: 700; cursor: pointer; }
   .stepper input { text-align: center; font-size: 20px; font-weight: 700; }
   .big-stock { font-size: 26px; font-weight: 700; margin: 6px 4px 0; }
+  /* ---------- Mahlzeit ---------- */
+  .card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+  .card-title { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 8px; }
+  .big-kcal { font-size: 30px; font-weight: 700; letter-spacing: -.5px; }
+  .big-kcal small { font-size: 15px; font-weight: 500; color: var(--muted); }
+  .macro-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; margin-top: 6px; }
+  .log-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .macro-row + .log-item { margin-top: 12px; }
+  .log-item .t { color: var(--muted); width: 42px; }
+  .log-item .n { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-item .k { font-weight: 600; }
+  .undo { background: none; border: 0; color: var(--muted); font-size: 13px; cursor: pointer; padding: 4px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 6px; margin: 0 -16px 14px; padding-left: 16px; padding-right: 16px; -webkit-overflow-scrolling: touch; }
+  .chip { flex-shrink: 0; background: var(--card); border-radius: 14px; padding: 10px 30px 10px 12px; min-width: 120px; position: relative; cursor: pointer; }
+  .chip b { display: block; font-size: 15px; }
+  .chip small { color: var(--muted); font-size: 12px; }
+  .chip .x { position: absolute; top: 4px; right: 4px; background: none; border: 0; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 6px; }
+  .meal-list { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); margin: 10px 0; }
+  .meal-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--line); }
+  .meal-item:last-child { border-bottom: 0; }
+  .meal-item .thumb { width: 38px; height: 38px; font-size: 18px; }
+  .meal-item .item-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gwrap { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .gbox { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 14px; }
+  .meal-item .gin { width: 72px; text-align: right; padding: 7px 9px; }
+  .meal-item .ik { font-size: 12px; color: var(--muted); }
+  .rm { background: none; border: 0; color: var(--muted); font-size: 20px; cursor: pointer; padding: 4px; }
+  .warn { color: var(--c); font-weight: 600; }
+  .totals { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -322,6 +351,19 @@
   </div>
 </div>
 
+<!-- Zutat wählen -->
+<div class="sheet-bg" id="pickSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="pickSheet">Schließen</button>
+      <h2>Zutat wählen</h2>
+      <span style="width:70px"></span>
+    </div>
+    <input class="search" id="pickSearch" placeholder="Produkt suchen">
+    <div id="pickList"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -387,7 +429,7 @@ function toast(msg) {
 const TABS = {
   produkte:     { title: "Produkte",    render: renderProducts, add: true },
   kuehlschrank: { title: "Kühlschrank", render: renderFridge, add: true },
-  mahlzeit:     { title: "Mahlzeit",    render: () => soon("🍽️", "Hier stellst du bald deine Mahlzeiten zusammen.") },
+  mahlzeit:     { title: "Mahlzeit",    render: renderMeal },
   heute:        { title: "Heute",       render: () => soon("📊", "Hier siehst du bald deine Tageswerte und den Kalorienrechner.") },
   vorschlaege:  { title: "Ideen",       render: () => soon("💡", "Hier bekommst du bald Rezeptideen aus deinem Bestand.") }
 };
@@ -866,9 +908,220 @@ $("sEmpty").onclick = () => {
   $("stockSheet").classList.remove("open"); toast("Aufgebraucht");
 };
 
+/* ---------- Mahlzeit ---------- */
+const LOG_KEY = "makro.log", TPL_KEY = "makro.templates", DRAFT_KEY = "makro.draft";
+function loadJSON(k, def) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? def; } catch (e) { return def; } }
+function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast("Speichern fehlgeschlagen"); } }
+
+let log = loadJSON(LOG_KEY, []);                    // gegessene Mahlzeiten
+let templates = loadJSON(TPL_KEY, []);              // gespeicherte Vorlagen
+let draft = loadJSON(DRAFT_KEY, { name: "", items: [] }); // Mahlzeit in Arbeit
+
+const todayKey = () => new Date().toLocaleDateString("sv-SE");
+const prod = id => products.find(x => x.id === id);
+const macrosFor = (p, g) => { const k = g / 100; return { kcal: p.kcal * k, p: p.p * k, c: p.c * k, f: p.f * k }; };
+const sumMacros = list => list.reduce((a, m) => ({ kcal: a.kcal + m.kcal, p: a.p + m.p, c: a.c + m.c, f: a.f + m.f }), { kcal: 0, p: 0, c: 0, f: 0 });
+const validItems = items => items.filter(i => prod(i.id));
+const itemsMacros = items => sumMacros(validItems(items).map(i => macrosFor(prod(i.id), i.g)));
+const saveDraft = () => saveJSON(DRAFT_KEY, draft);
+
+function macroLine(m) {
+  return `<div class="macro-row">
+    <span><i class="dot" style="background:var(--p)"></i><b>${Math.round(m.p)} g</b> Eiweiß</span>
+    <span><i class="dot" style="background:var(--c)"></i><b>${Math.round(m.c)} g</b> Kohlenh.</span>
+    <span><i class="dot" style="background:var(--f)"></i><b>${Math.round(m.f)} g</b> Fett</span>
+  </div>`;
+}
+const totalsHTML = m => `<div class="big-kcal">${Math.round(m.kcal)} <small>kcal</small></div>${macroLine(m)}`;
+
+function stockNote(id, g) {
+  const have = stock[id] || 0;
+  return g > have + 0.5
+    ? `<span class="warn">${have > 0.5 ? `Nur ${fmt(have)} g da` : "Nicht im Bestand"}</span>`
+    : `Noch ${fmt(have)} g da`;
+}
+const missingSomething = items => validItems(items).some(i => i.g > (stock[i.id] || 0) + 0.5);
+
+function renderMeal() {
+  const view = $("view");
+  const today = log.filter(e => e.day === todayKey());
+  const tm = sumMacros(today.map(e => e.totals));
+
+  let html = `<div class="card">
+    <div class="card-title">Heute bisher</div>
+    ${totalsHTML(tm)}
+    ${today.map(e => `<div class="log-item">
+        <span class="t">${e.time}</span><span class="n">${esc(e.name)}</span>
+        <span class="k">${Math.round(e.totals.kcal)} kcal</span>
+        <button class="undo" data-undo="${e.id}">↺</button>
+      </div>`).join("")}
+  </div>`;
+
+  if (templates.length) {
+    html += `<div class="cat-title" style="margin-top:4px">Gespeicherte Mahlzeiten</div><div class="chips">`;
+    for (const t of templates) {
+      const m = itemsMacros(t.items);
+      html += `<div class="chip" data-tpl="${t.id}">
+        <b>${esc(t.name)}</b>
+        <small>${Math.round(m.kcal)} kcal · ${Math.round(m.p)} g E${missingSomething(t.items) ? ` · <span class="warn">fehlt was</span>` : ""}</small>
+        <button class="x" data-deltpl="${t.id}">✕</button>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  const items = validItems(draft.items);
+  html += `<div class="card" id="builder">
+    <div class="card-title">Mahlzeit zusammenstellen</div>
+    <input id="mName" placeholder="Name, z. B. Quark-Bowl (optional)" value="${esc(draft.name || "")}">
+    ${items.length ? `<div class="meal-list">${items.map((i, idx) => {
+      const p = prod(i.id), cat = catOf(p.cat);
+      const img = p.image ? `<img class="thumb" src="${esc(p.image)}" alt="">` : `<div class="thumb">${cat.icon}</div>`;
+      return `<div class="meal-item" data-row="${idx}">
+        ${img}
+        <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${stockNote(i.id, i.g)}</div></div>
+        <div class="gwrap">
+          <div class="gbox"><input class="gin" data-idx="${idx}" type="number" inputmode="decimal" value="${i.g}">g</div>
+          <span class="ik">${Math.round(macrosFor(p, i.g).kcal)} kcal</span>
+        </div>
+        <button class="rm" data-rm="${idx}">✕</button>
+      </div>`;
+    }).join("")}</div>` : `<p class="hint" style="margin:12px 4px">Noch keine Zutaten. Füg welche hinzu oder tippe oben auf eine gespeicherte Mahlzeit.</p>`}
+    <button class="btn ghost" id="addIng" style="width:100%">＋ Zutat hinzufügen</button>
+    <div class="totals" id="mTotals">${totalsHTML(itemsMacros(items))}</div>
+    <div class="row">
+      <button class="btn ghost" id="saveTpl">Als Vorlage speichern</button>
+      <button class="btn" id="eatBtn">Gegessen ✓</button>
+    </div>
+    ${items.length ? `<div style="text-align:center;margin-top:8px"><button class="undo" id="clearDraft">Alles leeren</button></div>` : ""}
+  </div>`;
+  view.innerHTML = html;
+  draft.items = items;
+
+  $("mName").oninput = () => { draft.name = $("mName").value; saveDraft(); };
+  $("addIng").onclick = openPick;
+  $("eatBtn").onclick = eatMeal;
+  $("saveTpl").onclick = saveTemplate;
+  if ($("clearDraft")) $("clearDraft").onclick = () => { draft = { name: "", items: [] }; saveDraft(); renderMeal(); };
+
+  view.querySelectorAll(".gin").forEach(inp => inp.oninput = () => {
+    const idx = Number(inp.dataset.idx), it = draft.items[idx], p = prod(it.id);
+    it.g = Math.max(0, num(inp.value));
+    saveDraft();
+    const row = view.querySelector(`[data-row="${idx}"]`);
+    row.querySelector(".ik").textContent = `${Math.round(macrosFor(p, it.g).kcal)} kcal`;
+    row.querySelector(".item-sub").innerHTML = stockNote(it.id, it.g);
+    $("mTotals").innerHTML = totalsHTML(itemsMacros(draft.items));
+  });
+  view.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => {
+    draft.items.splice(Number(b.dataset.rm), 1); saveDraft(); renderMeal();
+  });
+  view.querySelectorAll("[data-undo]").forEach(b => b.onclick = () => undoMeal(b.dataset.undo));
+  view.querySelectorAll("[data-tpl]").forEach(c => c.onclick = e => {
+    if (e.target.dataset.deltpl) return;
+    loadTemplate(c.dataset.tpl);
+  });
+  view.querySelectorAll("[data-deltpl]").forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const t = templates.find(x => x.id === b.dataset.deltpl);
+    if (!t || !confirm(`„${t.name}“ löschen?`)) return;
+    templates = templates.filter(x => x.id !== t.id); saveJSON(TPL_KEY, templates); renderMeal();
+  });
+}
+
+function eatMeal() {
+  const items = validItems(draft.items).filter(i => i.g > 0);
+  if (!items.length) { toast("Füg erst Zutaten hinzu"); return; }
+  let short = false;
+  const logged = items.map(i => {
+    const p = prod(i.id), have = stock[i.id] || 0, deducted = Math.min(have, i.g);
+    if (i.g > have + 0.5) short = true;
+    stock[i.id] = have - deducted;
+    if (stock[i.id] < 0.5) delete stock[i.id];
+    return { id: i.id, name: p.name, g: i.g, deducted, ...macrosFor(p, i.g) };
+  });
+  const totals = sumMacros(logged);
+  const now = new Date();
+  log.push({
+    id: now.getTime().toString(36), day: todayKey(),
+    time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
+    name: (draft.name || "").trim() || "Mahlzeit", items: logged, totals
+  });
+  saveJSON(LOG_KEY, log);
+  saveStock();
+  draft = { name: "", items: [] }; saveDraft();
+  renderMeal();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  toast(short ? `Eingetragen ✓ – nicht alles war im Bestand` : `Guten Appetit! ${Math.round(totals.kcal)} kcal ✓`);
+}
+
+function undoMeal(id) {
+  const e = log.find(x => x.id === id);
+  if (!e || !confirm(`„${e.name}“ rückgängig machen? Die Zutaten kommen zurück in den Bestand.`)) return;
+  for (const i of e.items) if (prod(i.id) && i.deducted > 0) stock[i.id] = (stock[i.id] || 0) + i.deducted;
+  log = log.filter(x => x.id !== id);
+  saveJSON(LOG_KEY, log); saveStock(); renderMeal();
+  toast("Rückgängig gemacht");
+}
+
+function saveTemplate() {
+  const items = validItems(draft.items).filter(i => i.g > 0);
+  if (!items.length) { toast("Füg erst Zutaten hinzu"); return; }
+  const name = (draft.name || "").trim();
+  if (!name) { toast("Gib der Mahlzeit oben einen Namen"); $("mName").focus(); return; }
+  const existing = templates.find(t => t.name.toLowerCase() === name.toLowerCase());
+  if (existing && !confirm(`„${name}“ gibt es schon. Überschreiben?`)) return;
+  const tpl = { id: existing ? existing.id : Date.now().toString(36), name, items: items.map(({ id, g }) => ({ id, g })) };
+  templates = existing ? templates.map(t => t.id === existing.id ? tpl : t) : [...templates, tpl];
+  saveJSON(TPL_KEY, templates);
+  renderMeal();
+  toast("Vorlage gespeichert ✓");
+}
+
+function loadTemplate(id) {
+  const t = templates.find(x => x.id === id);
+  if (!t) return;
+  if (validItems(draft.items).length && !confirm("Aktuelle Mahlzeit ersetzen?")) return;
+  draft = { name: t.name, items: validItems(t.items).map(i => ({ id: i.id, g: i.g })) };
+  saveDraft();
+  renderMeal();
+  $("builder").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* Zutat wählen */
+function openPick() {
+  if (!products.length) { toast("Leg zuerst Produkte an"); return; }
+  $("pickSearch").value = "";
+  renderPick();
+  $("pickSheet").classList.add("open");
+}
+function renderPick() {
+  const term = $("pickSearch").value.toLowerCase();
+  const list = products.filter(p => p.name.toLowerCase().includes(term))
+    .sort((a, b) => (inStock(b) - inStock(a)) || a.name.localeCompare(b.name, "de"));
+  $("pickList").innerHTML = list.length ? `<div class="shop-list">${list.map(p => {
+    const cat = catOf(p.cat);
+    const img = p.image ? `<img class="thumb" src="${esc(p.image)}" alt="" loading="lazy">` : `<div class="thumb">${cat.icon}</div>`;
+    const sub = inStock(p) ? `Noch ${fmt(stock[p.id])} g da` : `<span class="warn">Nicht im Bestand</span>`;
+    return `<div class="shop-item" data-pick="${p.id}" style="cursor:pointer">${img}
+      <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${sub}</div></div>
+      <span class="item-sub">${Math.round(p.kcal)} kcal</span></div>`;
+  }).join("")}</div>` : `<div class="empty" style="padding:30px 10px">Nichts gefunden.</div>`;
+  $("pickList").querySelectorAll("[data-pick]").forEach(r => r.onclick = () => {
+    const id = r.dataset.pick;
+    if (draft.items.some(i => i.id === id)) { toast("Ist schon drin – Gramm einfach anpassen"); $("pickSheet").classList.remove("open"); return; }
+    const p = prod(id);
+    draft.items.push({ id, g: p.pack > 0 && p.pack < 100 ? p.pack : 100 });
+    saveDraft();
+    $("pickSheet").classList.remove("open");
+    renderMeal();
+  });
+}
+$("pickSearch").oninput = renderPick;
+
 /* Fenster schließen */
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
-["stockSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
+["stockSheet", "pickSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
 
 /* ---------- Start ---------- */
 showTab("produkte");
