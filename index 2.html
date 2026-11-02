@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Makro">
+<meta name="theme-color" content="#ffffff">
+<title>Makro</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f6f4;
+    --card: #ffffff;
+    --text: #1d1d1b;
+    --muted: #8a8a85;
+    --line: #e6e6e1;
+    --accent: #2f7d5b;
+    --accent-soft: #e5f1eb;
+    --danger: #c0392b;
+    --p: #2f7d5b;  /* Eiweiß */
+    --c: #d08c2e;  /* Kohlenhydrate */
+    --f: #4a6fa5;  /* Fett */
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212; --card: #1d1d1d; --text: #f1f1ee; --muted: #9a9a95;
+      --line: #2c2c2c; --accent: #4fb386; --accent-soft: #1f3329;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    padding: env(safe-area-inset-top) 0 calc(80px + env(safe-area-inset-bottom));
+  }
+  header {
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    padding: 16px 16px 10px; display: flex; align-items: center; justify-content: space-between;
+  }
+  h1 { font-size: 28px; margin: 0; letter-spacing: -0.5px; }
+  main { padding: 0 16px; max-width: 720px; margin: 0 auto; }
+
+  .btn {
+    border: 0; border-radius: 12px; padding: 12px 16px; font-size: 16px; font-weight: 600;
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+  .btn.danger { background: transparent; color: var(--danger); }
+  .btn.round { width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 26px; line-height: 44px; }
+
+  .search {
+    width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); font-size: 16px; margin-bottom: 14px;
+  }
+  .cat-title { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 18px 4px 8px; }
+  .list { background: var(--card); border-radius: var(--radius); overflow: hidden; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .item:last-child { border-bottom: 0; }
+  .thumb {
+    width: 48px; height: 48px; border-radius: 10px; background: var(--bg); flex-shrink: 0;
+    object-fit: contain; display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .item-main { flex: 1; min-width: 0; }
+  .item-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .macros { display: flex; gap: 10px; font-size: 13px; margin-top: 4px; }
+  .macros span b { font-weight: 600; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .kcal { font-weight: 700; text-align: right; white-space: nowrap; }
+  .kcal small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 50px 20px; line-height: 1.5; }
+  .empty .big { font-size: 48px; }
+
+  /* Tab-Leiste */
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+    background: var(--card); border-top: 1px solid var(--line);
+    display: flex; padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button {
+    flex: 1; background: none; border: 0; padding: 8px 0 10px; color: var(--muted);
+    font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+  }
+  nav button .ic { font-size: 22px; filter: grayscale(1); opacity: .6; }
+  nav button.active { color: var(--accent); font-weight: 600; }
+  nav button.active .ic { filter: none; opacity: 1; }
+
+  /* Formular-Fenster */
+  .sheet-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 20;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .sheet-bg.open { display: flex; }
+  .sheet {
+    background: var(--bg); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+    border-radius: 20px 20px 0 0; padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 700px) { .sheet-bg { align-items: center; } .sheet { border-radius: 20px; } }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .sheet-head h2 { margin: 0; font-size: 20px; }
+  .link { background: none; border: 0; color: var(--accent); font-size: 16px; cursor: pointer; padding: 6px; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 4px 6px; }
+  input, select {
+    width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); font-size: 16px; -webkit-appearance: none; appearance: none;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .preview { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .preview img { width: 72px; height: 72px; object-fit: contain; border-radius: 12px; background: var(--card); }
+  .row { display: flex; gap: 10px; margin-top: 18px; }
+  .row .btn { flex: 1; }
+  .hint { font-size: 13px; color: var(--muted); margin: 8px 4px 0; line-height: 1.4; }
+  .status { font-size: 14px; margin: 10px 4px 0; min-height: 20px; }
+
+  #productSheet { z-index: 25; }
+  #reader, #shopReader { width: 100%; border-radius: 14px; overflow: hidden; background: #000; }
+  #reader video, #shopReader video { border-radius: 14px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 20px; font-size: 14px;
+    opacity: 0; transition: opacity .25s; z-index: 30; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ---------- Küche: Kühlschrank 2/3 + Schrank 1/3 ---------- */
+  :root {
+    --fridge: #eef2f3; --fridge-edge: #cfd8dc; --shelf: #c3cdd2; --glass: rgba(255,255,255,.6);
+    --ice: #e4f2fa; --ice-edge: #b5d9ec; --wood: #efe6da; --wood-edge: #d6c6af;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fridge: #1f2427; --fridge-edge: #343c40; --shelf: #3d474c; --glass: rgba(255,255,255,.05);
+      --ice: #18252d; --ice-edge: #2b4352; --wood: #2a2520; --wood-edge: #43392e;
+    }
+  }
+  .kitchen { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 8px; align-items: stretch; }
+  .fridge, .cupboard { min-width: 0; display: flex; flex-direction: column; padding: 6px 8px 8px; }
+  .fridge { background: var(--fridge); border: 3px solid var(--fridge-edge); border-radius: 22px; }
+  .cupboard { background: var(--wood); border: 3px solid var(--wood-edge); border-radius: 14px; padding: 6px 6px 8px; }
+  .unit-title { font-size: 12px; font-weight: 700; text-align: center; color: var(--muted); margin: 2px 0 2px; }
+  .comp {
+    flex: 1 0 auto; min-height: 84px; min-width: 0; padding: 6px 4px 8px; display: flex; flex-direction: column;
+    border-bottom: 5px solid var(--shelf);
+  }
+  .cupboard .comp { min-height: 64px; border-bottom-color: var(--wood-edge); padding: 6px 2px 6px; }
+  .cupboard .comp:last-child { border-bottom: 0; }
+  .comp-label {
+    font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cupboard .comp-label { white-space: normal; line-height: 1.3; }
+  .comp-items { min-width: 0; margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+  .drawers { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .comp.drawer { border: 3px solid var(--shelf); border-radius: 12px; background: var(--glass); min-height: 96px; }
+  .comp.freezer { border: 3px solid var(--ice-edge); border-radius: 14px; background: var(--ice); margin-top: 8px; min-height: 96px; }
+
+  .group { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; cursor: pointer; max-width: 100%; flex: 0 0 auto; }
+  .pkgs { width: max-content; max-width: 100%; }
+  .pkgs { display: flex; flex-wrap: wrap; gap: 3px; }
+  .pkg {
+    width: 32px; height: 32px; border-radius: 8px; background: var(--card);
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    position: relative; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  .cupboard .pkg { width: 26px; height: 26px; font-size: 14px; border-radius: 6px; }
+  .pkg img { width: 100%; height: 100%; object-fit: contain; }
+  .pkg.partial > img, .pkg.partial > .e { opacity: .35; }
+  .pkg .fill { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent); opacity: .35; }
+  .pkg.more { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .group-name { font-size: 11px; color: var(--muted); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cupboard .group-name { max-width: 80px; font-size: 10px; }
+  .fridge-hint { text-align: center; color: var(--muted); font-size: 14px; margin: 14px 0 0; line-height: 1.5; }
+
+  .btn.pill { border-radius: 22px; padding: 10px 16px; font-size: 15px; }
+
+  /* Einkaufen */
+  .shop-list { background: var(--card); border-radius: var(--radius); overflow: hidden; }
+  .shop-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .shop-item:last-child { border-bottom: 0; }
+  .shop-item.on { background: var(--accent-soft); }
+  .shop-item .thumb { width: 38px; height: 38px; font-size: 18px; }
+  .shop-item .packIn { padding: 6px 10px; font-size: 14px; margin-top: 4px; max-width: 150px; }
+  .mini { display: flex; align-items: center; gap: 6px; }
+  .mini button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 20px; font-weight: 700; cursor: pointer; }
+  .shop-item.on .mini button { background: var(--accent); color: #fff; }
+  .mini span { min-width: 22px; text-align: center; font-weight: 700; }
+
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper button { width: 48px; height: 48px; border-radius: 12px; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 24px; font-weight: 700; cursor: pointer; }
+  .stepper input { text-align: center; font-size: 20px; font-weight: 700; }
+  .big-stock { font-size: 26px; font-weight: 700; margin: 6px 4px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="title">Produkte</h1>
+  <button class="btn round" id="addBtn" aria-label="Produkt hinzufügen">+</button>
+</header>
+
+<main id="view"></main>
+
+<nav>
+  <button data-tab="produkte" class="active"><span class="ic">🥫</span>Produkte</button>
+  <button data-tab="kuehlschrank"><span class="ic">🧊</span>Kühlschrank</button>
+  <button data-tab="mahlzeit"><span class="ic">🍽️</span>Mahlzeit</button>
+  <button data-tab="heute"><span class="ic">📊</span>Heute</button>
+  <button data-tab="vorschlaege"><span class="ic">💡</span>Ideen</button>
+</nav>
+
+<!-- Produkt anlegen / bearbeiten -->
+<div class="sheet-bg" id="productSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" id="cancelBtn">Abbrechen</button>
+      <h2 id="sheetTitle">Neues Produkt</h2>
+      <button class="link" id="saveBtn"><b>Sichern</b></button>
+    </div>
+
+    <button class="btn ghost" id="scanBtn" style="width:100%">📷 Barcode scannen</button>
+    <div id="scanArea" style="display:none; margin-top:12px">
+      <div id="reader"></div>
+      <button class="btn ghost" id="stopScanBtn" style="width:100%; margin-top:10px">Scan beenden</button>
+    </div>
+    <div class="grid2" style="margin-top:4px">
+      <div>
+        <label>Barcode (oder eintippen)</label>
+        <input id="fBarcode" inputmode="numeric" placeholder="z. B. 4002468...">
+      </div>
+      <div style="display:flex; align-items:flex-end">
+        <button class="btn ghost" id="lookupBtn" style="width:100%">Suchen</button>
+      </div>
+    </div>
+    <div class="status" id="scanStatus"></div>
+
+    <div class="preview" id="preview" style="display:none">
+      <img id="fImgPreview" alt="">
+      <div class="hint" style="margin:0">Produktbild von Open Food Facts</div>
+    </div>
+
+    <label>Name</label>
+    <input id="fName" placeholder="z. B. Magerquark">
+
+    <div class="grid2">
+      <div>
+        <label>Kategorie</label>
+        <select id="fCat"></select>
+      </div>
+      <div>
+        <label>Packungsgröße (g / ml)</label>
+        <input id="fPack" type="number" inputmode="decimal" placeholder="500">
+      </div>
+    </div>
+
+    <label style="margin-top:18px">Nährwerte pro 100 g</label>
+    <div class="grid2">
+      <div><label>Kalorien (kcal)</label><input id="fKcal" type="number" inputmode="decimal"></div>
+      <div><label>Eiweiß (g)</label><input id="fP" type="number" inputmode="decimal"></div>
+      <div><label>Kohlenhydrate (g)</label><input id="fC" type="number" inputmode="decimal"></div>
+      <div><label>Fett (g)</label><input id="fF" type="number" inputmode="decimal"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn danger" id="deleteBtn" style="display:none">Produkt löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Einkaufen -->
+<div class="sheet-bg" id="shopSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" id="shopCancel">Abbrechen</button>
+      <h2>🛒 Einkaufen</h2>
+      <button class="link" id="shopSaveBtn"><b>Einräumen</b></button>
+    </div>
+    <div class="row" style="margin-top:0">
+      <button class="btn ghost" id="shopScanBtn">📷 Scannen</button>
+      <button class="btn ghost" id="shopNewBtn">＋ Neues Produkt</button>
+    </div>
+    <div id="shopScanArea" style="display:none; margin-top:12px">
+      <div id="shopReader"></div>
+      <div class="hint">Scanne Produkt für Produkt. Bekannte Produkte landen direkt im Wagen, neue legst du kurz an.</div>
+      <button class="btn ghost" id="shopStopScan" style="width:100%; margin-top:10px">Scan beenden</button>
+    </div>
+    <input class="search" id="shopSearch" placeholder="Produkt suchen" style="margin-top:14px">
+    <div id="shopList"></div>
+  </div>
+</div>
+
+<!-- Bestand bearbeiten -->
+<div class="sheet-bg" id="stockSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="stockSheet">Fertig</button>
+      <h2 id="sName">Bestand</h2>
+      <span style="width:60px"></span>
+    </div>
+    <div class="preview" id="sPreview"></div>
+    <div class="big-stock" id="sStock"></div>
+    <div class="hint" id="sStockSub" style="margin-top:2px"></div>
+    <div class="row">
+      <button class="btn ghost" id="sMinus">− 1 Packung</button>
+      <button class="btn ghost" id="sPlus">+ 1 Packung</button>
+    </div>
+    <label>Genauer Bestand (g / ml)</label>
+    <div class="grid2">
+      <input id="sGrams" type="number" inputmode="decimal">
+      <button class="btn ghost" id="sSet">Übernehmen</button>
+    </div>
+    <div class="row">
+      <button class="btn danger" id="sEmpty">Alles aufgebraucht</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Grunddaten ---------- */
+const CATEGORIES = [
+  /* Kühlschrank */
+  { id: "milch",         name: "Milchprodukte",             short: "Milch",           icon: "🥛" },
+  { id: "fleisch",       name: "Fleisch & Fisch",           short: "Fleisch & Fisch", icon: "🥩" },
+  { id: "gemuese",       name: "Gemüse",                    short: "Gemüse",          icon: "🥦" },
+  { id: "obst",          name: "Obst",                      short: "Obst",            icon: "🍎" },
+  { id: "tiefkuehl",     name: "Tiefkühl",                  short: "❄️ Tiefkühl",     icon: "🧊" },
+  /* Schrank */
+  { id: "kohlenhydrate", name: "Kartoffeln, Reis & Nudeln", short: "Kartoffeln, Reis, Nudeln", icon: "🍝" },
+  { id: "oel",           name: "Öl & Fett",                 short: "Öl",              icon: "🫒" },
+  { id: "backen",        name: "Backzutaten",               short: "Backen",          icon: "🧁" },
+  { id: "gewuerze",      name: "Gewürze",                   short: "Gewürze",         icon: "🧂" },
+  { id: "suess",         name: "Süßigkeiten",               short: "Süßes",           icon: "🍫" },
+  { id: "sonstiges",     name: "Sonstiges",                 short: "Sonstiges",       icon: "📦" }
+];
+/* Kategorien aus Version 1 umziehen */
+const OLD_CATS = { protein: "sonstiges", konserven: "sonstiges", getraenke: "sonstiges" };
+
+const STORE_KEY = "makro.products";
+
+function loadProducts() {
+  try {
+    const list = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
+    list.forEach(p => { if (OLD_CATS[p.cat]) p.cat = OLD_CATS[p.cat]; });
+    return list;
+  }
+  catch (e) { return []; }
+}
+function saveProducts() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(products)); }
+  catch (e) { toast("Speichern fehlgeschlagen"); }
+}
+
+let products = loadProducts();
+
+/* Bestand: Produkt-ID -> Menge in g/ml */
+const STOCK_KEY = "makro.stock";
+let stock = (() => { try { return JSON.parse(localStorage.getItem(STOCK_KEY)) || {}; } catch (e) { return {}; } })();
+function saveStock() {
+  try { localStorage.setItem(STOCK_KEY, JSON.stringify(stock)); }
+  catch (e) { toast("Speichern fehlgeschlagen"); }
+}
+let editingId = null;
+let currentImage = "";
+let scanner = null;
+let searchTerm = "";
+
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? 0 : n; };
+const r1 = n => Math.round(n * 10) / 10;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+/* ---------- Tabs ---------- */
+const TABS = {
+  produkte:     { title: "Produkte",    render: renderProducts, add: true },
+  kuehlschrank: { title: "Kühlschrank", render: renderFridge, add: true },
+  mahlzeit:     { title: "Mahlzeit",    render: () => soon("🍽️", "Hier stellst du bald deine Mahlzeiten zusammen.") },
+  heute:        { title: "Heute",       render: () => soon("📊", "Hier siehst du bald deine Tageswerte und den Kalorienrechner.") },
+  vorschlaege:  { title: "Ideen",       render: () => soon("💡", "Hier bekommst du bald Rezeptideen aus deinem Bestand.") }
+};
+let currentTab = "produkte";
+
+function showTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  $("title").textContent = TABS[tab].title;
+  const ab = $("addBtn");
+  ab.style.visibility = TABS[tab].add ? "visible" : "hidden";
+  if (tab === "kuehlschrank") { ab.className = "btn pill"; ab.textContent = "🛒 Einkaufen"; }
+  else { ab.className = "btn round"; ab.textContent = "+"; }
+  TABS[tab].render();
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+function soon(icon, text) {
+  $("view").innerHTML = `<div class="empty"><div class="big">${icon}</div>${text}<br>Kommt im nächsten Schritt.</div>`;
+}
+
+/* ---------- Produktliste ---------- */
+function renderProducts() {
+  const view = $("view");
+  if (!products.length) {
+    view.innerHTML = `<div class="empty"><div class="big">🥫</div>
+      Noch keine Produkte.<br>Tippe oben auf <b>+</b> und scanne den Barcode deines ersten Produkts.</div>`;
+    return;
+  }
+  const term = searchTerm.toLowerCase();
+  let html = `<input class="search" id="search" placeholder="Produkt suchen" value="${esc(searchTerm)}">`;
+  let found = 0;
+  for (const cat of CATEGORIES) {
+    const items = products
+      .filter(p => p.cat === cat.id && p.name.toLowerCase().includes(term))
+      .sort((a, b) => a.name.localeCompare(b.name, "de"));
+    if (!items.length) continue;
+    found += items.length;
+    html += `<div class="cat-title">${cat.icon} ${cat.name}</div><div class="list">`;
+    for (const p of items) {
+      const img = p.image
+        ? `<img class="thumb" src="${esc(p.image)}" alt="" loading="lazy">`
+        : `<div class="thumb">${cat.icon}</div>`;
+      html += `<div class="item" data-id="${p.id}">
+        ${img}
+        <div class="item-main">
+          <div class="item-name">${esc(p.name)}</div>
+          <div class="macros">
+            <span><i class="dot" style="background:var(--p)"></i><b>${r1(p.p)}</b> E</span>
+            <span><i class="dot" style="background:var(--c)"></i><b>${r1(p.c)}</b> K</span>
+            <span><i class="dot" style="background:var(--f)"></i><b>${r1(p.f)}</b> F</span>
+          </div>
+        </div>
+        <div class="kcal">${Math.round(p.kcal)}<small>kcal/100 g</small></div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  if (!found) html += `<div class="empty">Nichts gefunden.</div>`;
+  view.innerHTML = html;
+
+  const s = $("search");
+  s.oninput = () => { searchTerm = s.value; renderProducts(); const n = $("search"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  view.querySelectorAll(".item").forEach(el => el.onclick = () => openSheet(el.dataset.id));
+}
+
+/* ---------- Formular ---------- */
+$("fCat").innerHTML = CATEGORIES.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join("");
+
+function setImage(url) {
+  currentImage = url || "";
+  $("preview").style.display = currentImage ? "flex" : "none";
+  $("fImgPreview").src = currentImage;
+}
+
+function openSheet(id = null) {
+  editingId = id;
+  const p = products.find(x => x.id === id) || {};
+  $("sheetTitle").textContent = id ? "Produkt bearbeiten" : "Neues Produkt";
+  $("fName").value = p.name || "";
+  $("fCat").value = p.cat || "sonstiges";
+  $("fPack").value = p.pack || "";
+  $("fKcal").value = p.kcal ?? "";
+  $("fP").value = p.p ?? "";
+  $("fC").value = p.c ?? "";
+  $("fF").value = p.f ?? "";
+  $("fBarcode").value = p.barcode || "";
+  setImage(p.image);
+  $("scanStatus").textContent = "";
+  $("deleteBtn").style.display = id ? "block" : "none";
+  $("productSheet").classList.add("open");
+}
+
+function closeSheet() {
+  stopScan();
+  returnToShop = false;
+  $("productSheet").classList.remove("open");
+}
+
+$("addBtn").onclick = () => currentTab === "kuehlschrank" ? openShop() : openSheet();
+$("cancelBtn").onclick = closeSheet;
+$("productSheet").onclick = e => { if (e.target.id === "productSheet") closeSheet(); };
+
+$("saveBtn").onclick = () => {
+  const name = $("fName").value.trim();
+  if (!name) { toast("Bitte einen Namen eingeben"); return; }
+  const data = {
+    name,
+    cat: $("fCat").value,
+    pack: num($("fPack").value),
+    kcal: num($("fKcal").value),
+    p: num($("fP").value),
+    c: num($("fC").value),
+    f: num($("fF").value),
+    barcode: $("fBarcode").value.trim(),
+    image: currentImage
+  };
+  if (editingId) {
+    Object.assign(products.find(x => x.id === editingId), data);
+  } else {
+    if (data.barcode && products.some(x => x.barcode === data.barcode)) {
+      toast("Dieses Produkt hast du schon"); return;
+    }
+    const np = { id: Date.now().toString(36), ...data };
+    products.push(np);
+    if (returnToShop) cart[np.id] = (cart[np.id] || 0) + 1;
+  }
+  const backToShop = returnToShop;
+  saveProducts();
+  closeSheet();
+  TABS[currentTab].render();
+  if (backToShop) { renderShopList(); toast("Neu angelegt und im Wagen ✓"); }
+  else toast("Gespeichert ✓");
+};
+
+$("deleteBtn").onclick = () => {
+  if (!confirm("Produkt wirklich löschen?")) return;
+  products = products.filter(x => x.id !== editingId);
+  delete stock[editingId];
+  saveProducts();
+  saveStock();
+  closeSheet();
+  TABS[currentTab].render();
+  toast("Gelöscht");
+};
+
+/* ---------- Barcode-Scan & Open Food Facts ---------- */
+$("scanBtn").onclick = startScan;
+$("stopScanBtn").onclick = stopScan;
+$("lookupBtn").onclick = () => lookup($("fBarcode").value.trim());
+
+function startScan() {
+  if (typeof Html5Qrcode === "undefined") { toast("Scanner nicht geladen – Internet prüfen"); return; }
+  $("scanArea").style.display = "block";
+  $("scanBtn").style.display = "none";
+  $("scanStatus").textContent = "Halte die Kamera auf den Barcode …";
+  scanner = new Html5Qrcode("reader", {
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E
+    ],
+    verbose: false
+  });
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 260, height: 140 } },
+    code => { $("fBarcode").value = code; stopScan(); lookup(code); },
+    () => {}
+  ).catch(() => {
+    $("scanStatus").textContent = "Kamera nicht verfügbar. Erlaube den Kamerazugriff oder tippe den Barcode ein.";
+    stopScan();
+  });
+}
+
+function stopScan() {
+  $("scanArea").style.display = "none";
+  $("scanBtn").style.display = "block";
+  if (scanner) {
+    const s = scanner; scanner = null;
+    s.stop().then(() => s.clear()).catch(() => {});
+  }
+}
+
+async function lookup(code) {
+  if (!code) { toast("Bitte Barcode eingeben"); return; }
+  $("scanStatus").textContent = "Suche Produkt …";
+  try {
+    const fields = "product_name,product_name_de,brands,image_front_small_url,image_front_url,nutriments,product_quantity,quantity,categories_tags";
+    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=${fields}`);
+    const data = await res.json();
+    if (data.status !== 1 || !data.product) {
+      $("scanStatus").textContent = "Nicht gefunden. Trag die Nährwerte bitte selbst ein.";
+      return;
+    }
+    const p = data.product, n = p.nutriments || {};
+    const name = p.product_name_de || p.product_name || "";
+    const brand = (p.brands || "").split(",")[0].trim();
+    $("fName").value = brand && name && !name.toLowerCase().includes(brand.toLowerCase()) ? `${name} (${brand})` : (name || brand);
+    const kcal = n["energy-kcal_100g"] ?? (n["energy_100g"] ? n["energy_100g"] / 4.184 : "");
+    $("fKcal").value = kcal !== "" ? Math.round(kcal) : "";
+    $("fP").value = n["proteins_100g"] != null ? r1(n["proteins_100g"]) : "";
+    $("fC").value = n["carbohydrates_100g"] != null ? r1(n["carbohydrates_100g"]) : "";
+    $("fF").value = n["fat_100g"] != null ? r1(n["fat_100g"]) : "";
+    if (p.product_quantity) $("fPack").value = Math.round(num(p.product_quantity));
+    $("fCat").value = guessCategory(p.categories_tags || [], name);
+    setImage(p.image_front_small_url || p.image_front_url || "");
+    const missing = [$("fKcal"), $("fP"), $("fC"), $("fF")].some(i => i.value === "");
+    $("scanStatus").textContent = missing
+      ? "Gefunden ✓ – einige Werte fehlen, bitte ergänzen."
+      : "Gefunden ✓ – prüf kurz die Werte und tippe auf Sichern.";
+  } catch (e) {
+    $("scanStatus").textContent = "Keine Verbindung. Versuch es nochmal oder trag die Werte selbst ein.";
+  }
+}
+
+function guessCategory(tags, name) {
+  const t = (tags.join(" ") + " " + name).toLowerCase();
+  const has = (...w) => w.some(x => t.includes(x));
+  if (has("frozen", "tiefkühl", "tiefgekühlt", "surgel")) return "tiefkuehl";
+  if (has("chocolate", "schokolade", "sweets", "süßwaren", "candy", "gummi", "biscuit", "kekse", "confectioner", "snacks-sucres")) return "suess";
+  if (has("meat", "fleisch", "fish", "fisch", "hack", "chicken", "hähnchen", "pute", "lachs", "thunfisch", "wurst", "sausage", "seafood")) return "fleisch";
+  if (has("dairy", "milch", "quark", "joghurt", "yogurt", "käse", "cheese", "skyr", "sahne", "butter", "eggs", "eier")) return "milch";
+  if (has("fruit", "obst", "banane", "apfel", "beere", "berries", "orange")) return "obst";
+  if (has("vegetable", "gemüse", "paprika", "tomate", "gurke", "salat", "zwiebel", "möhre", "karotte")) return "gemuese";
+  if (has("pasta", "nudel", "rice", "reis", "kartoffel", "potato", "bread", "brot", "haferflocken", "oats", "cereal")) return "kohlenhydrate";
+  if (has("vegetable-oils", "olive-oil", "oils", "öl ", "olivenöl", "rapsöl", "sonnenblumenöl")) return "oel";
+  if (has("flour", "mehl", "sugar", "zucker", "baking", "backpulver", "hefe", "vanill")) return "backen";
+  if (has("spice", "gewürz", "salz", "salt", "pfeffer", "pepper", "herbs", "kräuter", "paprikapulver")) return "gewuerze";
+  return "sonstiges";
+}
+
+/* ---------- Kühlschrank ---------- */
+const FRIDGE_CATS = ["milch", "fleisch", "gemuese", "obst", "tiefkuehl"];
+const CUPBOARD_CATS = ["kohlenhydrate", "oel", "backen", "gewuerze", "suess", "sonstiges"];
+const MAX_ICONS = 12;
+const catOf = id => CATEGORIES.find(c => c.id === id) || CATEGORIES[CATEGORIES.length - 1];
+const catIcon = id => catOf(id).icon;
+const packOf = p => p.pack > 0 ? p.pack : 100;
+const fmt = n => Math.round(n).toLocaleString("de-DE");
+
+function inStock(p) { return (stock[p.id] || 0) > 0.5; }
+
+function packageInfo(p) {
+  const g = stock[p.id] || 0, pack = packOf(p);
+  const full = Math.floor((g + 0.5) / pack);
+  const rest = g - full * pack;
+  return { g, pack, full, partial: rest > 0.5 ? rest / pack : 0 };
+}
+
+function stockText(p) {
+  const { g, full, partial } = packageInfo(p);
+  let t = full ? `${full} ${full === 1 ? "Packung" : "Packungen"}` : "";
+  if (partial) t += (t ? " + " : "") + "1 angebrochen";
+  return { main: t || "Leer", sub: `${fmt(g)} g/ml insgesamt` };
+}
+
+function pkgHTML(p, fillShare) {
+  const inner = p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : `<span class="e">${catIcon(p.cat)}</span>`;
+  if (fillShare == null) return `<div class="pkg">${inner}</div>`;
+  return `<div class="pkg partial">${inner}<div class="fill" style="height:${Math.max(8, Math.round(fillShare * 100))}%"></div></div>`;
+}
+
+function groupHTML(p) {
+  const { full, partial } = packageInfo(p);
+  let icons = "", shown = 0;
+  for (let i = 0; i < full && shown < MAX_ICONS; i++, shown++) icons += pkgHTML(p);
+  if (partial && shown < MAX_ICONS) { icons += pkgHTML(p, partial); shown++; }
+  const total = full + (partial ? 1 : 0);
+  if (total > shown) icons += `<div class="pkg more">+${total - shown}</div>`;
+  return `<div class="group" data-id="${p.id}"><div class="pkgs">${icons}</div><div class="group-name">${esc(p.name)}</div></div>`;
+}
+
+function compHTML(catId, extraClass = "") {
+  const items = products.filter(p => p.cat === catId && inStock(p))
+    .sort((a, b) => a.name.localeCompare(b.name, "de"));
+  return `<div class="comp ${extraClass}"><div class="comp-label">${catOf(catId).short}</div>
+    <div class="comp-items">${items.map(groupHTML).join("")}</div></div>`;
+}
+
+function renderFridge() {
+  const view = $("view");
+  const anything = products.some(inStock);
+  view.innerHTML = `
+    <div class="kitchen">
+      <div class="fridge">
+        <div class="unit-title">Kühlschrank</div>
+        ${compHTML("milch")}
+        ${compHTML("fleisch")}
+        <div class="drawers">${compHTML("gemuese", "drawer")}${compHTML("obst", "drawer")}</div>
+        ${compHTML("tiefkuehl", "freezer")}
+      </div>
+      <div class="cupboard">
+        <div class="unit-title">Schrank</div>
+        ${CUPBOARD_CATS.map(c => compHTML(c)).join("")}
+      </div>
+    </div>
+    ${anything ? "" : `<p class="fridge-hint">Noch leer. Tippe oben auf <b>🛒 Einkaufen</b> und trag deinen Einkauf ein.</p>`}
+  `;
+  view.querySelectorAll(".group").forEach(el => el.onclick = () => openStock(el.dataset.id));
+}
+
+/* ---------- Einkaufen ---------- */
+let cart = {};          // Produkt-ID -> Anzahl Packungen
+let pendingPack = {};   // Packungsgröße für Produkte ohne Angabe
+let shopSearch = "";
+let shopScanner = null, lastCode = "", lastCodeTime = 0;
+let returnToShop = false;
+
+const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
+
+function openShop() {
+  cart = {}; pendingPack = {}; shopSearch = "";
+  $("shopSearch").value = "";
+  renderShopList();
+  $("shopSheet").classList.add("open");
+}
+
+function closeShop(force) {
+  if (!force && cartCount() && !confirm("Einkauf verwerfen?")) return;
+  stopShopScan();
+  $("shopSheet").classList.remove("open");
+}
+
+function renderShopList() {
+  const n = cartCount();
+  $("shopSaveBtn").innerHTML = `<b>Einräumen${n ? ` (${n})` : ""}</b>`;
+  const list = $("shopList");
+  if (!products.length) {
+    list.innerHTML = `<div class="empty" style="padding:30px 10px">Noch keine Produkte.<br>Scanne dein erstes Produkt oder leg es neu an.</div>`;
+    return;
+  }
+  const term = shopSearch.toLowerCase();
+  let html = "", found = 0;
+  for (const cat of CATEGORIES) {
+    const items = products.filter(p => p.cat === cat.id && p.name.toLowerCase().includes(term))
+      .sort((a, b) => a.name.localeCompare(b.name, "de"));
+    if (!items.length) continue;
+    found += items.length;
+    html += `<div class="cat-title">${cat.icon} ${cat.name}</div><div class="shop-list">`;
+    for (const p of items) {
+      const c = cart[p.id] || 0;
+      const img = p.image ? `<img class="thumb" src="${esc(p.image)}" alt="" loading="lazy">` : `<div class="thumb">${cat.icon}</div>`;
+      const sub = p.pack > 0
+        ? `<div class="item-sub">${fmt(p.pack)} g pro Packung</div>`
+        : (c ? `<input class="packIn" data-id="${p.id}" type="number" inputmode="decimal" placeholder="g pro Packung" value="${pendingPack[p.id] || ""}">`
+             : `<div class="item-sub">Packungsgröße fehlt</div>`);
+      html += `<div class="shop-item ${c ? "on" : ""}">
+        ${img}
+        <div class="item-main"><div class="item-name">${esc(p.name)}</div>${sub}</div>
+        <div class="mini">
+          ${c ? `<button data-id="${p.id}" data-d="-1">−</button><span>${c}</span>` : ""}
+          <button data-id="${p.id}" data-d="1">+</button>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  if (!found) html += `<div class="empty" style="padding:30px 10px">Nichts gefunden.</div>`;
+  list.innerHTML = html;
+  list.querySelectorAll(".mini button").forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    cart[id] = Math.max(0, (cart[id] || 0) + Number(b.dataset.d));
+    if (!cart[id]) delete cart[id];
+    renderShopList();
+  });
+  list.querySelectorAll(".packIn").forEach(i => i.oninput = () => { pendingPack[i.dataset.id] = num(i.value); });
+}
+
+$("shopSearch").oninput = () => { shopSearch = $("shopSearch").value; renderShopList(); };
+$("shopCancel").onclick = () => closeShop(false);
+$("shopNewBtn").onclick = () => { stopShopScan(); returnToShop = true; openSheet(); };
+
+$("shopSaveBtn").onclick = () => {
+  const ids = Object.keys(cart);
+  if (!ids.length) { toast("Dein Wagen ist noch leer"); return; }
+  for (const id of ids) {
+    const p = products.find(x => x.id === id);
+    if (p && !(p.pack > 0) && !(pendingPack[id] > 0)) { toast(`Packungsgröße für ${p.name} fehlt`); return; }
+  }
+  let total = 0;
+  for (const id of ids) {
+    const p = products.find(x => x.id === id);
+    if (!p) continue;
+    if (!(p.pack > 0)) p.pack = pendingPack[id];
+    stock[id] = (stock[id] || 0) + cart[id] * p.pack;
+    total += cart[id];
+  }
+  saveProducts();
+  saveStock();
+  closeShop(true);
+  renderFridge();
+  toast(`${total} ${total === 1 ? "Packung" : "Packungen"} eingeräumt ✓`);
+};
+
+/* Scannen beim Einkaufen */
+$("shopScanBtn").onclick = startShopScan;
+$("shopStopScan").onclick = stopShopScan;
+
+function startShopScan() {
+  if (typeof Html5Qrcode === "undefined") { toast("Scanner nicht geladen – Internet prüfen"); return; }
+  $("shopScanArea").style.display = "block";
+  shopScanner = new Html5Qrcode("shopReader", {
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E
+    ],
+    verbose: false
+  });
+  shopScanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 240, height: 130 } },
+    onShopScan,
+    () => {}
+  ).catch(() => { toast("Kamera nicht verfügbar"); stopShopScan(); });
+}
+
+function stopShopScan() {
+  $("shopScanArea").style.display = "none";
+  if (shopScanner) {
+    const s = shopScanner; shopScanner = null;
+    s.stop().then(() => s.clear()).catch(() => {});
+  }
+}
+
+function onShopScan(code) {
+  const now = Date.now();
+  if (code === lastCode && now - lastCodeTime < 2500) return;
+  lastCode = code; lastCodeTime = now;
+  const p = products.find(x => x.barcode === code);
+  if (p) {
+    cart[p.id] = (cart[p.id] || 0) + 1;
+    if (navigator.vibrate) navigator.vibrate(40);
+    renderShopList();
+    toast(`+1 ${p.name}`);
+  } else {
+    stopShopScan();
+    returnToShop = true;
+    openSheet();
+    $("fBarcode").value = code;
+    lookup(code);
+  }
+}
+
+/* Bestand eines Produkts */
+let stockId = null;
+function openStock(id) {
+  stockId = id;
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  $("sName").textContent = p.name;
+  $("sPreview").innerHTML = p.image ? `<img src="${esc(p.image)}" alt="">` : "";
+  $("sPreview").style.display = p.image ? "flex" : "none";
+  refreshStockSheet();
+  $("stockSheet").classList.add("open");
+}
+function refreshStockSheet() {
+  const p = products.find(x => x.id === stockId);
+  const t = stockText(p);
+  $("sStock").textContent = t.main;
+  $("sStockSub").textContent = `${t.sub} · 1 Packung = ${fmt(packOf(p))} g`;
+  $("sGrams").value = Math.round(stock[p.id] || 0);
+}
+function changeStock(delta) {
+  const p = products.find(x => x.id === stockId);
+  stock[p.id] = Math.max(0, (stock[p.id] || 0) + delta);
+  if (stock[p.id] < 0.5) delete stock[p.id];
+  saveStock();
+  refreshStockSheet();
+  renderFridge();
+}
+$("sPlus").onclick = () => changeStock(packOf(products.find(x => x.id === stockId)));
+$("sMinus").onclick = () => changeStock(-packOf(products.find(x => x.id === stockId)));
+$("sSet").onclick = () => { const v = Math.max(0, num($("sGrams").value)); changeStock(v - (stock[stockId] || 0)); toast("Bestand aktualisiert"); };
+$("sEmpty").onclick = () => {
+  delete stock[stockId]; saveStock(); renderFridge();
+  $("stockSheet").classList.remove("open"); toast("Aufgebraucht");
+};
+
+/* Fenster schließen */
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
+["stockSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
+
+/* ---------- Start ---------- */
+showTab("produkte");
+</script>
+</body>
+</html>
