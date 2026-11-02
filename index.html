@@ -226,6 +226,43 @@
   .rm { background: none; border: 0; color: var(--muted); font-size: 20px; cursor: pointer; padding: 4px; }
   .warn { color: var(--c); font-weight: 600; }
   .totals { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  /* ---------- Heute ---------- */
+  .daynav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .daynav b { font-size: 17px; }
+  .navbtn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--card); color: var(--text); font-size: 20px; cursor: pointer; }
+  .navbtn:disabled { opacity: .3; }
+  .ring-wrap { display: flex; align-items: center; gap: 18px; }
+  .ring { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
+  .ring svg { width: 132px; height: 132px; transform: rotate(-90deg); }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .ring-center b { font-size: 26px; letter-spacing: -.5px; }
+  .ring-center small { font-size: 12px; color: var(--muted); }
+  .ring-side { flex: 1; min-width: 0; font-size: 14px; line-height: 1.7; }
+  .ring-side .rem { font-size: 18px; font-weight: 700; }
+  .bar-row { margin-top: 14px; }
+  .bar-head { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+  .bar-head span:last-child { color: var(--muted); }
+  .bar { height: 9px; background: var(--line); border-radius: 5px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 5px; }
+  .seg { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+  .seg button { flex: 1; border: 0; background: none; padding: 9px; border-radius: 9px; font-size: 15px; color: var(--text); cursor: pointer; }
+  .seg button.on { background: var(--accent); color: #fff; font-weight: 600; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 8px; }
+  .calc-result { background: var(--card); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 14px; line-height: 1.6; }
+  /* ---------- Mahlzeiten-Tab & Slots ---------- */
+  #pickSheet { z-index: 26; }
+  .meal-card { cursor: pointer; }
+  .mc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .mc-head b { font-size: 17px; }
+  .mc-kcal { font-size: 18px; font-weight: 700; white-space: nowrap; }
+  .mc-ing { font-size: 13px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-head { display: flex; justify-content: space-between; align-items: center; }
+  .slot-head span:first-child { font-size: 16px; }
+  .slot-kcal { color: var(--muted); font-size: 14px; font-weight: 600; }
+  .entry { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); margin-top: 8px; }
+  .entry + .entry { margin-top: 0; }
+  .entry .k { font-weight: 600; font-size: 14px; white-space: nowrap; }
+  .add-slot { background: none; border: 0; color: var(--accent); font-weight: 600; font-size: 15px; padding: 10px 0 0; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -240,8 +277,8 @@
 <nav>
   <button data-tab="produkte" class="active"><span class="ic">🥫</span>Produkte</button>
   <button data-tab="kuehlschrank"><span class="ic">🧊</span>Kühlschrank</button>
-  <button data-tab="mahlzeit"><span class="ic">🍽️</span>Mahlzeit</button>
-  <button data-tab="heute"><span class="ic">📊</span>Heute</button>
+  <button data-tab="mahlzeit"><span class="ic">🍽️</span>Mahlzeiten</button>
+  <button data-tab="heute"><span class="ic">🔥</span>Kalorien</button>
   <button data-tab="vorschlaege"><span class="ic">💡</span>Ideen</button>
 </nav>
 
@@ -364,6 +401,87 @@
   </div>
 </div>
 
+<!-- Kalorienrechner -->
+<div class="sheet-bg" id="calcSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="calcSheet">Abbrechen</button>
+      <h2>Kalorienrechner</h2>
+      <button class="link" id="calcSave"><b>Übernehmen</b></button>
+    </div>
+    <label>Geschlecht</label>
+    <div class="seg" id="cSex"><button data-v="m">Männlich</button><button data-v="w">Weiblich</button></div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
+      <div><label>Alter</label><input id="cAge" type="number" inputmode="numeric" placeholder="21"></div>
+      <div><label>Größe (cm)</label><input id="cHeight" type="number" inputmode="numeric" placeholder="180"></div>
+      <div><label>Gewicht (kg)</label><input id="cWeight" type="number" inputmode="decimal" placeholder="75"></div>
+    </div>
+    <label>Aktivität</label>
+    <select id="cAct"></select>
+    <label>Ziel</label>
+    <select id="cGoal"></select>
+    <div class="calc-result" id="cResult"></div>
+    <label style="margin-top:16px">Dein Tagesziel (kannst du anpassen)</label>
+    <div class="grid4">
+      <div><label>kcal</label><input id="tKcal" type="number" inputmode="numeric"></div>
+      <div><label>Eiweiß</label><input id="tP" type="number" inputmode="numeric"></div>
+      <div><label>Kohlenh.</label><input id="tC" type="number" inputmode="numeric"></div>
+      <div><label>Fett</label><input id="tF" type="number" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="tHint"></div>
+  </div>
+</div>
+
+<!-- Mahlzeit anlegen / bearbeiten -->
+<div class="sheet-bg" id="mealSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="mealSheet">Abbrechen</button>
+      <h2 id="meTitle">Neue Mahlzeit</h2>
+      <button class="link" id="meSave"><b>Sichern</b></button>
+    </div>
+    <label>Name</label>
+    <input id="meName" placeholder="z. B. Quark-Bowl">
+    <label style="margin-top:16px">Zutaten für 1 Portion</label>
+    <div id="meList"></div>
+    <button class="btn ghost" id="meAdd" style="width:100%">＋ Zutat hinzufügen</button>
+    <div class="totals" id="meTotals"></div>
+    <div class="row">
+      <button class="btn danger" id="meDelete" style="display:none">Mahlzeit löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Zu einem Slot hinzufügen -->
+<div class="sheet-bg" id="addSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="addSheet">Abbrechen</button>
+      <h2 id="addTitle">Hinzufügen</h2>
+      <span style="width:70px"></span>
+    </div>
+    <div id="addListView">
+      <div class="seg" id="addSeg"><button data-v="produkte" class="on">Produkte</button><button data-v="mahlzeiten">Mahlzeiten</button></div>
+      <input class="search" id="addSearch" style="margin-top:12px" placeholder="Suchen">
+      <div id="addList"></div>
+    </div>
+    <div id="addAmountView" style="display:none">
+      <button class="link" id="addBack" style="padding-left:0">‹ Zurück</button>
+      <div class="preview" id="aPreview" style="margin-top:8px"></div>
+      <div class="big-stock" id="aName"></div>
+      <label id="aLabel">Menge (g)</label>
+      <div class="stepper">
+        <button id="aMinus">−</button>
+        <input id="aAmount" type="number" inputmode="decimal">
+        <button id="aPlus">+</button>
+      </div>
+      <div class="hint" id="aStock"></div>
+      <div class="totals" id="aTotals"></div>
+      <button class="btn" id="aAdd" style="width:100%;margin-top:16px">Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -429,8 +547,8 @@ function toast(msg) {
 const TABS = {
   produkte:     { title: "Produkte",    render: renderProducts, add: true },
   kuehlschrank: { title: "Kühlschrank", render: renderFridge, add: true },
-  mahlzeit:     { title: "Mahlzeit",    render: renderMeal },
-  heute:        { title: "Heute",       render: () => soon("📊", "Hier siehst du bald deine Tageswerte und den Kalorienrechner.") },
+  mahlzeit:     { title: "Mahlzeiten",  render: renderMeals, add: true },
+  heute:        { title: "Kalorien",    render: renderToday },
   vorschlaege:  { title: "Ideen",       render: () => soon("💡", "Hier bekommst du bald Rezeptideen aus deinem Bestand.") }
 };
 let currentTab = "produkte";
@@ -529,7 +647,7 @@ function closeSheet() {
   $("productSheet").classList.remove("open");
 }
 
-$("addBtn").onclick = () => currentTab === "kuehlschrank" ? openShop() : openSheet();
+$("addBtn").onclick = () => currentTab === "kuehlschrank" ? openShop() : currentTab === "mahlzeit" ? openMealEditor() : openSheet();
 $("cancelBtn").onclick = closeSheet;
 $("productSheet").onclick = e => { if (e.target.id === "productSheet") closeSheet(); };
 
@@ -908,14 +1026,27 @@ $("sEmpty").onclick = () => {
   $("stockSheet").classList.remove("open"); toast("Aufgebraucht");
 };
 
-/* ---------- Mahlzeit ---------- */
-const LOG_KEY = "makro.log", TPL_KEY = "makro.templates", DRAFT_KEY = "makro.draft";
+/* ---------- Gemeinsame Helfer ---------- */
+const LOG_KEY = "makro.log", TPL_KEY = "makro.templates";
 function loadJSON(k, def) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? def; } catch (e) { return def; } }
 function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast("Speichern fehlgeschlagen"); } }
 
-let log = loadJSON(LOG_KEY, []);                    // gegessene Mahlzeiten
-let templates = loadJSON(TPL_KEY, []);              // gespeicherte Vorlagen
-let draft = loadJSON(DRAFT_KEY, { name: "", items: [] }); // Mahlzeit in Arbeit
+let log = loadJSON(LOG_KEY, []);           // Einträge im Kalorien-Tab
+let templates = loadJSON(TPL_KEY, []);     // gespeicherte Mahlzeiten
+
+const SLOTS = [
+  { id: "fruehstueck", name: "Frühstück",   icon: "🌅" },
+  { id: "snack1",      name: "Snack",       icon: "🍎" },
+  { id: "mittag",      name: "Mittagessen", icon: "🍽️" },
+  { id: "snack2",      name: "Snack",       icon: "🥨" },
+  { id: "abend",       name: "Abendbrot",   icon: "🌙" }
+];
+/* Einträge aus Version 4 einem Slot zuordnen */
+log.forEach(e => {
+  if (e.slot) return;
+  const h = parseInt(String(e.time || "12").split(":")[0], 10);
+  e.slot = h < 10 ? "fruehstueck" : h < 12 ? "snack1" : h < 15 ? "mittag" : h < 18 ? "snack2" : "abend";
+});
 
 const todayKey = () => new Date().toLocaleDateString("sv-SE");
 const prod = id => products.find(x => x.id === id);
@@ -923,7 +1054,8 @@ const macrosFor = (p, g) => { const k = g / 100; return { kcal: p.kcal * k, p: p
 const sumMacros = list => list.reduce((a, m) => ({ kcal: a.kcal + m.kcal, p: a.p + m.p, c: a.c + m.c, f: a.f + m.f }), { kcal: 0, p: 0, c: 0, f: 0 });
 const validItems = items => items.filter(i => prod(i.id));
 const itemsMacros = items => sumMacros(validItems(items).map(i => macrosFor(prod(i.id), i.g)));
-const saveDraft = () => saveJSON(DRAFT_KEY, draft);
+const defaultGrams = p => p.pack > 0 && p.pack < 100 ? p.pack : 100;
+const thumbHTML = p => p.image ? `<img class="thumb" src="${esc(p.image)}" alt="" loading="lazy">` : `<div class="thumb">${catOf(p.cat).icon}</div>`;
 
 function macroLine(m) {
   return `<div class="macro-row">
@@ -933,7 +1065,6 @@ function macroLine(m) {
   </div>`;
 }
 const totalsHTML = m => `<div class="big-kcal">${Math.round(m.kcal)} <small>kcal</small></div>${macroLine(m)}`;
-
 function stockNote(id, g) {
   const have = stock[id] || 0;
   return g > have + 0.5
@@ -942,98 +1073,339 @@ function stockNote(id, g) {
 }
 const missingSomething = items => validItems(items).some(i => i.g > (stock[i.id] || 0) + 0.5);
 
-function renderMeal() {
-  const view = $("view");
-  const today = log.filter(e => e.day === todayKey());
-  const tm = sumMacros(today.map(e => e.totals));
-
-  let html = `<div class="card">
-    <div class="card-title">Heute bisher</div>
-    ${totalsHTML(tm)}
-    ${today.map(e => `<div class="log-item">
-        <span class="t">${e.time}</span><span class="n">${esc(e.name)}</span>
-        <span class="k">${Math.round(e.totals.kcal)} kcal</span>
-        <button class="undo" data-undo="${e.id}">↺</button>
-      </div>`).join("")}
-  </div>`;
-
-  if (templates.length) {
-    html += `<div class="cat-title" style="margin-top:4px">Gespeicherte Mahlzeiten</div><div class="chips">`;
-    for (const t of templates) {
-      const m = itemsMacros(t.items);
-      html += `<div class="chip" data-tpl="${t.id}">
-        <b>${esc(t.name)}</b>
-        <small>${Math.round(m.kcal)} kcal · ${Math.round(m.p)} g E${missingSomething(t.items) ? ` · <span class="warn">fehlt was</span>` : ""}</small>
-        <button class="x" data-deltpl="${t.id}">✕</button>
-      </div>`;
-    }
-    html += `</div>`;
-  }
-
-  const items = validItems(draft.items);
-  html += `<div class="card" id="builder">
-    <div class="card-title">Mahlzeit zusammenstellen</div>
-    <input id="mName" placeholder="Name, z. B. Quark-Bowl (optional)" value="${esc(draft.name || "")}">
-    ${items.length ? `<div class="meal-list">${items.map((i, idx) => {
-      const p = prod(i.id), cat = catOf(p.cat);
-      const img = p.image ? `<img class="thumb" src="${esc(p.image)}" alt="">` : `<div class="thumb">${cat.icon}</div>`;
-      return `<div class="meal-item" data-row="${idx}">
-        ${img}
-        <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${stockNote(i.id, i.g)}</div></div>
-        <div class="gwrap">
-          <div class="gbox"><input class="gin" data-idx="${idx}" type="number" inputmode="decimal" value="${i.g}">g</div>
-          <span class="ik">${Math.round(macrosFor(p, i.g).kcal)} kcal</span>
-        </div>
-        <button class="rm" data-rm="${idx}">✕</button>
-      </div>`;
-    }).join("")}</div>` : `<p class="hint" style="margin:12px 4px">Noch keine Zutaten. Füg welche hinzu oder tippe oben auf eine gespeicherte Mahlzeit.</p>`}
-    <button class="btn ghost" id="addIng" style="width:100%">＋ Zutat hinzufügen</button>
-    <div class="totals" id="mTotals">${totalsHTML(itemsMacros(items))}</div>
-    <div class="row">
-      <button class="btn ghost" id="saveTpl">Als Vorlage speichern</button>
-      <button class="btn" id="eatBtn">Gegessen ✓</button>
-    </div>
-    ${items.length ? `<div style="text-align:center;margin-top:8px"><button class="undo" id="clearDraft">Alles leeren</button></div>` : ""}
-  </div>`;
-  view.innerHTML = html;
-  draft.items = items;
-
-  $("mName").oninput = () => { draft.name = $("mName").value; saveDraft(); };
-  $("addIng").onclick = openPick;
-  $("eatBtn").onclick = eatMeal;
-  $("saveTpl").onclick = saveTemplate;
-  if ($("clearDraft")) $("clearDraft").onclick = () => { draft = { name: "", items: [] }; saveDraft(); renderMeal(); };
-
-  view.querySelectorAll(".gin").forEach(inp => inp.oninput = () => {
-    const idx = Number(inp.dataset.idx), it = draft.items[idx], p = prod(it.id);
-    it.g = Math.max(0, num(inp.value));
-    saveDraft();
-    const row = view.querySelector(`[data-row="${idx}"]`);
-    row.querySelector(".ik").textContent = `${Math.round(macrosFor(p, it.g).kcal)} kcal`;
-    row.querySelector(".item-sub").innerHTML = stockNote(it.id, it.g);
-    $("mTotals").innerHTML = totalsHTML(itemsMacros(draft.items));
-  });
-  view.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => {
-    draft.items.splice(Number(b.dataset.rm), 1); saveDraft(); renderMeal();
-  });
-  view.querySelectorAll("[data-undo]").forEach(b => b.onclick = () => undoMeal(b.dataset.undo));
-  view.querySelectorAll("[data-tpl]").forEach(c => c.onclick = e => {
-    if (e.target.dataset.deltpl) return;
-    loadTemplate(c.dataset.tpl);
-  });
-  view.querySelectorAll("[data-deltpl]").forEach(b => b.onclick = e => {
-    e.stopPropagation();
-    const t = templates.find(x => x.id === b.dataset.deltpl);
-    if (!t || !confirm(`„${t.name}“ löschen?`)) return;
-    templates = templates.filter(x => x.id !== t.id); saveJSON(TPL_KEY, templates); renderMeal();
+/* ---------- Produkt-Auswahl (für Mahlzeiten) ---------- */
+let pickCallback = null;
+function openPick(cb) {
+  if (!products.length) { toast("Leg zuerst Produkte an"); return; }
+  pickCallback = cb;
+  $("pickSearch").value = "";
+  renderPick();
+  $("pickSheet").classList.add("open");
+}
+function renderPick() {
+  const term = $("pickSearch").value.toLowerCase();
+  const list = products.filter(p => p.name.toLowerCase().includes(term)).sort((a, b) => a.name.localeCompare(b.name, "de"));
+  $("pickList").innerHTML = list.length ? `<div class="shop-list">${list.map(p => `
+    <div class="shop-item" data-pick="${p.id}" style="cursor:pointer">${thumbHTML(p)}
+      <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${catOf(p.cat).name}</div></div>
+      <span class="item-sub">${Math.round(p.kcal)} kcal/100 g</span></div>`).join("")}</div>`
+    : `<div class="empty" style="padding:30px 10px">Nichts gefunden.</div>`;
+  $("pickList").querySelectorAll("[data-pick]").forEach(r => r.onclick = () => {
+    $("pickSheet").classList.remove("open");
+    if (pickCallback) pickCallback(r.dataset.pick);
   });
 }
+$("pickSearch").oninput = renderPick;
 
-function eatMeal() {
-  const items = validItems(draft.items).filter(i => i.g > 0);
-  if (!items.length) { toast("Füg erst Zutaten hinzu"); return; }
+/* ---------- Tab „Mahlzeiten“: feste Mahlzeiten anlegen ---------- */
+function renderMeals() {
+  const view = $("view");
+  if (!templates.length) {
+    view.innerHTML = `<div class="empty"><div class="big">🍽️</div>Noch keine Mahlzeiten gespeichert.<br>
+      Tippe oben auf <b>+</b> und stell eine Mahlzeit zusammen, die du öfter isst, z. B. deine Quark-Bowl.</div>`;
+    return;
+  }
+  view.innerHTML = [...templates].sort((a, b) => a.name.localeCompare(b.name, "de")).map(t => {
+    const items = validItems(t.items), m = itemsMacros(items);
+    return `<div class="card meal-card" data-edit="${t.id}">
+      <div class="mc-head"><b>${esc(t.name)}</b><span class="mc-kcal">${Math.round(m.kcal)} kcal</span></div>
+      ${macroLine(m)}
+      <div class="mc-ing">${items.map(i => `${esc(prod(i.id).name)} ${fmt(i.g)} g`).join(" · ")}</div>
+    </div>`;
+  }).join("");
+  view.querySelectorAll("[data-edit]").forEach(c => c.onclick = () => openMealEditor(c.dataset.edit));
+}
+
+let editing = null;
+function openMealEditor(id) {
+  const t = id ? templates.find(x => x.id === id) : null;
+  editing = t ? { id: t.id, name: t.name, items: validItems(t.items).map(i => ({ id: i.id, g: i.g })) } : { id: null, name: "", items: [] };
+  $("meTitle").textContent = t ? "Mahlzeit bearbeiten" : "Neue Mahlzeit";
+  $("meName").value = editing.name;
+  $("meDelete").style.display = t ? "block" : "none";
+  renderEditor();
+  $("mealSheet").classList.add("open");
+}
+
+function renderEditor() {
+  const items = editing.items;
+  $("meList").innerHTML = items.length ? `<div class="meal-list">${items.map((i, idx) => {
+    const p = prod(i.id);
+    return `<div class="meal-item" data-row="${idx}">
+      ${thumbHTML(p)}
+      <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${Math.round(p.kcal)} kcal/100 g</div></div>
+      <div class="gwrap">
+        <div class="gbox"><input class="gin" data-idx="${idx}" type="number" inputmode="decimal" value="${i.g}">g</div>
+        <span class="ik">${Math.round(macrosFor(p, i.g).kcal)} kcal</span>
+      </div>
+      <button class="rm" data-rm="${idx}">✕</button>
+    </div>`;
+  }).join("")}</div>` : `<p class="hint" style="margin:6px 4px 12px">Noch keine Zutaten.</p>`;
+  $("meTotals").innerHTML = totalsHTML(itemsMacros(items));
+  $("meList").querySelectorAll(".gin").forEach(inp => inp.oninput = () => {
+    const it = items[Number(inp.dataset.idx)];
+    it.g = Math.max(0, num(inp.value));
+    inp.closest(".meal-item").querySelector(".ik").textContent = `${Math.round(macrosFor(prod(it.id), it.g).kcal)} kcal`;
+    $("meTotals").innerHTML = totalsHTML(itemsMacros(items));
+  });
+  $("meList").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { items.splice(Number(b.dataset.rm), 1); renderEditor(); });
+}
+
+$("meName").oninput = () => { editing.name = $("meName").value; };
+$("meAdd").onclick = () => openPick(id => {
+  if (editing.items.some(i => i.id === id)) { toast("Ist schon drin – Gramm einfach anpassen"); return; }
+  editing.items.push({ id, g: defaultGrams(prod(id)) });
+  renderEditor();
+});
+$("meSave").onclick = () => {
+  const name = $("meName").value.trim();
+  const items = editing.items.filter(i => i.g > 0);
+  if (!name) { toast("Gib der Mahlzeit einen Namen"); return; }
+  if (!items.length) { toast("Füg mindestens eine Zutat hinzu"); return; }
+  const clash = templates.find(t => t.name.toLowerCase() === name.toLowerCase() && t.id !== editing.id);
+  if (clash) { toast("Diesen Namen gibt es schon"); return; }
+  const tpl = { id: editing.id || Date.now().toString(36), name, items: items.map(({ id, g }) => ({ id, g })) };
+  templates = editing.id ? templates.map(t => t.id === editing.id ? tpl : t) : [...templates, tpl];
+  saveJSON(TPL_KEY, templates);
+  $("mealSheet").classList.remove("open");
+  TABS[currentTab].render();
+  toast("Mahlzeit gespeichert ✓");
+};
+$("meDelete").onclick = () => {
+  if (!confirm(`„${editing.name}“ löschen?`)) return;
+  templates = templates.filter(t => t.id !== editing.id);
+  saveJSON(TPL_KEY, templates);
+  $("mealSheet").classList.remove("open");
+  TABS[currentTab].render();
+  toast("Gelöscht");
+};
+
+/* ---------- Tab „Kalorien“ ---------- */
+const PROFILE_KEY = "makro.profile", TARGET_KEY = "makro.targets";
+let profile = loadJSON(PROFILE_KEY, { sex: "m", age: "", height: "", weight: "", act: 1.55, goal: "halten" });
+let targets = loadJSON(TARGET_KEY, null);
+let viewDay = null; // null = heute
+
+const ACTIVITIES = [
+  { v: 1.2,   t: "Kaum Bewegung" },
+  { v: 1.375, t: "1–3× Training pro Woche" },
+  { v: 1.55,  t: "3–5× Training pro Woche" },
+  { v: 1.725, t: "6–7× Training pro Woche" },
+  { v: 1.9,   t: "Leistungssport, oft 2× täglich" }
+];
+const GOALS = {
+  aufbau:  { t: "Muskelaufbau (+300 kcal)",    d: 300,  p: 2.0 },
+  halten:  { t: "Gewicht halten",              d: 0,    p: 1.8 },
+  diaet:   { t: "Leicht abnehmen (−300 kcal)", d: -300, p: 2.2 },
+  gewicht: { t: "Gewicht machen (−500 kcal)",  d: -500, p: 2.4 }
+};
+
+function calcNeeds(pf) {
+  const a = num(pf.age), h = num(pf.height), w = num(pf.weight);
+  if (!(a > 0 && h > 0 && w > 0)) return null;
+  const bmr = 10 * w + 6.25 * h - 5 * a + (pf.sex === "w" ? -161 : 5);   // Mifflin-St Jeor
+  const tdee = bmr * Number(pf.act);
+  const g = GOALS[pf.goal] || GOALS.halten;
+  const kcal = Math.round((tdee + g.d) / 10) * 10;
+  const p = Math.round(w * g.p);
+  const f = Math.round(w * 0.9);
+  const c = Math.max(0, Math.round((kcal - p * 4 - f * 9) / 4));
+  return { bmr, tdee, kcal, p, c, f };
+}
+
+const dayShift = (day, n) => { const d = new Date(day + "T12:00"); d.setDate(d.getDate() + n); return d.toLocaleDateString("sv-SE"); };
+const dayLabel = day => {
+  const t = todayKey();
+  if (day === t) return "Heute";
+  if (day === dayShift(t, -1)) return "Gestern";
+  return new Date(day + "T12:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
+};
+
+function barHTML(label, val, goal, color) {
+  const pct = goal ? Math.min(100, val / goal * 100) : 0;
+  return `<div class="bar-row">
+    <div class="bar-head"><span><b>${label}</b></span><span>${Math.round(val)} / ${Math.round(goal)} g</span></div>
+    <div class="bar"><i style="width:${pct}%;background:${color}"></i></div>
+  </div>`;
+}
+
+function amountText(e) {
+  if (e.kind === "product") return `${fmt(e.amount)} g`;
+  if (e.kind === "meal") return e.amount === 1 ? "1 Portion" : `${String(e.amount).replace(".", ",")} Portionen`;
+  return "";
+}
+
+function renderToday() {
+  const view = $("view");
+  const day = viewDay || todayKey();
+  const isToday = day === todayKey();
+  const entries = log.filter(e => e.day === day);
+  const m = sumMacros(entries.map(e => e.totals));
+
+  let html = `<div class="daynav">
+    <button class="navbtn" id="dPrev">‹</button>
+    <b>${dayLabel(day)}</b>
+    <button class="navbtn" id="dNext" ${isToday ? "disabled" : ""}>›</button>
+  </div>`;
+
+  if (targets) {
+    const r = 56, C = 2 * Math.PI * r;
+    const share = targets.kcal ? m.kcal / targets.kcal : 0;
+    const over = share > 1.02, rest = targets.kcal - m.kcal;
+    html += `<div class="card">
+      <div class="ring-wrap">
+        <div class="ring">
+          <svg viewBox="0 0 132 132">
+            <circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="12"/>
+            <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "var(--accent)"}" stroke-width="12"
+              stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.min(1, share))}"/>
+          </svg>
+          <div class="ring-center"><b>${fmt(m.kcal)}</b><small>von ${fmt(targets.kcal)} kcal</small></div>
+        </div>
+        <div class="ring-side">
+          <div class="rem" style="color:${over ? "var(--danger)" : "inherit"}">${rest >= 0 ? `Noch ${fmt(rest)} kcal` : `${fmt(-rest)} kcal drüber`}</div>
+          <button class="undo" id="calcOpen" style="padding:4px 0;color:var(--accent);font-size:14px;font-weight:600">🧮 Kalorienrechner ›</button>
+        </div>
+      </div>
+      ${barHTML("Eiweiß", m.p, targets.p, "var(--p)")}
+      ${barHTML("Kohlenhydrate", m.c, targets.c, "var(--c)")}
+      ${barHTML("Fett", m.f, targets.f, "var(--f)")}
+    </div>`;
+  } else {
+    html += `<div class="card">
+      <div class="card-title">${dayLabel(day)} gegessen</div>
+      ${totalsHTML(m)}
+      <p class="hint" style="margin:12px 0 10px">Berechne dein Tagesziel, dann siehst du hier, wie viel noch geht.</p>
+      <button class="btn" id="calcOpen" style="width:100%">Kalorienrechner öffnen</button>
+    </div>`;
+  }
+
+  for (const slot of SLOTS) {
+    const se = entries.filter(e => e.slot === slot.id);
+    const sk = sumMacros(se.map(e => e.totals)).kcal;
+    html += `<div class="card">
+      <div class="slot-head"><span>${slot.icon} <b>${slot.name}</b></span><span class="slot-kcal">${se.length ? `${Math.round(sk)} kcal` : ""}</span></div>
+      ${se.map(e => `<div class="entry">
+        <div class="item-main">
+          <div class="item-name">${esc(e.name)}</div>
+          <div class="item-sub">${[amountText(e), `${Math.round(e.totals.p)} E · ${Math.round(e.totals.c)} K · ${Math.round(e.totals.f)} F`].filter(Boolean).join(" · ")}</div>
+        </div>
+        <span class="k">${Math.round(e.totals.kcal)} kcal</span>
+        <button class="rm" data-del="${e.id}">✕</button>
+      </div>`).join("")}
+      <button class="add-slot" data-slot="${slot.id}">＋ Hinzufügen</button>
+    </div>`;
+  }
+  view.innerHTML = html;
+
+  $("dPrev").onclick = () => { viewDay = dayShift(day, -1); renderToday(); };
+  $("dNext").onclick = () => { const n = dayShift(day, 1); viewDay = n >= todayKey() ? null : n; renderToday(); };
+  $("calcOpen").onclick = openCalc;
+  view.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => openAdd(b.dataset.slot));
+  view.querySelectorAll("[data-del]").forEach(b => b.onclick = () => removeEntry(b.dataset.del));
+}
+
+function removeEntry(id) {
+  const e = log.find(x => x.id === id);
+  if (!e || !confirm(`„${e.name}“ entfernen? Die Zutaten kommen zurück in den Bestand.`)) return;
+  for (const i of e.items || []) if (prod(i.id) && i.deducted > 0) stock[i.id] = (stock[i.id] || 0) + i.deducted;
+  log = log.filter(x => x.id !== id);
+  saveJSON(LOG_KEY, log); saveStock(); renderToday();
+  toast("Entfernt");
+}
+
+/* Hinzufügen zu einem Slot */
+let addSlot = null, addMode = "produkte", addSel = null;
+
+function openAdd(slotId) {
+  addSlot = slotId;
+  const slot = SLOTS.find(x => x.id === slotId);
+  $("addTitle").textContent = `${slot.icon} ${slot.name}`;
+  $("addSearch").value = "";
+  showAddList();
+  $("addSheet").classList.add("open");
+}
+function showAddList() {
+  $("addListView").style.display = "block";
+  $("addAmountView").style.display = "none";
+  $("addSeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === addMode));
+  renderAddList();
+}
+function renderAddList() {
+  const term = $("addSearch").value.toLowerCase();
+  const list = $("addList");
+  if (addMode === "produkte") {
+    const items = products.filter(p => p.name.toLowerCase().includes(term))
+      .sort((a, b) => (inStock(b) - inStock(a)) || a.name.localeCompare(b.name, "de"));
+    list.innerHTML = items.length ? `<div class="shop-list">${items.map(p => `
+      <div class="shop-item" data-sel="${p.id}" style="cursor:pointer">${thumbHTML(p)}
+        <div class="item-main"><div class="item-name">${esc(p.name)}</div>
+          <div class="item-sub">${inStock(p) ? `Noch ${fmt(stock[p.id])} g da` : `<span class="warn">Nicht im Bestand</span>`}</div></div>
+        <span class="item-sub">${Math.round(p.kcal)} kcal/100 g</span></div>`).join("")}</div>`
+      : `<div class="empty" style="padding:30px 10px">${products.length ? "Nichts gefunden." : "Noch keine Produkte angelegt."}</div>`;
+  } else {
+    const items = templates.filter(t => t.name.toLowerCase().includes(term)).sort((a, b) => a.name.localeCompare(b.name, "de"));
+    list.innerHTML = items.length ? `<div class="shop-list">${items.map(t => {
+      const m = itemsMacros(t.items);
+      return `<div class="shop-item" data-sel="${t.id}" style="cursor:pointer">
+        <div class="thumb">🍽️</div>
+        <div class="item-main"><div class="item-name">${esc(t.name)}</div>
+          <div class="item-sub">${Math.round(m.p)} g Eiweiß${missingSomething(t.items) ? ` · <span class="warn">fehlt was</span>` : ""}</div></div>
+        <span class="item-sub">${Math.round(m.kcal)} kcal</span></div>`;
+    }).join("")}</div>`
+      : `<div class="empty" style="padding:30px 10px">${templates.length ? "Nichts gefunden." : "Noch keine Mahlzeiten.<br>Leg sie im Tab „Mahlzeiten“ an."}</div>`;
+  }
+  list.querySelectorAll("[data-sel]").forEach(r => r.onclick = () => showAmount(r.dataset.sel));
+}
+$("addSeg").querySelectorAll("button").forEach(b => b.onclick = () => { addMode = b.dataset.v; showAddList(); });
+$("addSearch").oninput = renderAddList;
+$("addBack").onclick = showAddList;
+
+function showAmount(id) {
+  addSel = { kind: addMode === "produkte" ? "product" : "meal", id };
+  $("addListView").style.display = "none";
+  $("addAmountView").style.display = "block";
+  if (addSel.kind === "product") {
+    const p = prod(id);
+    $("aPreview").innerHTML = p.image ? `<img src="${esc(p.image)}" alt="">` : "";
+    $("aPreview").style.display = p.image ? "flex" : "none";
+    $("aName").textContent = p.name;
+    $("aLabel").textContent = "Menge (g)";
+    $("aAmount").value = defaultGrams(p);
+  } else {
+    const t = templates.find(x => x.id === id);
+    $("aPreview").style.display = "none";
+    $("aName").textContent = t.name;
+    $("aLabel").textContent = "Portionen";
+    $("aAmount").value = 1;
+  }
+  updateAmount();
+}
+
+function selectedItems() {
+  const a = Math.max(0, num($("aAmount").value));
+  if (addSel.kind === "product") return [{ id: addSel.id, g: a }];
+  const t = templates.find(x => x.id === addSel.id);
+  return validItems(t.items).map(i => ({ id: i.id, g: i.g * a }));
+}
+
+function updateAmount() {
+  const items = selectedItems();
+  $("aTotals").innerHTML = totalsHTML(itemsMacros(items));
+  $("aStock").innerHTML = addSel.kind === "product"
+    ? stockNote(addSel.id, items[0].g)
+    : (missingSomething(items) ? `<span class="warn">Nicht alle Zutaten sind im Bestand</span>` : "Alle Zutaten sind da ✓");
+}
+const amountStep = () => addSel.kind === "product" ? 10 : 0.5;
+$("aAmount").oninput = updateAmount;
+$("aMinus").onclick = () => { $("aAmount").value = Math.max(amountStep(), num($("aAmount").value) - amountStep()); updateAmount(); };
+$("aPlus").onclick = () => { $("aAmount").value = num($("aAmount").value) + amountStep(); updateAmount(); };
+
+$("aAdd").onclick = () => {
+  const amount = num($("aAmount").value);
+  if (!(amount > 0)) { toast("Bitte eine Menge eingeben"); return; }
   let short = false;
-  const logged = items.map(i => {
+  const logged = selectedItems().filter(i => i.g > 0).map(i => {
     const p = prod(i.id), have = stock[i.id] || 0, deducted = Math.min(have, i.g);
     if (i.g > have + 0.5) short = true;
     stock[i.id] = have - deducted;
@@ -1042,86 +1414,83 @@ function eatMeal() {
   });
   const totals = sumMacros(logged);
   const now = new Date();
+  const name = addSel.kind === "product" ? prod(addSel.id).name : templates.find(x => x.id === addSel.id).name;
   log.push({
-    id: now.getTime().toString(36), day: todayKey(),
+    id: now.getTime().toString(36), day: viewDay || todayKey(), slot: addSlot,
     time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
-    name: (draft.name || "").trim() || "Mahlzeit", items: logged, totals
+    kind: addSel.kind, refId: addSel.id, name, amount, items: logged, totals
   });
   saveJSON(LOG_KEY, log);
   saveStock();
-  draft = { name: "", items: [] }; saveDraft();
-  renderMeal();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  toast(short ? `Eingetragen ✓ – nicht alles war im Bestand` : `Guten Appetit! ${Math.round(totals.kcal)} kcal ✓`);
+  $("addSheet").classList.remove("open");
+  renderToday();
+  toast(short ? "Eingetragen ✓ – nicht alles war im Bestand" : `${Math.round(totals.kcal)} kcal eingetragen ✓`);
+};
+
+/* Rechner */
+$("cAct").innerHTML = ACTIVITIES.map(a => `<option value="${a.v}">${a.t}</option>`).join("");
+$("cGoal").innerHTML = Object.entries(GOALS).map(([k, g]) => `<option value="${k}">${g.t}</option>`).join("");
+
+function readCalcForm() {
+  return {
+    sex: $("cSex").querySelector(".on")?.dataset.v || "m",
+    age: $("cAge").value, height: $("cHeight").value, weight: $("cWeight").value,
+    act: Number($("cAct").value), goal: $("cGoal").value
+  };
 }
 
-function undoMeal(id) {
-  const e = log.find(x => x.id === id);
-  if (!e || !confirm(`„${e.name}“ rückgängig machen? Die Zutaten kommen zurück in den Bestand.`)) return;
-  for (const i of e.items) if (prod(i.id) && i.deducted > 0) stock[i.id] = (stock[i.id] || 0) + i.deducted;
-  log = log.filter(x => x.id !== id);
-  saveJSON(LOG_KEY, log); saveStock(); renderMeal();
-  toast("Rückgängig gemacht");
+function refreshCalc(fillTargets) {
+  const r = calcNeeds(readCalcForm());
+  if (!r) {
+    $("cResult").innerHTML = "Trag Alter, Größe und Gewicht ein.";
+  } else {
+    $("cResult").innerHTML = `Grundumsatz: <b>${fmt(r.bmr)} kcal</b><br>
+      Bedarf mit Training: <b>${fmt(r.tdee)} kcal</b><br>
+      Empfehlung für dein Ziel: <b>${fmt(r.kcal)} kcal</b>`;
+    if (fillTargets) { $("tKcal").value = r.kcal; $("tP").value = r.p; $("tC").value = r.c; $("tF").value = r.f; }
+  }
+  updateTargetHint();
 }
 
-function saveTemplate() {
-  const items = validItems(draft.items).filter(i => i.g > 0);
-  if (!items.length) { toast("Füg erst Zutaten hinzu"); return; }
-  const name = (draft.name || "").trim();
-  if (!name) { toast("Gib der Mahlzeit oben einen Namen"); $("mName").focus(); return; }
-  const existing = templates.find(t => t.name.toLowerCase() === name.toLowerCase());
-  if (existing && !confirm(`„${name}“ gibt es schon. Überschreiben?`)) return;
-  const tpl = { id: existing ? existing.id : Date.now().toString(36), name, items: items.map(({ id, g }) => ({ id, g })) };
-  templates = existing ? templates.map(t => t.id === existing.id ? tpl : t) : [...templates, tpl];
-  saveJSON(TPL_KEY, templates);
-  renderMeal();
-  toast("Vorlage gespeichert ✓");
+function updateTargetHint() {
+  const k = num($("tKcal").value), p = num($("tP").value), c = num($("tC").value), f = num($("tF").value);
+  const sum = p * 4 + c * 4 + f * 9;
+  $("tHint").innerHTML = k ? `Deine Makros ergeben ${fmt(sum)} kcal${Math.abs(sum - k) > 50 ? ` – <span class="warn">passt nicht ganz zu ${fmt(k)} kcal</span>` : " ✓"}.<br>
+    Für schnelles Gewichtmachen vor Wettkämpfen plan das lieber mit deinem Trainer.` : "";
 }
 
-function loadTemplate(id) {
-  const t = templates.find(x => x.id === id);
-  if (!t) return;
-  if (validItems(draft.items).length && !confirm("Aktuelle Mahlzeit ersetzen?")) return;
-  draft = { name: t.name, items: validItems(t.items).map(i => ({ id: i.id, g: i.g })) };
-  saveDraft();
-  renderMeal();
-  $("builder").scrollIntoView({ behavior: "smooth", block: "start" });
+function openCalc() {
+  $("cSex").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === (profile.sex || "m")));
+  $("cAge").value = profile.age || ""; $("cHeight").value = profile.height || ""; $("cWeight").value = profile.weight || "";
+  $("cAct").value = String(profile.act || 1.55); $("cGoal").value = profile.goal || "halten";
+  if (targets) { $("tKcal").value = targets.kcal; $("tP").value = targets.p; $("tC").value = targets.c; $("tF").value = targets.f; refreshCalc(false); }
+  else refreshCalc(true);
+  $("calcSheet").classList.add("open");
 }
 
-/* Zutat wählen */
-function openPick() {
-  if (!products.length) { toast("Leg zuerst Produkte an"); return; }
-  $("pickSearch").value = "";
-  renderPick();
-  $("pickSheet").classList.add("open");
-}
-function renderPick() {
-  const term = $("pickSearch").value.toLowerCase();
-  const list = products.filter(p => p.name.toLowerCase().includes(term))
-    .sort((a, b) => (inStock(b) - inStock(a)) || a.name.localeCompare(b.name, "de"));
-  $("pickList").innerHTML = list.length ? `<div class="shop-list">${list.map(p => {
-    const cat = catOf(p.cat);
-    const img = p.image ? `<img class="thumb" src="${esc(p.image)}" alt="" loading="lazy">` : `<div class="thumb">${cat.icon}</div>`;
-    const sub = inStock(p) ? `Noch ${fmt(stock[p.id])} g da` : `<span class="warn">Nicht im Bestand</span>`;
-    return `<div class="shop-item" data-pick="${p.id}" style="cursor:pointer">${img}
-      <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${sub}</div></div>
-      <span class="item-sub">${Math.round(p.kcal)} kcal</span></div>`;
-  }).join("")}</div>` : `<div class="empty" style="padding:30px 10px">Nichts gefunden.</div>`;
-  $("pickList").querySelectorAll("[data-pick]").forEach(r => r.onclick = () => {
-    const id = r.dataset.pick;
-    if (draft.items.some(i => i.id === id)) { toast("Ist schon drin – Gramm einfach anpassen"); $("pickSheet").classList.remove("open"); return; }
-    const p = prod(id);
-    draft.items.push({ id, g: p.pack > 0 && p.pack < 100 ? p.pack : 100 });
-    saveDraft();
-    $("pickSheet").classList.remove("open");
-    renderMeal();
-  });
-}
-$("pickSearch").oninput = renderPick;
+$("cSex").querySelectorAll("button").forEach(b => b.onclick = () => {
+  $("cSex").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  refreshCalc(true);
+});
+["cAge", "cHeight", "cWeight"].forEach(id => $(id).oninput = () => refreshCalc(true));
+["cAct", "cGoal"].forEach(id => $(id).onchange = () => refreshCalc(true));
+["tKcal", "tP", "tC", "tF"].forEach(id => $(id).oninput = updateTargetHint);
+
+$("calcSave").onclick = () => {
+  const t = { kcal: Math.round(num($("tKcal").value)), p: Math.round(num($("tP").value)), c: Math.round(num($("tC").value)), f: Math.round(num($("tF").value)) };
+  if (!t.kcal) { toast("Trag zuerst deine Daten ein"); return; }
+  profile = readCalcForm();
+  targets = t;
+  saveJSON(PROFILE_KEY, profile);
+  saveJSON(TARGET_KEY, targets);
+  $("calcSheet").classList.remove("open");
+  TABS[currentTab].render();
+  toast("Tagesziel gespeichert ✓");
+};
 
 /* Fenster schließen */
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
-["stockSheet", "pickSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
+["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
 
 /* ---------- Start ---------- */
 showTab("produkte");
