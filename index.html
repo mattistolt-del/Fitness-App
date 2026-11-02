@@ -263,6 +263,31 @@
   .entry + .entry { margin-top: 0; }
   .entry .k { font-weight: 600; font-size: 14px; white-space: nowrap; }
   .add-slot { background: none; border: 0; color: var(--accent); font-weight: 600; font-size: 15px; padding: 10px 0 0; cursor: pointer; }
+  /* ---------- Ideen ---------- */
+  .filters { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 14px; padding: 2px 16px 4px; -webkit-overflow-scrolling: touch; }
+  .filters button { flex-shrink: 0; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 18px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+  .filters button.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .recipe { cursor: pointer; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 3px 9px; border-radius: 10px; font-weight: 600; }
+  .tag.grey { background: var(--bg); color: var(--muted); }
+  .have { color: var(--accent); font-weight: 600; font-size: 14px; margin-top: 10px; }
+  .miss { color: var(--c); font-weight: 600; font-size: 14px; margin-top: 10px; }
+  .ing { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .ing:last-child { border-bottom: 0; }
+  .ing .g { color: var(--muted); white-space: nowrap; }
+  .steps { margin: 6px 0 0; padding-left: 20px; line-height: 1.55; font-size: 15px; }
+  .steps li { margin-bottom: 6px; }
+  /* Rezeptbilder */
+  .rc { display: flex; gap: 12px; align-items: flex-start; }
+  .rimg { width: 88px; height: 88px; border-radius: 14px; overflow: hidden; flex-shrink: 0; }
+  .rimg svg, .rimg img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .rmain { flex: 1; min-width: 0; }
+  .rmain .mc-head b { font-size: 16px; line-height: 1.25; }
+  .rmain .mc-kcal { font-size: 15px; }
+  .rhero { width: 100%; height: 210px; border-radius: 18px; overflow: hidden; margin-bottom: 10px; }
+  .rhero svg, .rhero img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .photo-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -482,6 +507,30 @@
   </div>
 </div>
 
+<!-- Rezept -->
+<div class="sheet-bg" id="recipeSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="recipeSheet">Schließen</button>
+      <h2 id="rTitle">Rezept</h2>
+      <span style="width:70px"></span>
+    </div>
+    <div class="rhero" id="rHero"></div>
+    <div class="photo-row">
+      <button class="undo" id="rPhotoBtn" style="color:var(--accent);font-weight:600;font-size:14px">📷 Eigenes Foto</button>
+      <button class="undo" id="rPhotoDel" style="display:none;font-size:14px">Foto entfernen</button>
+    </div>
+    <input type="file" id="rPhotoIn" accept="image/*" style="display:none">
+    <div id="rBody"></div>
+    <label>Eintragen bei</label>
+    <select id="rSlot"></select>
+    <div class="row">
+      <button class="btn ghost" id="rSave">Als Mahlzeit speichern</button>
+      <button class="btn" id="rAdd">Eintragen ✓</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -549,7 +598,7 @@ const TABS = {
   kuehlschrank: { title: "Kühlschrank", render: renderFridge, add: true },
   mahlzeit:     { title: "Mahlzeiten",  render: renderMeals, add: true },
   heute:        { title: "Kalorien",    render: renderToday },
-  vorschlaege:  { title: "Ideen",       render: () => soon("💡", "Hier bekommst du bald Rezeptideen aus deinem Bestand.") }
+  vorschlaege:  { title: "Ideen",       render: renderIdeas }
 };
 let currentTab = "produkte";
 
@@ -1231,6 +1280,7 @@ function barHTML(label, val, goal, color) {
 
 function amountText(e) {
   if (e.kind === "product") return `${fmt(e.amount)} g`;
+  if (e.kind === "recipe") return "1 Portion (Rezept)";
   if (e.kind === "meal") return e.amount === 1 ? "1 Portion" : `${String(e.amount).replace(".", ",")} Portionen`;
   return "";
 }
@@ -1427,6 +1477,319 @@ $("aAdd").onclick = () => {
   toast(short ? "Eingetragen ✓ – nicht alles war im Bestand" : `${Math.round(totals.kcal)} kcal eingetragen ✓`);
 };
 
+/* ---------- Ideen: Fitness-Rezepte ---------- */
+/* Zutat: Name, Suchwörter für deine Produkte, Gramm pro Portion, Richtwerte pro 100 g [kcal, E, K, F] */
+const ING = {
+  haehnchen:  { n: "Hähnchenbrust",        k: ["hähnchen", "hühnchen", "chicken"],                  r: [110, 23, 0, 1.5] },
+  pute:       { n: "Putenbrust",           k: ["pute", "truthahn"],                                  r: [105, 24, 0, 1] },
+  hack:       { n: "Rinderhack (mager)",   k: ["hack"],                                              r: [125, 21, 0, 5] },
+  lachs:      { n: "Lachs",                k: ["lachs", "salmon"],                                   r: [200, 20, 0, 13] },
+  thunfisch:  { n: "Thunfisch (Wasser)",   k: ["thunfisch", "tuna"],                                 r: [110, 25, 0, 1] },
+  garnelen:   { n: "Garnelen",             k: ["garnele", "shrimp", "scampi"],                       r: [75, 17, 0, 1] },
+  eier:       { n: "Eier",                 k: ["eier", "egg"], x: ["eiklar", "white", "nudel"],      r: [140, 12.5, 0.7, 9.5] },
+  eiklar:     { n: "Eiklar",               k: ["eiklar", "egg white"],                               r: [50, 11, 0.7, 0.2] },
+  quark:      { n: "Magerquark",           k: ["quark"],                                             r: [67, 12, 4, 0.3] },
+  skyr:       { n: "Skyr",                 k: ["skyr"],                                              r: [63, 11, 4, 0.2] },
+  huettenkaese: { n: "Hüttenkäse",         k: ["hüttenkäse", "körniger frischkäse", "cottage"],     r: [98, 12.5, 3, 4.3] },
+  hafer:      { n: "Haferflocken",         k: ["hafer", "oat"], x: ["milch", "drink"],              r: [370, 13.5, 59, 7] },
+  reis:       { n: "Reis",                 k: ["reis", "rice", "basmati", "jasmin"], x: ["milchreis", "waffel"], r: [350, 7, 78, 0.6] },
+  nudeln:     { n: "Vollkornnudeln",       k: ["nudel", "pasta", "spaghetti", "penne", "fusilli"], r: [350, 13, 64, 2.5] },
+  kartoffel:  { n: "Kartoffeln",           k: ["kartoffel"], x: ["süß", "süss", "püree", "chips"],  r: [72, 2, 15, 0.1] },
+  suesskart:  { n: "Süßkartoffel",         k: ["süßkartoffel", "süsskartoffel", "sweet potato"],    r: [86, 1.6, 20, 0.1] },
+  wrap:       { n: "Vollkorn-Wrap",        k: ["wrap", "tortilla"],                                  r: [300, 9, 48, 7] },
+  brot:       { n: "Vollkornbrot",         k: ["brot", "toast"],                                     r: [220, 8, 38, 2] },
+  paprika:    { n: "Paprika",              k: ["paprika"], x: ["pulver", "gewürz", "edelsüß", "chips"], r: [30, 1, 5, 0.3] },
+  brokkoli:   { n: "Brokkoli",             k: ["brokkoli", "broccoli"],                              r: [34, 3, 4, 0.4] },
+  zucchini:   { n: "Zucchini",             k: ["zucchini"],                                          r: [19, 1.5, 2, 0.4] },
+  spinat:     { n: "Spinat",               k: ["spinat"],                                            r: [23, 2.5, 1.5, 0.4] },
+  tomate:     { n: "Tomaten",              k: ["tomate", "cherry"], x: ["passiert", "passata", "mark", "ketchup", "sauce", "soße", "stückig", "gehackt"], r: [18, 1, 3, 0.2] },
+  passata:    { n: "Passierte Tomaten",    k: ["passiert", "passata", "stückige tomaten", "gehackte tomaten", "tomatensauce"], r: [35, 1.5, 6, 0.2] },
+  zwiebel:    { n: "Zwiebel",              k: ["zwiebel"], x: ["pulver", "granulat", "röst"],       r: [40, 1.2, 8, 0.1] },
+  kidney:     { n: "Kidneybohnen",         k: ["kidney", "bohnen"],                                  r: [105, 8, 15, 0.5] },
+  mais:       { n: "Mais",                 k: ["mais"], x: ["mehl", "stärke", "waffel"],             r: [80, 2.7, 15, 1] },
+  gurke:      { n: "Gurke",                k: ["gurke"],                                             r: [15, 0.6, 2, 0.2] },
+  salat:      { n: "Salat",                k: ["salat", "rucola", "eisberg"], x: ["dressing", "thunfisch"], r: [15, 1.3, 1.5, 0.2] },
+  banane:     { n: "Banane",               k: ["banane", "banana"],                                  r: [93, 1.2, 20, 0.2] },
+  beeren:     { n: "Beeren",               k: ["beere", "berries", "himbeer", "heidelbeer", "erdbeer"], r: [45, 1, 8, 0.4] },
+  apfel:      { n: "Apfel",                k: ["apfel"], x: ["mus", "saft", "essig"],                r: [52, 0.3, 12, 0.2] },
+  whey:       { n: "Proteinpulver",        k: ["protein", "whey", "eiweißpulver"], x: ["riegel", "pudding", "bar"], r: [380, 75, 8, 5] },
+  milch:      { n: "Milch (1,5 %)",        k: ["milch"], x: ["reis", "schoko", "butter", "kondens"], r: [47, 3.4, 4.8, 1.5] },
+  erdnuss:    { n: "Erdnussbutter",        k: ["erdnuss", "peanut"],                                 r: [600, 25, 15, 50] },
+  linsen:     { n: "Rote Linsen",          k: ["linsen"],                                            r: [340, 24, 50, 1.5] },
+  oel:        { n: "Öl",                   k: ["öl", "oil"], x: ["thunfisch", "in öl"],              r: [880, 0, 0, 100] },
+  honig:      { n: "Honig",                k: ["honig", "honey"],                                    r: [300, 0.3, 75, 0] },
+  soja:       { n: "Sojasauce",            k: ["soja", "soy"], x: ["drink", "milch", "joghurt"],    r: [60, 8, 5, 0] }
+};
+
+/* Rezepte für 1 Portion. o = optional (zählt nicht als „fehlt“) */
+const RECIPES = [
+  { id: "bolo", art: { c: "plate", base: "#c8452f" }, name: "Protein-Bolognese", type: "haupt", ing: [["hack", 150], ["nudeln", 80], ["passata", 200], ["zwiebel", 50], ["paprika", 100]],
+    steps: ["Nudeln nach Packung kochen.", "Zwiebel und Paprika würfeln, mit dem Hack in einer heißen Pfanne krümelig anbraten.", "Passierte Tomaten dazu, mit Salz, Pfeffer und Oregano würzen, 10 Minuten köcheln.", "Mit den Nudeln servieren."] },
+  { id: "bowl", art: { c: "bowl", base: "#f5efe3" }, name: "Hähnchen-Reis-Bowl", type: "haupt", ing: [["haehnchen", 180], ["reis", 70], ["brokkoli", 150], ["paprika", 100], ["soja", 15, "o"], ["oel", 5, "o"]],
+    steps: ["Reis kochen.", "Hähnchen in Streifen schneiden und im Öl goldbraun braten.", "Brokkoli und Paprika dazu, 5 Minuten mitbraten.", "Mit Sojasauce ablöschen und auf dem Reis anrichten."] },
+  { id: "chili", art: { c: "bowl", base: "#a8392a" }, name: "Chili con Carne fit", type: "haupt", ing: [["hack", 150], ["kidney", 120], ["mais", 60], ["passata", 200], ["zwiebel", 50], ["paprika", 100]],
+    steps: ["Zwiebel und Paprika würfeln, mit dem Hack anbraten.", "Mit Chili, Kreuzkümmel, Paprikapulver, Salz und Pfeffer würzen.", "Passierte Tomaten, Bohnen und Mais dazu, 15 Minuten köcheln."] },
+  { id: "lachs", art: { c: "plate" }, name: "Lachs mit Kartoffeln & Brokkoli", type: "haupt", ing: [["lachs", 150], ["kartoffel", 250], ["brokkoli", 200]],
+    steps: ["Kartoffeln kochen (ca. 20 Min.).", "Brokkoli die letzten 5 Minuten dämpfen.", "Lachs auf der Hautseite 4 Minuten braten, wenden, 2 Minuten fertig garen. Mit Zitrone, Salz und Pfeffer würzen."] },
+  { id: "blech", art: { c: "plate" }, name: "Hähnchen-Süßkartoffel-Blech", type: "haupt", ing: [["haehnchen", 170], ["suesskart", 250], ["paprika", 150], ["zwiebel", 50], ["oel", 8, "o"]],
+    steps: ["Ofen auf 200 °C vorheizen.", "Süßkartoffel, Paprika und Zwiebel in Stücke schneiden, mit Öl und Gewürzen mischen.", "Hähnchen dazulegen und alles 25–30 Minuten backen."] },
+  { id: "garnelen", art: { c: "plate", base: "#f4ecd8" }, name: "Garnelen-Zucchini-Pfanne", type: "haupt", ing: [["garnelen", 200], ["zucchini", 250], ["tomate", 150], ["reis", 50], ["oel", 5, "o"]],
+    steps: ["Reis kochen.", "Zucchini in Scheiben im Öl anbraten.", "Garnelen und halbierte Tomaten dazu, 3–4 Minuten braten.", "Mit Knoblauch, Salz und Chili würzen."] },
+  { id: "curry", art: { c: "bowl", base: "#e0a03a" }, name: "Linsen-Hähnchen-Curry", type: "haupt", ing: [["haehnchen", 120], ["linsen", 50], ["passata", 150], ["spinat", 80], ["zwiebel", 40]],
+    steps: ["Zwiebel und Hähnchen würfeln und anbraten, mit Currypulver bestäuben.", "Linsen, passierte Tomaten und 150 ml Wasser dazu, 12 Minuten köcheln.", "Spinat unterheben, bis er zusammenfällt."] },
+  { id: "thunsalat", art: { c: "bowl", base: "#eaf3df" }, name: "Thunfisch-Bohnen-Salat", type: "haupt", ing: [["thunfisch", 130], ["kidney", 100], ["mais", 50], ["gurke", 100], ["tomate", 100], ["zwiebel", 30], ["oel", 5, "o"]],
+    steps: ["Gurke, Tomaten und Zwiebel klein schneiden.", "Mit abgetropftem Thunfisch, Bohnen und Mais mischen.", "Mit Öl, Essig, Salz und Pfeffer anmachen."] },
+  { id: "wrap", art: { c: "plate" }, name: "Puten-Wrap", type: "haupt", ing: [["pute", 130], ["wrap", 65], ["huettenkaese", 60], ["salat", 40], ["tomate", 60], ["gurke", 50]],
+    steps: ["Pute in Streifen braten und würzen.", "Wrap mit Hüttenkäse bestreichen.", "Salat, Tomate, Gurke und Pute darauf, einrollen."] },
+  { id: "quarkbowl", art: { c: "bowl", base: "#fbf8f1" }, name: "Quark-Beeren-Bowl", type: "frueh", ing: [["quark", 250], ["beeren", 100], ["hafer", 30], ["honig", 10, "o"]],
+    steps: ["Quark mit etwas Wasser oder Milch cremig rühren.", "Beeren und Haferflocken drauf, nach Wunsch mit Honig süßen."] },
+  { id: "oats", art: { c: "bowl", base: "#efe4cf" }, name: "Protein Overnight Oats", type: "frueh", ing: [["hafer", 50], ["skyr", 150], ["milch", 150], ["banane", 60], ["whey", 15, "o"]],
+    steps: ["Haferflocken, Skyr, Milch und Proteinpulver verrühren.", "Über Nacht in den Kühlschrank stellen.", "Morgens mit Bananenscheiben essen."] },
+  { id: "omelett", art: { c: "plate", base: "#f6d55c", skip: ["eier"] }, name: "Fitness-Omelett mit Brot", type: "frueh", ing: [["eier", 120], ["eiklar", 150], ["spinat", 60], ["tomate", 80], ["brot", 60]],
+    steps: ["Eier und Eiklar verquirlen, salzen und pfeffern.", "Spinat und Tomaten kurz anbraten, Eimasse darüber gießen.", "Bei mittlerer Hitze stocken lassen, mit Brot servieren."] },
+  { id: "pancakes", art: { c: "plate", pancakes: true, skip: ["eier", "hafer"] }, name: "Protein-Pancakes", type: "frueh", ing: [["hafer", 50], ["eier", 120], ["quark", 100], ["banane", 60], ["beeren", 80, "o"]],
+    steps: ["Haferflocken, Eier, Quark und Banane fein pürieren.", "Kleine Pancakes in einer beschichteten Pfanne von beiden Seiten backen.", "Mit Beeren servieren."] },
+  { id: "shake", art: { c: "glass", base: "#f3e3b0" }, name: "Bananen-Protein-Shake", type: "snack", ing: [["milch", 300], ["whey", 30], ["banane", 100]],
+    steps: ["Alles in einen Mixer oder Shaker geben und gut mixen."] },
+  { id: "skyrapfel", art: { c: "bowl", base: "#fbf8f1" }, name: "Skyr mit Apfel & Erdnussbutter", type: "snack", ing: [["skyr", 200], ["apfel", 120], ["erdnuss", 10]],
+    steps: ["Apfel würfeln.", "Auf den Skyr geben und Erdnussbutter darüber träufeln."] },
+  { id: "huettenbrot", art: { c: "plate" }, name: "Hüttenkäse-Brot mit Gemüse", type: "snack", ing: [["huettenkaese", 200], ["brot", 50], ["gurke", 100], ["tomate", 100]],
+    steps: ["Brot mit Hüttenkäse belegen.", "Gurke und Tomate in Scheiben drauf, salzen und pfeffern."] }
+];
+
+/* ---------- Rezept-Illustrationen ---------- */
+const PHOTO_KEY = "makro.recipePhotos";
+let recipePhotos = loadJSON(PHOTO_KEY, {});
+
+function seeded(seed) {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
+}
+const rot = (a, x, y) => `transform="rotate(${a.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"`;
+const ART = {
+  haehnchen: { n: 5,  d: (x, y, a) => `<rect x="${x - 7}" y="${y - 3.5}" width="14" height="7" rx="3" fill="#ecc48f" stroke="#c98f4e" stroke-width="1" ${rot(a, x, y)}/>` },
+  pute:      { n: 5,  d: (x, y, a) => `<rect x="${x - 7}" y="${y - 3}" width="14" height="6" rx="3" fill="#f1d3a8" stroke="#d2a066" stroke-width="1" ${rot(a, x, y)}/>` },
+  hack:      { n: 16, d: (x, y, a, R) => `<circle cx="${x}" cy="${y}" r="${(2 + R() * 1.6).toFixed(1)}" fill="${R() > .5 ? "#7a4a2e" : "#8e5a37"}"/>` },
+  lachs:     { n: 1,  d: (x, y, a) => `<g ${rot(a, x, y)}><rect x="${x - 14}" y="${y - 8}" width="28" height="16" rx="4" fill="#f08a5d"/><path d="M${x - 8} ${y - 8}v16M${x - 1} ${y - 8}v16M${x + 6} ${y - 8}v16" stroke="#fde3d3" stroke-width="1.6"/></g>` },
+  thunfisch: { n: 8,  d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="4" ry="2.6" fill="#d9a99b" ${rot(a, x, y)}/>` },
+  garnelen:  { n: 6,  d: (x, y, a) => `<path d="M${x - 5} ${y} a5 5 0 1 1 5 5" fill="none" stroke="#f4978e" stroke-width="4" stroke-linecap="round" ${rot(a, x, y)}/>` },
+  eier:      { n: 2,  d: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="9" ry="7.5" fill="#fffdf7" stroke="#eee6d2"/><circle cx="${x + 1}" cy="${y}" r="3.6" fill="#f5b82e"/>` },
+  huettenkaese: { n: 12, d: (x, y) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#fffdf6" stroke="#e7e1d1" stroke-width=".8"/>` },
+  hafer:     { n: 18, d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="2.8" ry="1.8" fill="#d8bf8a" ${rot(a, x, y)}/>` },
+  reis:      { n: 34, d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.1" fill="#fffdf5" stroke="#e3dcc6" stroke-width=".5" ${rot(a, x, y)}/>` },
+  nudeln:    { n: 6,  d: (x, y, a) => `<path d="M${x - 9} ${y} q3 -4 6 0 t6 0 t6 0" fill="none" stroke="#f2cf6b" stroke-width="2.6" stroke-linecap="round" ${rot(a, x, y)}/>` },
+  kartoffel: { n: 5,  d: (x, y, a) => `<rect x="${x - 5}" y="${y - 4}" width="10" height="8" rx="3.5" fill="#e8c37a" stroke="#cfa255" stroke-width=".8" ${rot(a, x, y)}/>` },
+  suesskart: { n: 6,  d: (x, y, a) => `<rect x="${x - 5}" y="${y - 4}" width="10" height="8" rx="3" fill="#f39c4f" stroke="#d97c2b" stroke-width=".8" ${rot(a, x, y)}/>` },
+  wrap:      { n: 2,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#ead6aa" stroke="#cfae6e"/><path d="M${x} ${y} m-3 0 a3 3 0 1 1 3 3 a6 6 0 1 1 6 -6" fill="none" stroke="#c49a52" stroke-width="1.4"/><circle cx="${x + 4}" cy="${y - 5}" r="2" fill="#7cc04b"/>` },
+  brot:      { n: 1,  d: (x, y) => `<g ${rot(-8, x, y)}><path d="M${x - 13} ${y + 12} v-14 a13 9 0 0 1 26 0 v14 z" fill="#b87a3e"/><path d="M${x - 10} ${y + 9.5} v-11 a10 6.5 0 0 1 20 0 v11 z" fill="#f0d6a6"/></g>` },
+  paprika:   { n: 6,  d: (x, y, a, R) => `<rect x="${x - 6}" y="${y - 1.8}" width="12" height="3.6" rx="1.8" fill="${R() > .5 ? "#e8453c" : "#f5b82e"}" ${rot(a, x, y)}/>` },
+  brokkoli:  { n: 4,  d: (x, y) => `<rect x="${x - 1.5}" y="${y}" width="3" height="6" rx="1" fill="#8cbf5a"/><circle cx="${x - 3}" cy="${y - 1}" r="3.6" fill="#3f8f3a"/><circle cx="${x + 3}" cy="${y - 1}" r="3.6" fill="#3f8f3a"/><circle cx="${x}" cy="${y - 4}" r="3.8" fill="#4ea245"/>` },
+  zucchini:  { n: 6,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#5d9c41"/><circle cx="${x}" cy="${y}" r="3.6" fill="#dcecb4"/>` },
+  spinat:    { n: 5,  d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="3.4" fill="#2f6b2f" ${rot(a, x, y)}/>` },
+  tomate:    { n: 5,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="4.6" fill="#e74c3c"/><circle cx="${x - 1.5}" cy="${y - 1.5}" r="1.2" fill="#f7a59a"/>` },
+  zwiebel:   { n: 4,  d: (x, y, a) => `<path d="M${x - 4} ${y} a4 4 0 0 1 8 0" fill="none" stroke="#c39bd3" stroke-width="1.6" ${rot(a, x, y)}/>` },
+  kidney:    { n: 10, d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.2" fill="#7b1e2b" ${rot(a, x, y)}/>` },
+  mais:      { n: 12, d: (x, y, a) => `<rect x="${x - 1.6}" y="${y - 1.6}" width="3.2" height="3.2" rx=".8" fill="#f7d038" ${rot(a, x, y)}/>` },
+  gurke:     { n: 5,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#7fb24a"/><circle cx="${x}" cy="${y}" r="3.8" fill="#e6f4c8"/>` },
+  salat:     { n: 5,  d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="4" fill="#7cc04b" ${rot(a, x, y)}/>` },
+  banane:    { n: 4,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#f8e7a1" stroke="#e9cf72" stroke-width=".8"/><circle cx="${x}" cy="${y}" r="1" fill="#c9a24a"/>` },
+  beeren:    { n: 11, d: (x, y, a, R) => `<circle cx="${x}" cy="${y}" r="${(2.4 + R()).toFixed(1)}" fill="${["#4b3a8c", "#c0392b", "#6c4fb0"][Math.floor(R() * 3)]}"/>` },
+  apfel:     { n: 6,  d: (x, y, a) => `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" rx="1.4" fill="#f5edc4" stroke="#d6453b" stroke-width="1.2" ${rot(a, x, y)}/>` },
+  linsen:    { n: 16, d: (x, y) => `<circle cx="${x}" cy="${y}" r="1.6" fill="#f0a24a"/>` },
+  erdnuss:   { drizzle: "#a0652b" },
+  honig:     { drizzle: "#f2b84b" }
+};
+const TILE = { frueh: "#fbefd9", haupt: "#e5f0e8", snack: "#efe8f8" };
+
+function recipeArt(r) {
+  const R = seeded(r.id), art = r.art || { c: "plate" };
+  const bg = TILE[r.type] || "#eee";
+  let g = `<rect width="160" height="120" fill="${bg}"/>`;
+  const cx = 80, cy = 60;
+  if (art.c === "glass") {
+    g += `<ellipse cx="${cx}" cy="108" rx="34" ry="5" fill="rgba(0,0,0,.08)"/>
+      <path d="M${cx - 22} 20 L${cx + 22} 20 L${cx + 18} 106 Q${cx} 110 ${cx - 18} 106 Z" fill="${art.base}" stroke="#e2d6b6" stroke-width="1.5"/>
+      <path d="M${cx - 22} 20 L${cx + 22} 20 L${cx + 21} 32 L${cx - 21} 32 Z" fill="#fffaf0" opacity=".85"/>
+      <path d="M${cx + 6} 30 L${cx + 20} 4" stroke="#2f7d5b" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="${cx - 22}" cy="22" r="9" fill="#f8e7a1" stroke="#e9cf72"/><circle cx="${cx - 22}" cy="22" r="1.6" fill="#c9a24a"/>
+      <path d="M${cx - 16} 50 v40" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>`;
+    return `<svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${g}</svg>`;
+  }
+  g += `<ellipse cx="${cx}" cy="${cy + 52}" rx="44" ry="5" fill="rgba(0,0,0,.07)"/>`;
+  if (art.c === "bowl") {
+    g += `<circle cx="${cx}" cy="${cy}" r="52" fill="#dfe7ea"/><circle cx="${cx}" cy="${cy}" r="48" fill="#ffffff"/><circle cx="${cx}" cy="${cy}" r="43" fill="${art.base || "#f7f5ef"}"/>`;
+  } else {
+    g += `<circle cx="${cx}" cy="${cy}" r="52" fill="#ffffff" stroke="#e4e4de"/><circle cx="${cx}" cy="${cy}" r="42" fill="#f8f8f4"/>`;
+    if (art.base) g += `<circle cx="${cx}" cy="${cy}" r="34" fill="${art.base}"/>`;
+  }
+  if (art.pancakes) {
+    g += `<circle cx="${cx + 4}" cy="${cy + 6}" r="30" fill="#c98a45"/><circle cx="${cx + 2}" cy="${cy + 3}" r="30" fill="#e0a25a"/><circle cx="${cx}" cy="${cy}" r="30" fill="#e9b46c"/><circle cx="${cx}" cy="${cy}" r="24" fill="#eebd7a"/>`;
+  }
+  const skip = new Set(["passata", "milch", "whey", "oel", "soja", "eiklar", "quark", "skyr", ...(art.skip || [])]);
+  const keys = r.ing.map(x => x[0]).filter(k => !skip.has(k) && ART[k] && !ART[k].drizzle);
+  const drizzles = r.ing.map(x => x[0]).filter(k => ART[k] && ART[k].drizzle);
+  const span = (Math.PI * 2) / Math.max(1, keys.length), start = R() * Math.PI * 2;
+  const maxR = art.c === "bowl" ? 34 : art.pancakes ? 20 : 32;
+  keys.forEach((k, i) => {
+    const def = ART[k];
+    const n = keys.length === 1 && def.n > 1 ? def.n * 2 : def.n;
+    for (let j = 0; j < n; j++) {
+      const ang = keys.length === 1 ? R() * Math.PI * 2 : start + span * i + span * (0.12 + R() * 0.76);
+      const rad = def.n === 1 ? maxR * 0.45 : 7 + R() * (maxR - 7);
+      const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
+      g += def.d(+x.toFixed(1), +y.toFixed(1), R() * 180, R);
+    }
+  });
+  for (const k of drizzles) {
+    let d = `M${cx - 22} ${cy - 8}`;
+    for (let t = 1; t <= 4; t++) d += ` Q${cx - 22 + t * 11 - 5} ${cy - 8 + (t % 2 ? -10 : 10)} ${cx - 22 + t * 11} ${cy - 8 + t * 4}`;
+    g += `<path d="${d}" fill="none" stroke="${ART[k].drizzle}" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>`;
+  }
+  return `<svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${g}</svg>`;
+}
+const recipeImg = r => recipePhotos[r.id] ? `<img src="${recipePhotos[r.id]}" alt="">` : recipeArt(r);
+
+/* Eigenes Foto: verkleinert und lokal gespeichert */
+$("rPhotoBtn").onclick = () => $("rPhotoIn").click();
+$("rPhotoDel").onclick = () => {
+  delete recipePhotos[openRecipeId]; saveJSON(PHOTO_KEY, recipePhotos);
+  openRecipe(openRecipeId); renderIdeas(); toast("Foto entfernt");
+};
+$("rPhotoIn").onchange = () => {
+  const file = $("rPhotoIn").files[0];
+  $("rPhotoIn").value = "";
+  if (!file) return;
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => {
+    const W = 640, H = 480, c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const sc = Math.max(W / img.width, H / img.height);
+    const w = img.width * sc, h = img.height * sc;
+    c.getContext("2d").drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    URL.revokeObjectURL(url);
+    recipePhotos[openRecipeId] = c.toDataURL("image/jpeg", 0.72);
+    saveJSON(PHOTO_KEY, recipePhotos);
+    openRecipe(openRecipeId); renderIdeas(); toast("Foto gespeichert ✓");
+  };
+  img.onerror = () => toast("Foto konnte nicht geladen werden");
+  img.src = url;
+};
+const RTYPES = { frueh: "Frühstück", haupt: "Hauptgericht", snack: "Snack" };
+let ideaFilter = "alle";
+let openRecipeId = null;
+
+function matchProduct(key) {
+  const d = ING[key];
+  const hits = products.filter(p => {
+    const n = p.name.toLowerCase();
+    return d.k.some(w => n.includes(w)) && !(d.x || []).some(w => n.includes(w));
+  });
+  if (!hits.length) return null;
+  return hits.sort((a, b) => (stock[b.id] || 0) - (stock[a.id] || 0))[0];
+}
+
+function analyzeRecipe(r) {
+  const rows = r.ing.map(([key, g, opt]) => {
+    const d = ING[key], p = matchProduct(key);
+    const have = p ? (stock[p.id] || 0) : 0;
+    const ok = !!p && have + 0.5 >= g;
+    const m = p ? macrosFor(p, g) : { kcal: d.r[0] * g / 100, p: d.r[1] * g / 100, c: d.r[2] * g / 100, f: d.r[3] * g / 100 };
+    return { key, name: d.n, g, opt: opt === "o", p, have, ok, m };
+  });
+  const missing = rows.filter(x => !x.opt && !x.ok);
+  return { rows, missing, totals: sumMacros(rows.map(x => x.m)) };
+}
+
+function renderIdeas() {
+  const view = $("view");
+  const list = RECIPES.map(r => ({ r, a: analyzeRecipe(r) }))
+    .filter(({ r, a }) =>
+      ideaFilter === "alle" ? true :
+      ideaFilter === "kochbar" ? a.missing.length === 0 :
+      r.type === ideaFilter)
+    .sort((x, y) => (x.a.missing.length - y.a.missing.length) || (y.a.totals.p / y.a.totals.kcal - x.a.totals.p / x.a.totals.kcal));
+
+  const filters = [["alle", "Alle"], ["kochbar", "✓ Kann ich kochen"], ["frueh", "Frühstück"], ["haupt", "Hauptgericht"], ["snack", "Snack"]];
+  let html = `<div class="filters">${filters.map(([k, t]) => `<button data-f="${k}" class="${ideaFilter === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
+  html += list.length ? list.map(({ r, a }) => `<div class="card recipe rc" data-r="${r.id}">
+      <div class="rimg">${recipeImg(r)}</div>
+      <div class="rmain">
+      <div class="mc-head"><b>${r.name}</b><span class="mc-kcal">${Math.round(a.totals.kcal)} kcal</span></div>
+      <div class="tags">
+        <span class="tag">💪 ${Math.round(a.totals.p)} g Eiweiß</span>
+        <span class="tag grey">${Math.round(a.totals.c)} g K · ${Math.round(a.totals.f)} g F</span>
+        <span class="tag grey">${RTYPES[r.type]}</span>
+      </div>
+      ${a.missing.length ? `<div class="miss">Fehlt: ${a.missing.map(x => x.name).join(", ")}</div>` : `<div class="have">✓ Alles da</div>`}
+      </div>
+    </div>`).join("")
+    : `<div class="empty"><div class="big">🥗</div>${ideaFilter === "kochbar" ? "Gerade reicht dein Bestand für kein Rezept komplett.<br>Schau unter „Alle“, was dir noch fehlt." : "Keine Rezepte gefunden."}</div>`;
+  html += `<p class="hint" style="text-align:center;margin:4px 0 10px">Werte pro Portion – mit deinen Produkten berechnet, sonst mit Richtwerten.</p>`;
+  view.innerHTML = html;
+  view.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { ideaFilter = b.dataset.f; renderIdeas(); });
+  view.querySelectorAll("[data-r]").forEach(c => c.onclick = () => openRecipe(c.dataset.r));
+}
+
+const slotByTime = () => { const h = new Date().getHours(); return h < 10 ? "fruehstueck" : h < 12 ? "snack1" : h < 15 ? "mittag" : h < 18 ? "snack2" : "abend"; };
+$("rSlot").innerHTML = SLOTS.map(sl => `<option value="${sl.id}">${sl.icon} ${sl.name}${sl.id === "snack1" ? " (vormittags)" : sl.id === "snack2" ? " (nachmittags)" : ""}</option>`).join("");
+
+function openRecipe(id) {
+  openRecipeId = id;
+  const r = RECIPES.find(x => x.id === id), a = analyzeRecipe(r);
+  $("rTitle").textContent = r.name;
+  $("rHero").innerHTML = recipeImg(r);
+  $("rPhotoBtn").textContent = recipePhotos[id] ? "📷 Foto ändern" : "📷 Eigenes Foto";
+  $("rPhotoDel").style.display = recipePhotos[id] ? "inline-block" : "none";
+  $("rBody").innerHTML = `
+    ${totalsHTML(a.totals)}
+    <div class="card-title" style="margin-top:18px">Zutaten für 1 Portion</div>
+    <div class="card" style="padding:4px 14px;margin-bottom:0">${a.rows.map(x => `<div class="ing">
+      <div class="item-main">
+        <div>${x.name}${x.opt ? ` <span class="item-sub">(optional)</span>` : ""}</div>
+        <div class="item-sub">${x.p ? (x.ok ? `Dein Produkt: ${esc(x.p.name)}` : `<span class="warn">${esc(x.p.name)}: nur ${fmt(x.have)} g da</span>`) : (x.opt ? "Nicht im Bestand" : `<span class="warn">Nicht im Bestand</span>`)}</div>
+      </div>
+      <span class="g">${fmt(x.g)} g</span>
+    </div>`).join("")}</div>
+    <div class="card-title" style="margin-top:18px">So geht's</div>
+    <ol class="steps">${r.steps.map(st => `<li>${st}</li>`).join("")}</ol>`;
+  $("rSlot").value = r.type === "frueh" ? "fruehstueck" : slotByTime();
+  $("recipeSheet").classList.add("open");
+}
+
+$("rAdd").onclick = () => {
+  const r = RECIPES.find(x => x.id === openRecipeId), a = analyzeRecipe(r);
+  let short = false;
+  const logged = a.rows.filter(x => !x.opt || x.p).map(x => {
+    if (!x.p) { short = true; return { id: null, name: x.name, g: x.g, deducted: 0, ...x.m }; }
+    const have = stock[x.p.id] || 0, deducted = Math.min(have, x.g);
+    if (x.g > have + 0.5) short = true;
+    stock[x.p.id] = have - deducted;
+    if (stock[x.p.id] < 0.5) delete stock[x.p.id];
+    return { id: x.p.id, name: x.p.name, g: x.g, deducted, ...x.m };
+  });
+  const totals = sumMacros(logged), now = new Date();
+  log.push({
+    id: now.getTime().toString(36), day: todayKey(), slot: $("rSlot").value,
+    time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
+    kind: "recipe", refId: r.id, name: r.name, amount: 1, items: logged, totals
+  });
+  saveJSON(LOG_KEY, log); saveStock();
+  $("recipeSheet").classList.remove("open");
+  renderIdeas();
+  toast(short ? "Eingetragen ✓ – fehlende Zutaten mit Richtwerten" : `${Math.round(totals.kcal)} kcal eingetragen ✓`);
+};
+
+$("rSave").onclick = () => {
+  const r = RECIPES.find(x => x.id === openRecipeId), a = analyzeRecipe(r);
+  const unknown = a.rows.filter(x => !x.opt && !x.p);
+  if (unknown.length) { toast(`Leg zuerst als Produkt an: ${unknown.map(x => x.name).join(", ")}`); return; }
+  if (templates.some(t => t.name.toLowerCase() === r.name.toLowerCase())) { toast("Diese Mahlzeit hast du schon gespeichert"); return; }
+  templates.push({ id: Date.now().toString(36), name: r.name, items: a.rows.filter(x => x.p).map(x => ({ id: x.p.id, g: x.g })) });
+  saveJSON(TPL_KEY, templates);
+  toast("Unter „Mahlzeiten“ gespeichert ✓");
+};
+
 /* Rechner */
 $("cAct").innerHTML = ACTIVITIES.map(a => `<option value="${a.v}">${a.t}</option>`).join("");
 $("cGoal").innerHTML = Object.entries(GOALS).map(([k, g]) => `<option value="${k}">${g.t}</option>`).join("");
@@ -1490,7 +1853,7 @@ $("calcSave").onclick = () => {
 
 /* Fenster schließen */
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
-["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
+["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet", "recipeSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
 
 /* ---------- Start ---------- */
 showTab("produkte");
