@@ -288,6 +288,49 @@
   .rhero { width: 100%; height: 210px; border-radius: 18px; overflow: hidden; margin-bottom: 10px; }
   .rhero svg, .rhero img { width: 100%; height: 100%; display: block; object-fit: cover; }
   .photo-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 12px; }
+  /* ---------- Realistischer Kühlschrank & Schrank ---------- */
+  .kitchen { padding: 10px 2px 14px; gap: 12px; }
+  .unit-title, .comp-label { display: none; }
+  .fridge {
+    position: relative; padding: 14px 8px 10px;
+    background: linear-gradient(180deg, #fbfdfe 0%, #eef3f6 60%, #e4ecf0 100%);
+    border: 9px solid #dde3e7; border-radius: 22px;
+    box-shadow: inset 0 0 0 2px #c9d1d6, inset 0 -40px 50px rgba(110,150,175,.10), 0 8px 16px rgba(0,0,0,.14);
+  }
+  .fridge::before { content: ""; position: absolute; top: 4px; left: 35%; right: 35%; height: 4px; border-radius: 2px; background: #fffbe8; box-shadow: 0 0 14px 6px rgba(255,246,200,.85); }
+  .fridge::after { content: ""; position: absolute; right: -16px; top: 16%; width: 5px; height: 84px; border-radius: 3px; background: linear-gradient(90deg, #b3bbc1, #dfe4e7); box-shadow: 1px 1px 2px rgba(0,0,0,.15); }
+  .fridge .comp { position: relative; border-bottom: 0; padding: 8px 6px 14px; min-height: 80px; }
+  .fridge .comp::after { content: ""; position: absolute; left: -8px; right: -8px; bottom: 0; height: 6px; background: linear-gradient(180deg, rgba(215,236,246,.95), rgba(170,205,222,.75)); border-top: 1px solid #fff; box-shadow: 0 3px 4px rgba(60,90,110,.12); }
+  .drawers { margin-top: 10px; }
+  .fridge .comp.drawer {
+    border: 2px solid rgba(160,190,206,.9); border-radius: 6px 6px 12px 12px; padding: 8px 6px 18px; min-height: 92px;
+    background: linear-gradient(180deg, rgba(255,255,255,.35) 0 52%, rgba(206,226,236,.75) 52% 100%);
+  }
+  .fridge .comp.drawer::after { left: 32%; right: 32%; bottom: 6px; height: 5px; border-radius: 3px; border: 0; background: rgba(140,170,188,.7); box-shadow: none; }
+  .fridge .comp.freezer {
+    margin-top: 20px; border: 2px solid #b6d6e6; border-radius: 10px; padding: 10px 6px 12px; min-height: 96px;
+    background:
+      radial-gradient(circle at 15% 22%, rgba(255,255,255,.95) 0 2px, transparent 3px),
+      radial-gradient(circle at 72% 62%, rgba(255,255,255,.85) 0 1.5px, transparent 2.5px),
+      radial-gradient(circle at 44% 86%, rgba(255,255,255,.85) 0 2px, transparent 3px),
+      radial-gradient(circle at 88% 18%, rgba(255,255,255,.8) 0 1.5px, transparent 2.5px),
+      linear-gradient(180deg, #eef8fd, #d3e9f5);
+  }
+  .fridge .comp.freezer::after { left: -10px; right: -10px; top: -16px; bottom: auto; height: 8px; border: 0; border-radius: 2px; background: #dde3e7; box-shadow: 0 1px 0 #c9d1d6; }
+  .cupboard {
+    position: relative; padding: 10px 7px 6px;
+    background: repeating-linear-gradient(90deg, rgba(150,100,50,.05) 0 2px, transparent 2px 11px), linear-gradient(180deg, #f1e2c9, #e6d0ad);
+    border: 8px solid #b07a46; border-radius: 6px;
+    box-shadow: inset 0 0 0 2px #8e5c30, inset 0 14px 18px rgba(80,45,15,.18), 0 8px 16px rgba(0,0,0,.14);
+  }
+  .cupboard::before { content: ""; position: absolute; top: -15px; left: -13px; right: -13px; height: 8px; border-radius: 3px; background: linear-gradient(180deg, #9c6738, #7f5028); }
+  .cupboard::after { content: ""; position: absolute; bottom: -16px; left: -6px; right: -6px; height: 8px; border-radius: 0 0 3px 3px; background: #6e4422; }
+  .cupboard .comp { position: relative; border-bottom: 0; padding: 8px 2px 13px; min-height: 64px; }
+  .cupboard .comp::after { content: ""; position: absolute; left: -7px; right: -7px; bottom: 0; height: 7px; background: linear-gradient(180deg, #cf9a63, #a9733f); box-shadow: 0 3px 4px rgba(70,40,10,.22); }
+  .cupboard .comp:last-child::after { display: none; }
+  .fridge .group-name, .cupboard .group-name { color: #6b6b66; }
+  .fridge .pkg, .cupboard .pkg { background: #fff; }
+  .fridge .pkg.more, .cupboard .pkg.more { color: #8a8a85; }
 </style>
 </head>
 <body>
@@ -300,10 +343,10 @@
 <main id="view"></main>
 
 <nav>
-  <button data-tab="produkte" class="active"><span class="ic">🥫</span>Produkte</button>
+  <button data-tab="heute"><span class="ic">🔥</span>Kalorien</button>
   <button data-tab="kuehlschrank"><span class="ic">🧊</span>Kühlschrank</button>
   <button data-tab="mahlzeit"><span class="ic">🍽️</span>Mahlzeiten</button>
-  <button data-tab="heute"><span class="ic">🔥</span>Kalorien</button>
+  <button data-tab="produkte"><span class="ic">🥫</span>Produkte</button>
   <button data-tab="vorschlaege"><span class="ic">💡</span>Ideen</button>
 </nav>
 
@@ -1856,7 +1899,7 @@ document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dat
 ["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet", "recipeSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
 
 /* ---------- Start ---------- */
-showTab("produkte");
+showTab("heute");
 </script>
 </body>
 </html>
