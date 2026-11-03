@@ -232,14 +232,15 @@
   .navbtn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--card); color: var(--text); font-size: 20px; cursor: pointer; }
   .navbtn:disabled { opacity: .3; }
   .ring-wrap { display: flex; align-items: center; gap: 18px; }
-  .ring { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
-  .ring svg { width: 132px; height: 132px; transform: rotate(-90deg); }
+  .ring { position: relative; width: 168px; height: 168px; flex-shrink: 0; }
+  .ring svg { width: 168px; height: 168px; transform: rotate(-90deg); }
   .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .ring-center b { font-size: 26px; letter-spacing: -.5px; }
-  .ring-center small { font-size: 12px; color: var(--muted); }
+  .ring-center b { font-size: 34px; letter-spacing: -.8px; line-height: 1.05; }
+  .ring-center small { font-size: 13px; color: var(--muted); }
   .ring-side { flex: 1; min-width: 0; font-size: 14px; line-height: 1.7; }
-  .ring-side .rem { font-size: 18px; font-weight: 700; }
-  .bar-row { margin-top: 14px; }
+  .ring-side .rem { font-size: 21px; font-weight: 800; line-height: 1.25; }
+  .bar-row { margin-top: 16px; }
+  .bar-row .bar-head { font-size: 15px; }
   .bar-head { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
   .bar-head span:last-child { color: var(--muted); }
   .bar { height: 9px; background: var(--line); border-radius: 5px; overflow: hidden; }
@@ -435,7 +436,7 @@
 
   /* Kalorien */
   .ring-center b { color: var(--text); }
-  .bar { height: 10px; }
+  .bar { height: 13px; border-radius: 7px; }
   .bar > i { background-image: linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,0)); }
   .slot { position: relative; overflow: hidden; padding-left: 18px; }
   .slot::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--sc); }
@@ -642,6 +643,41 @@
     .lib-cols .lib-head { display: flex; }
     body[data-tab="produkte"] #addBtn { visibility: hidden !important; }
   }
+
+  /* ---------- Gewicht ---------- */
+  .w-card { padding: 12px 14px; }
+  .w-top { display: flex; align-items: center; gap: 8px; }
+  .w-top > b { font-size: 15px; white-space: nowrap; }
+  .w-top .w-in { flex: 1; }
+  .w-top .w-in input { font-size: 17px; padding: 6px 0; }
+  .btn.sm { padding: 8px 12px; font-size: 14px; border-radius: 10px; }
+  .w-chg { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .w-chg.up, .w-stats .up { color: #ea580c; } .w-chg.down, .w-stats .down { color: #16a34a; }
+  .w-entry { display: flex; gap: 8px; align-items: stretch; }
+  .w-in { flex: 1; display: flex; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+  .w-in input { flex: 1; min-width: 0; border: 0; background: none; font-size: 22px; font-weight: 700; padding: 10px 0; color: var(--text); outline: none; }
+  .w-in span { color: var(--muted); font-weight: 600; }
+  .w-entry .btn { padding: 0 18px; }
+  .w-done { font-size: 12px; color: #16a34a; margin: 5px 2px 6px; }
+  .w-done.muted { color: var(--muted); }
+  .w-done .undo { color: var(--muted); font-size: 13px; padding: 0; text-decoration: underline; }
+  .w-seg { margin: 2px 0 4px; padding: 2px; }
+  .w-seg button { font-size: 12.5px; padding: 4px 2px; }
+  .w-chart { width: 100%; height: auto; display: block; }
+  .w-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 18px 10px; }
+  .w-legend { display: flex; gap: 6px 12px; align-items: center; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin: 2px 4px 8px; }
+  .w-legend i { display: inline-block; width: 14px; height: 0; border-top: 2.6px solid var(--accent); margin-right: -6px; vertical-align: middle; }
+  .w-legend i.l2 { border-top: 2.4px dotted var(--t2); }
+  .w-legend i.l3 { border-top: 2px dashed #16a34a; }
+  .w-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 4px; }
+  .w-stats div { background: var(--bg); border-radius: 10px; padding: 5px 8px; }
+  .w-stats small { display: block; font-size: 10px; color: var(--muted); }
+  .w-stats b { font-size: 13px; }
+  .w-goal { margin-top: 6px; }
+  .w-goal summary { font-size: 12.5px; color: var(--accent); font-weight: 600; cursor: pointer; list-style: none; padding: 4px 2px; }
+  .w-goal summary::-webkit-details-marker { display: none; }
+  .w-goal .w-entry { margin-top: 8px; }
+  .w-goal .w-in input { font-size: 18px; padding: 8px 0; }
 </style>
 </head>
 <body>
@@ -656,8 +692,8 @@
 <nav>
   <button data-tab="heute"><span class="ic">🔥</span>Kalorien</button>
   <button data-tab="kuehlschrank"><span class="ic">🧊</span>Kühlschrank</button>
+  <button data-tab="produkte"><span class="ic">🥫</span>Produkte</button>
   <button data-tab="vorschlaege"><span class="ic">🍳</span>Rezepte</button>
-  <button data-tab="produkte"><span class="ic">🥫</span>Lebensmittel</button>
   <button data-tab="training"><span class="ic">🏋️</span>Training</button>
 </nav>
 
@@ -1067,7 +1103,7 @@ function toast(msg) {
 
 /* ---------- Tabs ---------- */
 const TABS = {
-  produkte:     { title: "Lebensmittel", render: renderLib, add: true },
+  produkte:     { title: "Produkte",    render: renderLib, add: true },
   kuehlschrank: { title: "Kühlschrank", render: renderFridge, add: true },
   heute:        { title: "Kalorien",    render: renderToday },
   vorschlaege:  { title: "Rezepte",     render: renderIdeas },
@@ -1100,12 +1136,12 @@ function renderLib() {
   const view = $("view");
   view.innerHTML = `
     <div class="seg lib-seg">
-      <button data-seg="produkte" class="${libSeg === "produkte" ? "on" : ""}">🥫 Produkte <span>${products.length}</span></button>
+      <button data-seg="produkte" class="${libSeg === "produkte" ? "on" : ""}">🥦 Lebensmittel <span>${products.length}</span></button>
       <button data-seg="mahlzeit" class="${libSeg === "mahlzeit" ? "on" : ""}">🍽️ Mahlzeiten <span>${templates.length}</span></button>
     </div>
     <div class="lib-cols" data-show="${libSeg}">
       <section class="lib-col" data-col="produkte">
-        <div class="lib-head"><b>🥫 Produkte</b><button class="btn pill sm" id="libAddProd">+ Produkt</button></div>
+        <div class="lib-head"><b>🥦 Lebensmittel</b><button class="btn pill sm" id="libAddProd">+ Lebensmittel</button></div>
         <div id="colProd"></div>
       </section>
       <section class="lib-col" data-col="mahlzeit">
@@ -1129,11 +1165,11 @@ function renderLib() {
 function renderProducts(view = $("colProd") || $("view")) {
   if (!products.length) {
     view.innerHTML = `<div class="empty"><div class="big">🥫</div>
-      Noch keine Produkte.<br>Tippe auf <b>+ Produkt</b> und scanne den Barcode deines ersten Produkts.</div>`;
+      Noch keine Lebensmittel.<br>Tippe oben auf <b>+</b> und scanne den Barcode deines ersten Lebensmittels.</div>`;
     return;
   }
   const term = searchTerm.toLowerCase();
-  let html = `<input class="search" id="search" placeholder="Produkt suchen" value="${esc(searchTerm)}">`;
+  let html = `<input class="search" id="search" placeholder="Lebensmittel suchen" value="${esc(searchTerm)}">`;
   let found = 0;
   for (const cat of CATEGORIES) {
     const items = products
@@ -2192,6 +2228,139 @@ function amountText(e) {
   return "";
 }
 
+/* ---------- Körpergewicht ---------- */
+const WEIGHT_KEY = "makro.weights", WGOAL_KEY = "makro.weightGoal", WVIEW_KEY = "makro.weightView";
+let weights = loadJSON(WEIGHT_KEY, {});            // { "2026-11-03": 77.4 }
+let weightGoal = loadJSON(WGOAL_KEY, null);
+let weightView = loadJSON(WVIEW_KEY, "tage");
+const kg1 = v => (Math.round(v * 10) / 10).toFixed(1).replace(".", ",");
+const sortedWeightDays = () => Object.keys(weights).filter(d => weights[d] > 0).sort();
+const dateOf = d => new Date(d + "T12:00");
+function weekStart(day) { const d = dateOf(day), wd = (d.getDay() + 6) % 7; d.setDate(d.getDate() - wd); return d.toLocaleDateString("sv-SE"); }
+function isoWeekNo(day) { const d = dateOf(day); d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7); const y = new Date(d.getFullYear(), 0, 4); return 1 + Math.round(((d - y) / 864e5 - 3 + (y.getDay() + 6) % 7) / 7); }
+const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+
+/* Punkte je nach Ansicht: Tage (30), Wochen (12), Monate (12), Gesamt */
+function weightSeries(view) {
+  const days = sortedWeightDays();
+  if (!days.length) return [];
+  const today = todayKey();
+  if (view === "tage") {
+    const from = dayShift(today, -29);
+    return days.filter(d => d >= from).map(d => ({ t: dateOf(d).getTime(), v: weights[d], lab: dateOf(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) }));
+  }
+  const groups = {};
+  for (const d of days) {
+    const k = view === "monate" ? d.slice(0, 7) : weekStart(d);
+    (groups[k] = groups[k] || []).push(weights[d]);
+  }
+  let keys = Object.keys(groups).sort();
+  if (view === "wochen") keys = keys.filter(k => k >= weekStart(dayShift(today, -7 * 11)));
+  if (view === "monate") { const lim = new Date(); lim.setMonth(lim.getMonth() - 11); keys = keys.filter(k => k >= lim.toLocaleDateString("sv-SE").slice(0, 7)); }
+  return keys.map(k => {
+    const t = view === "monate" ? dateOf(k + "-15").getTime() : dateOf(k).getTime() + 3 * 864e5;
+    const lab = view === "monate" ? dateOf(k + "-15").toLocaleDateString("de-DE", { month: "short", year: "2-digit" }) : (view === "wochen" ? `KW ${isoWeekNo(k)}` : dateOf(k).toLocaleDateString("de-DE", { month: "short", year: "2-digit" }));
+    return { t, v: avg(groups[k]), lab, n: groups[k].length };
+  });
+}
+
+function weightChart(pts, view) {
+  const W = 330, H = 120, pl = 34, pr = 10, pt = 14, pb = 20;
+  if (!pts.length) return `<div class="w-empty">Noch keine Einträge – trag oben dein Gewicht ein.</div>`;
+  const vals = pts.map(p => p.v).concat(weightGoal ? [weightGoal] : []);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max(.4, (hi - lo) * .18); lo -= pad; hi += pad;
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+  const X = t => t1 === t0 ? (pl + W - pr) / 2 : pl + (t - t0) / (t1 - t0) * (W - pl - pr);
+  const Y = v => pt + (1 - (v - lo) / (hi - lo)) * (H - pt - pb);
+  const f = n => n.toFixed(1);
+  /* weiche Linie */
+  const P = pts.map(p => [X(p.t), Y(p.v)]);
+  let line = `M${f(P[0][0])} ${f(P[0][1])}`;
+  for (let i = 1; i < P.length; i++) { const [x0, y0] = P[i - 1], [x1, y1] = P[i], cx = (x0 + x1) / 2; line += `C${f(cx)} ${f(y0)} ${f(cx)} ${f(y1)} ${f(x1)} ${f(y1)}`; }
+  const area = `${line}L${f(P[P.length - 1][0])} ${H - pb}L${f(P[0][0])} ${H - pb}Z`;
+  /* Gitter */
+  const step = (hi - lo) / 3;
+  let g = [0, 2].map(i => { const v = lo + step * i + step / 2; return v < hi ? `<path d="M${pl} ${f(Y(v))}H${W - pr}" stroke="var(--line)" stroke-dasharray="3 4"/><text x="${pl - 6}" y="${f(Y(v) + 3.5)}" text-anchor="end" font-size="10" fill="var(--muted)">${kg1(v)}</text>` : ""; }).join("");
+  /* 7-Tage-Schnitt als Trend (nur Tagesansicht) */
+  let trend = "";
+  if (view === "tage" && pts.length >= 4) {
+    const tp = pts.map((p, i) => { const win = pts.filter(q => q.t <= p.t && q.t > p.t - 7 * 864e5); return [X(p.t), Y(avg(win.map(q => q.v)))]; });
+    trend = `<path d="${tp.map((q, i) => `${i ? "L" : "M"}${f(q[0])} ${f(q[1])}`).join("")}" fill="none" stroke="var(--t2)" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round" opacity=".9"/>`;
+  }
+  const goal = weightGoal ? `<path d="M${pl} ${f(Y(weightGoal))}H${W - pr}" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${W - pr}" y="${f(Y(weightGoal) - 4)}" text-anchor="end" font-size="10" font-weight="700" fill="#16a34a">Ziel ${kg1(weightGoal)}</text>` : "";
+  const dotsR = pts.length > 20 ? 2.4 : 3.6;
+  const dotsS = pts.map((p, i) => `<circle cx="${f(P[i][0])}" cy="${f(P[i][1])}" r="${i === pts.length - 1 ? 5 : dotsR}" fill="var(--card)" stroke="var(--accent)" stroke-width="2.2"/>`).join("");
+  /* Beschriftung x-Achse: Anfang, Mitte, Ende */
+  const idx = [...new Set([0, Math.floor((pts.length - 1) / 2), pts.length - 1])];
+  const xl = idx.map((i, k) => `<text x="${f(P[i][0])}" y="${H - 7}" font-size="10" fill="var(--muted)" text-anchor="${pts.length === 1 ? "middle" : k === 0 ? "start" : k === idx.length - 1 ? "end" : "middle"}">${pts[i].lab}</text>`).join("");
+  const last = P[P.length - 1];
+  const tip = `<g transform="translate(${f(Math.min(Math.max(last[0], pl + 22), W - pr - 22))} ${f(Math.max(last[1] - 14, 10))})"><rect x="-22" y="-9" width="44" height="16" rx="8" fill="var(--accent)"/><text x="0" y="3" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">${kg1(pts[pts.length - 1].v)}</text></g>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart w-chart"><defs><linearGradient id="wG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.30"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>
+    ${g}${goal}<path d="${area}" fill="url(#wG)"/>${trend}<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/>${dotsS}${tip}${xl}</svg>`;
+}
+
+function weightStats() {
+  const days = sortedWeightDays(); if (!days.length) return "";
+  const today = todayKey(), wk = weekStart(today), prevWk = weekStart(dayShift(today, -7));
+  const inRange = (a, b) => days.filter(d => d >= a && d < b).map(d => weights[d]);
+  const cur = inRange(wk, dayShift(wk, 7)), prev = inRange(prevWk, wk);
+  const lastV = weights[days[days.length - 1]], firstV = weights[days[0]];
+  const diff = (a, b) => { const d = a - b; return `<span class="${d > 0.05 ? "up" : d < -0.05 ? "down" : ""}">${d > 0 ? "+" : d < 0 ? "−" : "±"}${kg1(Math.abs(d))} kg</span>`; };
+  const cells = [];
+  cells.push(`<div><small>Ø diese Woche</small><b>${cur.length ? kg1(avg(cur)) + " kg" : "–"}</b></div>`);
+  cells.push(`<div><small>vs. Vorwoche</small><b>${cur.length && prev.length ? diff(avg(cur), avg(prev)) : "–"}</b></div>`);
+  if (weightGoal) cells.push(`<div><small>bis zum Ziel</small><b>${Math.abs(lastV - weightGoal) < .05 ? "erreicht 🎉" : kg1(Math.abs(lastV - weightGoal)) + " kg"}</b></div>`);
+  else cells.push(`<div><small>seit Beginn</small><b>${days.length > 1 ? diff(lastV, firstV) : "–"}</b></div>`);
+  return `<div class="w-stats">${cells.join("")}</div>`;
+}
+
+function weightCardHTML(day) {
+  const v = weights[day], days = sortedWeightDays();
+  const prevDay = days.filter(d => d < day).pop();
+  const ph = prevDay ? kg1(weights[prevDay]) : "z. B. 77,0";
+  const change = v && prevDay ? (() => { const d = v - weights[prevDay]; return `<span class="w-chg ${d > 0.05 ? "up" : d < -0.05 ? "down" : ""}">${d > 0 ? "▲ +" : d < 0 ? "▼ −" : "± "}${kg1(Math.abs(d))} kg</span>`; })() : "";
+  const tabs = [["tage", "Tage"], ["wochen", "Wochen"], ["monate", "Monate"], ["gesamt", "Gesamt"]];
+  const series = weightSeries(weightView === "gesamt" ? (days.length > 120 ? "monate" : "wochen") : weightView);
+  const pts = weightView === "gesamt" ? (() => { const all = sortedWeightDays(); if (all.length <= 60) return all.map(d => ({ t: dateOf(d).getTime(), v: weights[d], lab: dateOf(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" }) })); return series; })() : series;
+  return `<div class="card w-card">
+    <div class="w-top">
+      <b>⚖️ Gewicht</b>
+      <div class="w-in"><input id="wIn" inputmode="decimal" type="text" placeholder="${ph}" value="${v ? kg1(v) : ""}"><span>kg</span></div>
+      <button class="btn sm" id="wSave">${v ? "Ändern" : "Eintragen"}</button>
+    </div>
+    <div class="w-done ${v ? "" : "muted"}">${v ? `${change || "✓ eingetragen"} · <button class="undo" id="wDel">löschen</button>` : "Morgens nach dem Aufstehen wiegen."}</div>
+    <div class="seg w-seg">${tabs.map(([k, n]) => `<button data-wv="${k}" class="${weightView === k ? "on" : ""}">${n}</button>`).join("")}</div>
+    ${weightChart(pts, weightView === "gesamt" && sortedWeightDays().length <= 60 ? "tage" : weightView)}
+
+    ${weightStats()}
+    <details class="w-goal"><summary>🎯 ${weightGoal ? `Ziel ${kg1(weightGoal)} kg` : "Zielgewicht festlegen"}</summary>
+      <div class="w-entry"><div class="w-in"><input id="wGoal" inputmode="decimal" type="text" placeholder="z. B. 75,0" value="${weightGoal ? kg1(weightGoal) : ""}"><span>kg</span></div><button class="btn ghost" id="wGoalSave">Speichern</button></div>
+    </details>
+  </div>`;
+}
+
+function bindWeight(day) {
+  const save = () => {
+    const raw = $("wIn").value.trim();
+    if (!raw) { toast("Bitte Gewicht eingeben"); return; }
+    const v = num(raw);
+    if (!(v > 25 && v < 300)) { toast("Das sieht nicht nach einem Gewicht aus"); return; }
+    weights[day] = Math.round(v * 10) / 10; saveJSON(WEIGHT_KEY, weights);
+    if (day === sortedWeightDays().pop()) { profile.weight = weights[day]; saveJSON(PROFILE_KEY, profile); }
+    renderToday(); toast(`${kg1(weights[day])} kg eingetragen ✓`);
+  };
+  $("wSave").onclick = save;
+  $("wIn").onkeydown = e => { if (e.key === "Enter") save(); };
+  if ($("wDel")) $("wDel").onclick = () => { delete weights[day]; saveJSON(WEIGHT_KEY, weights); renderToday(); toast("Eintrag gelöscht"); };
+  document.querySelectorAll("[data-wv]").forEach(b => b.onclick = () => { weightView = b.dataset.wv; saveJSON(WVIEW_KEY, weightView); renderToday(); });
+  $("wGoalSave").onclick = () => {
+    const raw = $("wGoal").value.trim();
+    weightGoal = raw ? Math.round(num(raw) * 10) / 10 : null;
+    saveJSON(WGOAL_KEY, weightGoal); renderToday(); toast(weightGoal ? `Ziel ${kg1(weightGoal)} kg gespeichert` : "Ziel entfernt");
+  };
+}
+
 function renderToday() {
   const view = $("view");
   const day = viewDay || todayKey();
@@ -2214,8 +2383,8 @@ function renderToday() {
         <div class="ring">
           <svg viewBox="0 0 132 132">
             <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--t1)"/><stop offset="1" style="stop-color:var(--t2)"/></linearGradient></defs>
-            <circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="12"/>
-            <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "url(#ringGrad)"}" stroke-width="12"
+            <circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="13"/>
+            <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "url(#ringGrad)"}" stroke-width="13"
               stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.min(1, share))}"/>
           </svg>
           <div class="ring-center"><b>${fmt(m.kcal)}</b><small>von ${fmt(targets.kcal)} kcal</small></div>
@@ -2237,6 +2406,8 @@ function renderToday() {
       <button class="btn" id="calcOpen" style="width:100%">Kalorienrechner öffnen</button>
     </div>`;
   }
+
+  html += weightCardHTML(day);
 
   for (const slot of SLOTS) {
     const se = entries.filter(e => e.slot === slot.id);
@@ -2260,6 +2431,7 @@ function renderToday() {
   $("dPrev").onclick = () => { viewDay = dayShift(day, -1); renderToday(); };
   $("dNext").onclick = () => { const n = dayShift(day, 1); viewDay = n >= todayKey() ? null : n; renderToday(); };
   $("calcOpen").onclick = openCalc;
+  bindWeight(day);
   view.querySelectorAll("[data-slot]").forEach(b => b.onclick = () => openAdd(b.dataset.slot));
   view.querySelectorAll("[data-del]").forEach(b => b.onclick = () => removeEntry(b.dataset.del));
 }
@@ -5624,7 +5796,7 @@ function updateSub() {
   let t = "";
   if (currentTab === "heute") t = new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
   else if (currentTab === "kuehlschrank") t = plural(products.filter(inStock).length, "Produkt vorrätig", "Produkte vorrätig");
-  else if (currentTab === "produkte") t = `${plural(products.length, "Produkt", "Produkte")} · ${plural(templates.length, "Mahlzeit", "Mahlzeiten")}`;
+  else if (currentTab === "produkte") t = `${plural(products.length, "Lebensmittel", "Lebensmittel")} · ${plural(templates.length, "Mahlzeit", "Mahlzeiten")}`;
   else if (currentTab === "training") {
     const wkN = workouts.filter(w => weekDays().includes(w.day)).length;
     t = activeWk ? "Training läuft – weiter geht's 💪" : `${plural(wkN, "Einheit", "Einheiten")} diese Woche`;
@@ -5638,7 +5810,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "31";
+const APP_VERSION = "35";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
