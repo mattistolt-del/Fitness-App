@@ -620,6 +620,28 @@
   @media (prefers-color-scheme: dark) {
     .kitchen.flat .fridge { background: #e6edf4; }
   }
+
+  /* ---------- Lebensmittel: Produkte | Mahlzeiten ---------- */
+  .lib-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--card); border-radius: 14px; padding: 4px; margin: 4px 0 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .lib-seg button { border: 0; background: none; border-radius: 10px; padding: 10px 6px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .lib-seg button span { display: inline-block; min-width: 20px; padding: 1px 6px; margin-left: 4px; border-radius: 9px; background: var(--bg); font-size: 12px; }
+  .lib-seg button.on { background: var(--accent); color: #fff; }
+  .lib-seg button.on span { background: rgba(255,255,255,.25); }
+  .lib-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 10px; }
+  .lib-head b { font-size: 17px; }
+  .btn.pill.sm { padding: 7px 12px; font-size: 14px; border-radius: 16px; }
+  .lib-cols[data-show="produkte"] .lib-col[data-col="mahlzeit"], .lib-cols[data-show="mahlzeit"] .lib-col[data-col="produkte"] { display: none; }
+  .lib-cols .lib-head { display: none; }
+  .fi-thumb { display: flex; align-items: center; justify-content: center; }
+  .fi-thumb svg { width: auto; height: auto; max-width: 82%; max-height: 82%; }
+  @media (min-width: 700px) {
+    main:has(.lib-cols) { max-width: 1100px; }
+    .lib-seg { display: none; }
+    .lib-cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .lib-cols .lib-col { display: block !important; }
+    .lib-cols .lib-head { display: flex; }
+    body[data-tab="produkte"] #addBtn { visibility: hidden !important; }
+  }
 </style>
 </head>
 <body>
@@ -634,9 +656,8 @@
 <nav>
   <button data-tab="heute"><span class="ic">🔥</span>Kalorien</button>
   <button data-tab="kuehlschrank"><span class="ic">🧊</span>Kühlschrank</button>
-  <button data-tab="mahlzeit"><span class="ic">🍽️</span>Mahlzeiten</button>
-  <button data-tab="produkte"><span class="ic">🥫</span>Produkte</button>
-  <button data-tab="vorschlaege"><span class="ic">💡</span>Ideen</button>
+  <button data-tab="vorschlaege"><span class="ic">🍳</span>Rezepte</button>
+  <button data-tab="produkte"><span class="ic">🥫</span>Lebensmittel</button>
   <button data-tab="training"><span class="ic">🏋️</span>Training</button>
 </nav>
 
@@ -1046,11 +1067,10 @@ function toast(msg) {
 
 /* ---------- Tabs ---------- */
 const TABS = {
-  produkte:     { title: "Produkte",    render: renderProducts, add: true },
+  produkte:     { title: "Lebensmittel", render: renderLib, add: true },
   kuehlschrank: { title: "Kühlschrank", render: renderFridge, add: true },
-  mahlzeit:     { title: "Mahlzeiten",  render: renderMeals, add: true },
   heute:        { title: "Kalorien",    render: renderToday },
-  vorschlaege:  { title: "Ideen",       render: renderIdeas },
+  vorschlaege:  { title: "Rezepte",     render: renderIdeas },
   training:     { title: "Training",    render: renderTraining, add: true }
 };
 let currentTab = "produkte";
@@ -1074,12 +1094,42 @@ function soon(icon, text) {
   $("view").innerHTML = `<div class="empty"><div class="big">${icon}</div>${text}<br>Kommt im nächsten Schritt.</div>`;
 }
 
-/* ---------- Produktliste ---------- */
-function renderProducts() {
+/* ---------- Lebensmittel: Produkte und Mahlzeiten als zwei Spalten ---------- */
+let libSeg = (() => { try { return localStorage.getItem("makro.libSeg") || "produkte"; } catch (e) { return "produkte"; } })();
+function renderLib() {
   const view = $("view");
+  view.innerHTML = `
+    <div class="seg lib-seg">
+      <button data-seg="produkte" class="${libSeg === "produkte" ? "on" : ""}">🥫 Produkte <span>${products.length}</span></button>
+      <button data-seg="mahlzeit" class="${libSeg === "mahlzeit" ? "on" : ""}">🍽️ Mahlzeiten <span>${templates.length}</span></button>
+    </div>
+    <div class="lib-cols" data-show="${libSeg}">
+      <section class="lib-col" data-col="produkte">
+        <div class="lib-head"><b>🥫 Produkte</b><button class="btn pill sm" id="libAddProd">+ Produkt</button></div>
+        <div id="colProd"></div>
+      </section>
+      <section class="lib-col" data-col="mahlzeit">
+        <div class="lib-head"><b>🍽️ Mahlzeiten</b><button class="btn pill sm" id="libAddMeal">+ Mahlzeit</button></div>
+        <div id="colMeal"></div>
+      </section>
+    </div>`;
+  renderProducts($("colProd"));
+  renderMeals($("colMeal"));
+  $("libAddProd").onclick = () => openSheet();
+  $("libAddMeal").onclick = () => openMealEditor();
+  view.querySelectorAll("[data-seg]").forEach(b => b.onclick = () => {
+    libSeg = b.dataset.seg; try { localStorage.setItem("makro.libSeg", libSeg); } catch (e) {}
+    view.querySelectorAll("[data-seg]").forEach(x => x.classList.toggle("on", x === b));
+    view.querySelector(".lib-cols").dataset.show = libSeg;
+    if (typeof updateSub === "function") updateSub();
+  });
+}
+
+/* ---------- Produktliste ---------- */
+function renderProducts(view = $("colProd") || $("view")) {
   if (!products.length) {
     view.innerHTML = `<div class="empty"><div class="big">🥫</div>
-      Noch keine Produkte.<br>Tippe oben auf <b>+</b> und scanne den Barcode deines ersten Produkts.</div>`;
+      Noch keine Produkte.<br>Tippe auf <b>+ Produkt</b> und scanne den Barcode deines ersten Produkts.</div>`;
     return;
   }
   const term = searchTerm.toLowerCase();
@@ -1095,7 +1145,7 @@ function renderProducts() {
     for (const p of items) {
       const img = p.image
         ? `<img class="thumb" src="${esc(p.image)}" alt="" loading="lazy">`
-        : `<div class="thumb">${cat.icon}</div>`;
+        : `<div class="thumb fi-thumb">${foodSVG(foodIconKey(p), 1, 1)}</div>`;
       html += `<div class="item" data-id="${p.id}">
         ${img}
         <div class="item-main">
@@ -1115,7 +1165,7 @@ function renderProducts() {
   view.innerHTML = html;
 
   const s = $("search");
-  s.oninput = () => { searchTerm = s.value; renderProducts(); const n = $("search"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  s.oninput = () => { searchTerm = s.value; renderProducts(view); const n = $("search"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
   view.querySelectorAll(".item").forEach(el => el.onclick = () => openSheet(el.dataset.id));
 }
 
@@ -1155,7 +1205,7 @@ function closeSheet() {
   if (resume) setTimeout(startShopScan, 250);
 }
 
-$("addBtn").onclick = () => currentTab === "kuehlschrank" ? openShop() : currentTab === "mahlzeit" ? openMealEditor() : currentTab === "training" ? openStart() : openSheet();
+$("addBtn").onclick = () => currentTab === "kuehlschrank" ? openShop() : (currentTab === "produkte" && libSeg === "mahlzeit") ? openMealEditor() : currentTab === "training" ? openStart() : openSheet();
 $("cancelBtn").onclick = closeSheet;
 $("productSheet").onclick = e => { if (e.target.id === "productSheet") closeSheet(); };
 
@@ -2005,11 +2055,10 @@ function renderPick() {
 $("pickSearch").oninput = renderPick;
 
 /* ---------- Tab „Mahlzeiten“: feste Mahlzeiten anlegen ---------- */
-function renderMeals() {
-  const view = $("view");
+function renderMeals(view = $("colMeal") || $("view")) {
   if (!templates.length) {
     view.innerHTML = `<div class="empty"><div class="big">🍽️</div>Noch keine Mahlzeiten gespeichert.<br>
-      Tippe oben auf <b>+</b> und stell eine Mahlzeit zusammen, die du öfter isst, z. B. deine Quark-Bowl.</div>`;
+      Tippe auf <b>+ Mahlzeit</b> und stell eine Mahlzeit zusammen, die du öfter isst, z. B. deine Quark-Bowl.</div>`;
     return;
   }
   view.innerHTML = [...templates].sort((a, b) => a.name.localeCompare(b.name, "de")).map(t => {
@@ -3639,8 +3688,428 @@ Object.assign(DISH, {
 });
 
 const artCache = new Map();
+/* ---------- Rezeptbilder v4: Draufsicht, klarer Stil passend zu den Kühlschrank-Icons ----------
+   Bildfläche 160×100 (16:10). Das Wichtige liegt in der Mitte (x 30–130), damit auch das quadratische
+   Vorschaubild passt. Keine Filter (Safari zeichnet die sonst unscharf). */
+const RA4 = (() => {
+  const r2 = n => +(+n).toFixed(2);
+  const P = (x, y) => `${r2(x)} ${r2(y)}`;
+  const hx = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const tone = (h, k) => "#" + hx(h).map(c => Math.max(0, Math.min(255, Math.round(k > 0 ? c + (255 - c) * k : c * (1 + k))))).map(v => v.toString(16).padStart(2, "0")).join("");
+  const rng = seed => { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; }; };
+
+  let R, uid, defs;
+  const id = p => p + (uid++);
+  const rad = (c, stops, cx = .38, cy = .32, r = .8) => { const i = id("r"); defs += `<radialGradient id="${i}" cx="${cx}" cy="${cy}" r="${r}">${stops.map(([o, col, a = 1]) => `<stop offset="${o}" stop-color="${col}" stop-opacity="${a}"/>`).join("")}</radialGradient>`; return `url(#${i})`; };
+  const lin = (stops, x2 = 1, y2 = 1) => { const i = id("l"); defs += `<linearGradient id="${i}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map(([o, col, a = 1]) => `<stop offset="${o}" stop-color="${col}" stop-opacity="${a}"/>`).join("")}</linearGradient>`; return `url(#${i})`; };
+  /* Muster: feine Sprenkel / Poren – werden einmal pro Bild definiert */
+  let pats = {};
+  const pat = (name, w, h, body) => { if (!pats[name]) { pats[name] = 1; defs += `<pattern id="${name}" patternUnits="userSpaceOnUse" width="${w}" height="${h}">${body}</pattern>`; } return `url(#${name})`; };
+  const dots = (n, w, h, col, rmin, rmax, op = 1) => Array.from({ length: n }, () => `<circle cx="${r2(rr(0, w))}" cy="${r2(rr(0, h))}" r="${r2(rr(rmin, rmax))}" fill="${col}" opacity="${op}"/>`).join("");
+  const speckDark = () => pat("spD", 9, 9, dots(16, 9, 9, "#2a1a0e", .1, .26, .55));
+  const speckLight = () => pat("spL", 7, 7, dots(10, 7, 7, "#ffffff", .1, .24, .7));
+  const pores = () => pat("por", 6, 6, Array.from({ length: 7 }, () => `<ellipse cx="${r2(rr(0, 6))}" cy="${r2(rr(0, 6))}" rx="${r2(rr(.25, .6))}" ry="${r2(rr(.15, .35))}" fill="#7a4a1e" opacity=".45" ${rot(rr(0, 6), rr(0, 6), rr(0, 180))}/>`).join(""));
+  const bubbles = () => pat("bub", 7, 7, Array.from({ length: 5 }, () => `<circle cx="${r2(rr(0, 7))}" cy="${r2(rr(0, 7))}" r="${r2(rr(.2, .5))}" fill="#8a5220" opacity=".5"/>`).join(""));
+  const weave = () => pat("wv", 2, 2, `<rect width="2" height="2" fill="none"/><path d="M0 .5H2M.5 0V2" stroke="#000" stroke-width=".18" opacity=".06"/>`);
+  const texOver = (d, kind = "food", op = 1) => {
+    const c = clip(d);
+    return `<g ${c} opacity="${op}"><rect x="0" y="0" width="160" height="100" fill="${speckDark()}" opacity=".5"/><rect x="0" y="0" width="160" height="100" fill="${speckLight()}" opacity=".6"/></g>`;
+  };
+  const clip = d => { const i = id("c"); defs += `<clipPath id="${i}"><path d="${d}"/></clipPath>`; return `clip-path="url(#${i})"`; };
+  const rot = (x, y, a) => `transform="rotate(${r2(a)} ${r2(x)} ${r2(y)})"`;
+  const rr = (a, b) => a + (b - a) * R();
+
+  /* ---------- Regionen ---------- */
+  const circle = (cx, cy, r) => ({ d: `M${P(cx - r, cy)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`, inside: (x, y) => (x - cx) ** 2 + (y - cy) ** 2 < r * r, cx, cy, r, bb: [cx - r, cy - r, cx + r, cy + r] });
+  const blob = (cx, cy, rx, ry = rx, wob = .12) => {
+    const n = 10, pts = [], k = [];
+    for (let i = 0; i < n; i++) k.push(1 + (R() - .5) * 2 * wob);
+    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; pts.push([cx + Math.cos(a) * rx * k[i], cy + Math.sin(a) * ry * k[i]]); }
+    let d = `M${P(...pts[0])}`;
+    for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; d += `C${P(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)} ${P(p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)} ${P(...p2)}`; }
+    return { d: d + "Z", inside: (x, y) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < .92, cx, cy, r: Math.max(rx, ry), bb: [cx - rx, cy - ry, cx + rx, cy + ry] };
+  };
+  const sector = (cx, cy, r, a0, a1, gap = 1.1) => {
+    const A0 = a0 * Math.PI / 180, A1 = a1 * Math.PI / 180, m = (A0 + A1) / 2;
+    const ox = Math.cos(m) * gap, oy = Math.sin(m) * gap, X = cx + ox, Y = cy + oy, rr0 = r - gap;
+    const d = `M${P(X, Y)}L${P(X + Math.cos(A0) * rr0, Y + Math.sin(A0) * rr0)}A${rr0} ${rr0} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${P(X + Math.cos(A1) * rr0, Y + Math.sin(A1) * rr0)}Z`;
+    const inside = (x, y) => { const dx = x - X, dy = y - Y, dd = Math.hypot(dx, dy); if (dd > rr0 - 1 || dd < 2) return false; let a = Math.atan2(dy, dx) * 180 / Math.PI; while (a < a0) a += 360; while (a > a0 + 360) a -= 360; return a > a0 + 4 && a < a1 - 4; };
+    return { d, inside, cx: X + Math.cos(m) * r * .55, cy: Y + Math.sin(m) * r * .55, r: r * .45, bb: [cx - r, cy - r, cx + r, cy + r] };
+  };
+  const rect = (x, y, w, h, rx = 3) => ({ d: `M${P(x + rx, y)}H${r2(x + w - rx)}Q${P(x + w, y)} ${P(x + w, y + rx)}V${r2(y + h - rx)}Q${P(x + w, y + h)} ${P(x + w - rx, y + h)}H${r2(x + rx)}Q${P(x, y + h)} ${P(x, y + h - rx)}V${r2(y + rx)}Q${P(x, y)} ${P(x + rx, y)}Z`, inside: (X, Y) => X > x + 1 && X < x + w - 1 && Y > y + 1 && Y < y + h - 1, cx: x + w / 2, cy: y + h / 2, r: Math.min(w, h) / 2, bb: [x, y, x + w, y + h] });
+
+  /* Punkte in einer Region verteilen (mit Mindestabstand) */
+  const spots = (reg, n, minD = 3) => {
+    const out = []; let tries = 0;
+    while (out.length < n && tries < n * 60) {
+      tries++;
+      const x = rr(reg.bb[0], reg.bb[2]), y = rr(reg.bb[1], reg.bb[3]);
+      if (!reg.inside(x, y)) continue;
+      if (out.some(([a, b]) => (a - x) ** 2 + (b - y) ** 2 < minD * minD)) continue;
+      out.push([x, y]);
+    }
+    return out.sort((a, b) => a[1] - b[1]);
+  };
+  /* kleiner Schatten unter einem Stück */
+  const sh = (x, y, rx, ry = rx * .7, a = .22) => `<ellipse cx="${r2(x + .5)}" cy="${r2(y + .8)}" rx="${r2(rx)}" ry="${r2(ry)}" fill="#3b2a1a" opacity="${a}"/>`;
+
+  /* ---------- Stücke (einzelne Zutaten, Draufsicht) ---------- */
+  const PC = {
+    grain: (x, y) => `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="1.15" ry=".5" fill="#fffdf7" stroke="#e2dccd" stroke-width=".22" ${rot(x, y, rr(0, 180))}/>`,
+    floret: (x, y, s = 1) => {
+      let g = sh(x, y, 4.2 * s, 3.4 * s);
+      g += `<path d="M${P(x, y + 1 * s)}L${P(x + rr(-1, 1) * s, y + 4.5 * s)}" stroke="#8fbf5a" stroke-width="${r2(1.8 * s)}" stroke-linecap="round"/>`;
+      [[-2.2, -.6, 2.4], [1.9, -.8, 2.5], [0, -2.6, 2.4], [-.4, 1, 2.2], [2.2, 1.4, 1.8], [-2.4, 1.6, 1.7]].forEach(([dx, dy, r], i) => {
+        const X = x + dx * s, Y = y + dy * s;
+        g += `<circle cx="${r2(X)}" cy="${r2(Y)}" r="${r2(r * s)}" fill="${i % 2 ? "#2f7d32" : "#3b8f3b"}"/><circle cx="${r2(X - .6 * s)}" cy="${r2(Y - .6 * s)}" r="${r2(r * .5 * s)}" fill="#5fae4e"/>`;
+        for (let k = 0; k < 3; k++) g += `<circle cx="${r2(X + rr(-r, r) * .6 * s)}" cy="${r2(Y + rr(-r, r) * .6 * s)}" r="${r2(.35 * s)}" fill="#7cc461"/>`;
+      });
+      return g;
+    },
+    strip: (x, y, s = 1, col = "#d9302a") => { const a = rr(0, 180), L = rr(7, 10) * s; return sh(x, y, L / 2, 1.6 * s, .16) + `<g ${rot(x, y, a)}><rect x="${r2(x - L / 2)}" y="${r2(y - 1.3 * s)}" width="${r2(L)}" height="${r2(2.6 * s)}" rx="${r2(1.3 * s)}" fill="${col}"/><rect x="${r2(x - L / 2 + 1.2)}" y="${r2(y - .9 * s)}" width="${r2(L - 2.4)}" height="${r2(.7 * s)}" rx=".35" fill="#fff" opacity=".45"/></g>`; },
+    cherry: (x, y, s = 1) => sh(x, y, 3.2 * s) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(3.1 * s)}" fill="#e3342a"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(2.3 * s)}" fill="#f2604f"/>` +
+      [0, 1, 2].map(i => { const a = i * 2.1 + .4; return `<ellipse cx="${r2(x + Math.cos(a) * 1.2 * s)}" cy="${r2(y + Math.sin(a) * 1.2 * s)}" rx="${r2(.75 * s)}" ry="${r2(.45 * s)}" fill="#f7c36b" ${rot(x + Math.cos(a) * 1.2 * s, y + Math.sin(a) * 1.2 * s, a * 57)}/>`; }).join("") + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(.6 * s)}" fill="#f9b8a6"/>`,
+    tomatoSlice: (x, y, s = 1) => sh(x, y, 5 * s) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(5 * s)}" fill="#d92b22"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(4.2 * s)}" fill="#f0503f"/>` +
+      [0, 1, 2, 3, 4].map(i => { const a = i * 1.2566; return `<path d="M${P(x, y)}L${P(x + Math.cos(a - .45) * 3.6 * s, y + Math.sin(a - .45) * 3.6 * s)}A${r2(3.6 * s)} ${r2(3.6 * s)} 0 0 1 ${P(x + Math.cos(a + .45) * 3.6 * s, y + Math.sin(a + .45) * 3.6 * s)}Z" fill="#f98a73"/><ellipse cx="${r2(x + Math.cos(a) * 2.3 * s)}" cy="${r2(y + Math.sin(a) * 2.3 * s)}" rx="${r2(.6 * s)}" ry="${r2(.35 * s)}" fill="#fbd27a"/>`; }).join("") + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(1 * s)}" fill="#f7a891"/>`,
+    cucumber: (x, y, s = 1) => sh(x, y, 4.2 * s) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(4.2 * s)}" fill="#2f7d32"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(3.6 * s)}" fill="#cde9a6"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(2 * s)}" fill="#e6f5cf"/>` +
+      [0, 1, 2, 3, 4, 5].map(i => { const a = i * 1.047; return `<ellipse cx="${r2(x + Math.cos(a) * 1.3 * s)}" cy="${r2(y + Math.sin(a) * 1.3 * s)}" rx="${r2(.5 * s)}" ry="${r2(.28 * s)}" fill="#f6fbe9" ${rot(x + Math.cos(a) * 1.3 * s, y + Math.sin(a) * 1.3 * s, a * 57)}/>`; }).join(""),
+    zucchini: (x, y, s = 1) => sh(x, y, 4 * s) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(4 * s)}" fill="#2b5e22"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(3.4 * s)}" fill="#d9e9a0"/><circle cx="${r2(x - .8 * s)}" cy="${r2(y - .8 * s)}" r="${r2(1.8 * s)}" fill="#c7a25a" opacity=".55"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(1.3 * s)}" fill="#eef5c9"/>`,
+    corn: (x, y, s = 1) => `<rect x="${r2(x - 1.1 * s)}" y="${r2(y - .9 * s)}" width="${r2(2.2 * s)}" height="${r2(1.9 * s)}" rx="${r2(.7 * s)}" fill="#f6c42c" stroke="#e0a91a" stroke-width=".25" ${rot(x, y, rr(-30, 30))}/><circle cx="${r2(x - .4 * s)}" cy="${r2(y - .3 * s)}" r="${r2(.35 * s)}" fill="#fde68a"/>`,
+    bean: (x, y, s = 1) => { const a = rr(0, 180); return `<g ${rot(x, y, a)}><path d="M${P(x - 2.2 * s, y)}C${P(x - 2.2 * s, y - 1.8 * s)} ${P(x + 2.2 * s, y - 1.8 * s)} ${P(x + 2.2 * s, y)}C${P(x + 2.2 * s, y + 1.6 * s)} ${P(x + .4 * s, y + .6 * s)} ${P(x, y + .9 * s)}C${P(x - .4 * s, y + .6 * s)} ${P(x - 2.2 * s, y + 1.6 * s)} ${P(x - 2.2 * s, y)}Z" fill="#7a1f24"/><ellipse cx="${r2(x - .5 * s)}" cy="${r2(y - .7 * s)}" rx="${r2(.9 * s)}" ry="${r2(.35 * s)}" fill="#c25a5f"/></g>`; },
+    pea: (x, y, s = 1) => `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(1.5 * s)}" fill="#5aa832"/><circle cx="${r2(x - .5 * s)}" cy="${r2(y - .5 * s)}" r="${r2(.5 * s)}" fill="#a6dc76"/>`,
+    edamame: (x, y, s = 1) => { const a = rr(0, 180); return sh(x, y, 4 * s, 1.8 * s, .15) + `<g ${rot(x, y, a)}><path d="M${P(x - 4.4 * s, y)}Q${P(x - 3 * s, y - 2.4 * s)} ${P(x - 1.4 * s, y - 1.4 * s)}Q${P(x, y - 2.6 * s)} ${P(x + 1.4 * s, y - 1.4 * s)}Q${P(x + 3 * s, y - 2.4 * s)} ${P(x + 4.4 * s, y)}Q${P(x, y + 1.8 * s)} ${P(x - 4.4 * s, y)}Z" fill="#6cae3a"/>` + [-2.6, 0, 2.6].map(d => `<ellipse cx="${r2(x + d * s)}" cy="${r2(y - .5 * s)}" rx="${r2(1.1 * s)}" ry="${r2(.8 * s)}" fill="#8fcd55"/>`).join("") + `</g>`; },
+    chickpea: (x, y, s = 1) => `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(1.9 * s)}" fill="#e2b25e"/><path d="M${P(x - .6 * s, y - 1.6 * s)}Q${P(x + .5 * s, y)} ${P(x - .2 * s, y + 1.6 * s)}" stroke="#c48d3a" stroke-width="${r2(.35 * s)}" fill="none"/><circle cx="${r2(x - .7 * s)}" cy="${r2(y - .7 * s)}" r="${r2(.55 * s)}" fill="#f3d39a"/>`,
+    blueberry: (x, y, s = 1) => sh(x, y, 2 * s, 1.5 * s, .2) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(2 * s)}" fill="#33306b"/><circle cx="${r2(x - .6 * s)}" cy="${r2(y - .7 * s)}" r="${r2(.7 * s)}" fill="#6a68b8"/><path d="M${P(x - .5 * s, y + .4 * s)}l${r2(.5 * s)} ${r2(-.4 * s)} ${r2(.5 * s)} ${r2(.4 * s)}" stroke="#1d1b45" stroke-width="${r2(.3 * s)}" fill="none"/>`,
+    raspberry: (x, y, s = 1) => sh(x, y, 2.3 * s, 1.7 * s, .2) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(2.3 * s)}" fill="#c81d43"/>` + [[-1, -1], [0, -1.3], [1, -1], [-1.3, 0], [0, 0], [1.3, 0], [-1, 1], [0, 1.3], [1, 1]].map(([a, b]) => `<circle cx="${r2(x + a * s)}" cy="${r2(y + b * s)}" r="${r2(.62 * s)}" fill="#e43c5f"/>`).join("") + `<circle cx="${r2(x - .8 * s)}" cy="${r2(y - .9 * s)}" r="${r2(.35 * s)}" fill="#fff" opacity=".6"/>`,
+    strawberry: (x, y, s = 1) => { const a = rr(-40, 40); return sh(x, y, 3.4 * s) + `<g ${rot(x, y, a)}><path d="M${P(x, y + 4 * s)}C${P(x - 4.4 * s, y + 1 * s)} ${P(x - 3.6 * s, y - 3.6 * s)} ${P(x, y - 3 * s)}C${P(x + 3.6 * s, y - 3.6 * s)} ${P(x + 4.4 * s, y + 1 * s)} ${P(x, y + 4 * s)}Z" fill="#e0262f"/><path d="M${P(x, y + 2.8 * s)}C${P(x - 2.8 * s, y + .6 * s)} ${P(x - 2.4 * s, y - 2.2 * s)} ${P(x, y - 1.8 * s)}C${P(x + 2.4 * s, y - 2.2 * s)} ${P(x + 2.8 * s, y + .6 * s)} ${P(x, y + 2.8 * s)}Z" fill="#f78a8e"/><path d="M${P(x - 2.2 * s, y - 3.4 * s)}L${P(x, y - 2.4 * s)}L${P(x + 2.2 * s, y - 3.4 * s)}" stroke="#3f8f3a" stroke-width="${r2(1 * s)}" fill="none" stroke-linecap="round"/></g>`; },
+    banana: (x, y, s = 1) => sh(x, y, 3.2 * s) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(3.2 * s)}" fill="#f6e3a1"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(2.8 * s)}" fill="#fbefc4"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(1.2 * s)}" fill="none" stroke="#e7cf88" stroke-width="${r2(.4 * s)}"/>` + [0, 1, 2].map(i => `<circle cx="${r2(x + Math.cos(i * 2.1) * .55 * s)}" cy="${r2(y + Math.sin(i * 2.1) * .55 * s)}" r="${r2(.22 * s)}" fill="#8a6d3b"/>`).join(""),
+    appleCube: (x, y, s = 1) => { const a = rr(-25, 25); return sh(x, y, 2.4 * s) + `<g ${rot(x, y, a)}><rect x="${r2(x - 2.2 * s)}" y="${r2(y - 2.2 * s)}" width="${r2(4.4 * s)}" height="${r2(4.4 * s)}" rx="${r2(.8 * s)}" fill="#f8efc8"/><rect x="${r2(x - 2.2 * s)}" y="${r2(y - 2.2 * s)}" width="${r2(4.4 * s)}" height="${r2(1.1 * s)}" rx="${r2(.5 * s)}" fill="#d83a2e"/></g>`; },
+    appleSlice: (x, y, s = 1) => { const a = rr(0, 360); return sh(x, y, 4 * s, 2 * s, .15) + `<g ${rot(x, y, a)}><path d="M${P(x - 4.5 * s, y)}A${r2(4.5 * s)} ${r2(4.5 * s)} 0 0 0 ${P(x + 4.5 * s, y)}Z" fill="#f8efc8"/><path d="M${P(x - 4.5 * s, y)}A${r2(4.5 * s)} ${r2(4.5 * s)} 0 0 0 ${P(x + 4.5 * s, y)}" stroke="#d83a2e" stroke-width="${r2(.9 * s)}" fill="none"/><ellipse cx="${r2(x)}" cy="${r2(y + 1 * s)}" rx="${r2(.5 * s)}" ry="${r2(.3 * s)}" fill="#6b4426"/></g>`; },
+    oat: (x, y, s = 1) => `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="${r2(1.5 * s)}" ry="${r2(1 * s)}" fill="#e9d3a4" stroke="#d1b47c" stroke-width=".2" ${rot(x, y, rr(0, 180))}/>`,
+    choc: (x, y, s = 1) => `<path d="M${P(x - 1.2 * s, y - .9 * s)}L${P(x + 1.3 * s, y - 1.1 * s)}L${P(x + 1 * s, y + 1.1 * s)}L${P(x - 1.2 * s, y + .9 * s)}Z" fill="#3e2416" ${rot(x, y, rr(0, 90))}/><path d="M${P(x - .8 * s, y - .6 * s)}L${P(x + .6 * s, y - .7 * s)}" stroke="#7a5038" stroke-width=".3"/>`,
+    crouton: (x, y, s = 1) => sh(x, y, 2 * s) + `<rect x="${r2(x - 1.8 * s)}" y="${r2(y - 1.8 * s)}" width="${r2(3.6 * s)}" height="${r2(3.6 * s)}" rx="${r2(.7 * s)}" fill="#d9a04f" ${rot(x, y, rr(0, 90))}/><circle cx="${r2(x - .5 * s)}" cy="${r2(y - .5 * s)}" r="${r2(.8 * s)}" fill="#f0c77e"/>`,
+    parmesan: (x, y, s = 1) => `<path d="M${P(x - 2.4 * s, y)}L${P(x + 2 * s, y - 1 * s)}L${P(x + 2.4 * s, y + .4 * s)}L${P(x - 1.6 * s, y + 1 * s)}Z" fill="#fbefc0" stroke="#e8d38f" stroke-width=".2" ${rot(x, y, rr(0, 180))}/>`,
+    herb: (x, y, s = 1) => `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="${r2(1 * s)}" ry="${r2(.55 * s)}" fill="${R() > .5 ? "#3f8f3a" : "#5aa846"}" ${rot(x, y, rr(0, 180))}/>`,
+    sesame: (x, y, s = 1) => `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="${r2(.55 * s)}" ry="${r2(.3 * s)}" fill="${R() > .7 ? "#2b2b2b" : "#fbf3dc"}" ${rot(x, y, rr(0, 180))}/>`,
+    mushroom: (x, y, s = 1) => { const a = rr(0, 360); return sh(x, y, 3 * s) + `<g ${rot(x, y, a)}><path d="M${P(x - 3.2 * s, y)}C${P(x - 3.2 * s, y - 3.4 * s)} ${P(x + 3.2 * s, y - 3.4 * s)} ${P(x + 3.2 * s, y)}Q${P(x + 1 * s, y + .3 * s)} ${P(x + .9 * s, y + 2.6 * s)}H${r2(x - .9 * s)}Q${P(x - 1 * s, y + .3 * s)} ${P(x - 3.2 * s, y)}Z" fill="#efe1cd"/><path d="M${P(x - 3.2 * s, y)}C${P(x - 3.2 * s, y - 3.4 * s)} ${P(x + 3.2 * s, y - 3.4 * s)} ${P(x + 3.2 * s, y)}" stroke="#a9825c" stroke-width="${r2(.7 * s)}" fill="none"/></g>`; },
+    onion: (x, y, s = 1) => `<path d="M${P(x - 2.6 * s, y + 1 * s)}A${r2(2.8 * s)} ${r2(2.8 * s)} 0 0 1 ${P(x + 2.6 * s, y + 1 * s)}" stroke="#a85d9a" stroke-width="${r2(.8 * s)}" fill="none" ${rot(x, y, rr(0, 360))}/>`,
+    spinach: (x, y, s = 1) => { const a = rr(0, 360); return sh(x, y, 3.6 * s, 2 * s, .14) + `<g ${rot(x, y, a)}><path d="M${P(x - 4 * s, y)}Q${P(x - 1 * s, y - 3.2 * s)} ${P(x + 4 * s, y)}Q${P(x - 1 * s, y + 3.2 * s)} ${P(x - 4 * s, y)}Z" fill="#2f6e2a"/><path d="M${P(x - 4 * s, y)}L${P(x + 3.4 * s, y)}" stroke="#5f9c3d" stroke-width="${r2(.35 * s)}"/></g>`; },
+    lettuce: (x, y, s = 1) => { const a = rr(0, 360); let d = ""; for (let i = 0; i <= 12; i++) { const t = i / 12 * Math.PI * 2, r = (5 + Math.sin(t * 5) * .9) * s; d += `${i ? "L" : "M"}${P(x + Math.cos(t) * r * 1.2, y + Math.sin(t) * r * .8)}`; } return sh(x, y, 5.5 * s, 3.5 * s, .12) + `<g ${rot(x, y, a)}><path d="${d}Z" fill="${R() > .5 ? "#8fcd55" : "#7cbf47"}"/><path d="M${P(x - 4.5 * s, y)}L${P(x + 4.5 * s, y)}M${P(x - 1 * s, y)}L${P(x + 1 * s, y - 2.5 * s)}M${P(x + 1.5 * s, y)}L${P(x + 3 * s, y + 2.2 * s)}" stroke="#c8e6a0" stroke-width="${r2(.45 * s)}"/></g>`; },
+    potato: (x, y, s = 1) => sh(x, y, 4.8 * s, 3.6 * s) + `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="${r2(4.8 * s)}" ry="${r2(3.8 * s)}" fill="#e7c06a" ${rot(x, y, rr(-30, 30))}/><ellipse cx="${r2(x - .8 * s)}" cy="${r2(y - .8 * s)}" rx="${r2(3.3 * s)}" ry="${r2(2.4 * s)}" fill="#f6dc94"/><path d="M${P(x + 1.6 * s, y - 2.6 * s)}A${r2(4 * s)} ${r2(3 * s)} 0 0 1 ${P(x + 4 * s, y + 1 * s)}" stroke="#a87a3a" stroke-width="${r2(.6 * s)}" fill="none"/>` + [0, 1].map(() => PC.herb(x + rr(-2, 2) * s, y + rr(-2, 1) * s, .8 * s)).join(""),
+    sweetWedge: (x, y, s = 1) => { const a = rr(0, 360); return sh(x, y, 5 * s, 2.4 * s, .18) + `<g ${rot(x, y, a)}><path d="M${P(x - 5.4 * s, y + 1.4 * s)}Q${P(x, y - 4.2 * s)} ${P(x + 5.4 * s, y + 1.4 * s)}Z" fill="#e8742e"/><path d="M${P(x - 5.4 * s, y + 1.4 * s)}Q${P(x, y - 4.2 * s)} ${P(x + 5.4 * s, y + 1.4 * s)}" stroke="#a84a1c" stroke-width="${r2(1 * s)}" fill="none"/><path d="M${P(x - 3 * s, y + .4 * s)}Q${P(x, y - 1.8 * s)} ${P(x + 3 * s, y + .4 * s)}" stroke="#f6a463" stroke-width="${r2(.8 * s)}" fill="none"/><circle cx="${r2(x + 1 * s)}" cy="${r2(y - .4 * s)}" r="${r2(.35 * s)}" fill="#6b2a10"/></g>`; },
+    greenBean: (x, y, s = 1) => { const a = rr(-25, 25); return sh(x, y, 5 * s, 1 * s, .15) + `<g ${rot(x, y, a)}><path d="M${P(x - 6 * s, y)}Q${P(x, y - 1.4 * s)} ${P(x + 6 * s, y)}" stroke="#3d8a33" stroke-width="${r2(1.6 * s)}" stroke-linecap="round" fill="none"/><path d="M${P(x - 5 * s, y - .5 * s)}Q${P(x, y - 1.6 * s)} ${P(x + 5 * s, y - .5 * s)}" stroke="#76bd55" stroke-width="${r2(.45 * s)}" fill="none"/></g>`; },
+    chickenSlice: (x, y, s = 1, a) => { a = a ?? rr(0, 180); return sh(x, y, 5 * s, 2.4 * s, .2) + `<g ${rot(x, y, a)}><rect x="${r2(x - 5.5 * s)}" y="${r2(y - 2 * s)}" width="${r2(11 * s)}" height="${r2(4 * s)}" rx="${r2(1.8 * s)}" fill="#d99a4e"/><rect x="${r2(x - 5 * s)}" y="${r2(y - 1.3 * s)}" width="${r2(10 * s)}" height="${r2(2.2 * s)}" rx="${r2(1 * s)}" fill="#f1d3a8"/>` + [-3, 0, 3].map(d => `<path d="M${P(x + d * s - 1, y - 2 * s)}L${P(x + d * s + 1, y + 2 * s)}" stroke="#8a5320" stroke-width="${r2(.55 * s)}" opacity=".6"/>`).join("") + `</g>`; },
+    chickenCube: (x, y, s = 1) => sh(x, y, 2.6 * s) + `<rect x="${r2(x - 2.5 * s)}" y="${r2(y - 2.3 * s)}" width="${r2(5 * s)}" height="${r2(4.6 * s)}" rx="${r2(1.2 * s)}" fill="#d99a4e" ${rot(x, y, rr(0, 90))}/><rect x="${r2(x - 1.6 * s)}" y="${r2(y - 1.5 * s)}" width="${r2(3 * s)}" height="${r2(2.6 * s)}" rx="${r2(.8 * s)}" fill="#efc489" ${rot(x, y, rr(0, 90))}/>`,
+    mince: (x, y, s = 1) => `<path d="M${P(x - 1.3 * s, y)}L${P(x - .3 * s, y - 1.2 * s)}L${P(x + 1.2 * s, y - .6 * s)}L${P(x + .9 * s, y + .9 * s)}L${P(x - .6 * s, y + 1.1 * s)}Z" fill="${R() > .5 ? "#6e3a24" : "#874a2e"}"/>`,
+    shrimp: (x, y, s = 1) => { const a = rr(0, 360); return sh(x, y, 4 * s, 3 * s, .2) + `<g ${rot(x, y, a)}><path d="M${P(x + 3.6 * s, y - 1 * s)}A${r2(3.8 * s)} ${r2(3.8 * s)} 0 1 0 ${P(x + 2.2 * s, y + 3 * s)}" stroke="#f0855c" stroke-width="${r2(3 * s)}" fill="none" stroke-linecap="round"/><path d="M${P(x + 3.6 * s, y - 1 * s)}A${r2(3.8 * s)} ${r2(3.8 * s)} 0 1 0 ${P(x + 2.2 * s, y + 3 * s)}" stroke="#fbc0a3" stroke-width="${r2(.8 * s)}" fill="none" stroke-dasharray="${r2(1.2 * s)} ${r2(1 * s)}"/><path d="M${P(x + 2.2 * s, y + 3 * s)}l${r2(2 * s)} ${r2(.8 * s)} ${r2(-.6 * s)} ${r2(1.4 * s)}Z" fill="#e2552f"/></g>`; },
+    tofu: (x, y, s = 1) => sh(x, y, 3 * s) + `<rect x="${r2(x - 2.8 * s)}" y="${r2(y - 2.8 * s)}" width="${r2(5.6 * s)}" height="${r2(5.6 * s)}" rx="${r2(1 * s)}" fill="#e3b462" ${rot(x, y, rr(-20, 20))}/><rect x="${r2(x - 1.9 * s)}" y="${r2(y - 2 * s)}" width="${r2(3.8 * s)}" height="${r2(3.6 * s)}" rx="${r2(.7 * s)}" fill="#f6e5c0" ${rot(x, y, rr(-20, 20))}/>`,
+    salmonCube: (x, y, s = 1) => sh(x, y, 2.8 * s) + `<g ${rot(x, y, rr(-30, 30))}><rect x="${r2(x - 2.7 * s)}" y="${r2(y - 2.5 * s)}" width="${r2(5.4 * s)}" height="${r2(5 * s)}" rx="${r2(.8 * s)}" fill="#f47c45"/><path d="M${P(x - 2.7 * s, y - 1 * s)}Q${P(x, y - .2 * s)} ${P(x + 2.7 * s, y - 1.4 * s)}M${P(x - 2.7 * s, y + 1.2 * s)}Q${P(x, y + 2 * s)} ${P(x + 2.7 * s, y + .8 * s)}" stroke="#fcd6bf" stroke-width="${r2(.5 * s)}" fill="none"/></g>`,
+    egg: (x, y, s = 1) => { let d = ""; for (let i = 0; i <= 12; i++) { const t = i / 12 * Math.PI * 2, r = (6 + Math.sin(t * 3 + 1) * .9 + Math.cos(t * 5) * .5) * s; d += `${i ? "L" : "M"}${P(x + Math.cos(t) * r, y + Math.sin(t) * r * .9)}`; } return sh(x, y, 6 * s, 5 * s, .14) + `<path d="${d}Z" fill="#fffdf8" stroke="#efe6d4" stroke-width=".4" stroke-linejoin="round"/><circle cx="${r2(x + .6 * s)}" cy="${r2(y - .3 * s)}" r="${r2(2.6 * s)}" fill="#f4a51c"/><circle cx="${r2(x + .6 * s)}" cy="${r2(y - .3 * s)}" r="${r2(2.1 * s)}" fill="#fbbf24"/><circle cx="${r2(x - .2 * s)}" cy="${r2(y - 1.1 * s)}" r="${r2(.7 * s)}" fill="#fff" opacity=".7"/>`; },
+    eggHalf: (x, y, s = 1) => sh(x, y, 3.4 * s, 4 * s) + `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="${r2(3.4 * s)}" ry="${r2(4.4 * s)}" fill="#fffdf8" stroke="#e8decb" stroke-width=".3" ${rot(x, y, rr(-30, 30))}/><circle cx="${r2(x)}" cy="${r2(y + .3 * s)}" r="${r2(1.9 * s)}" fill="#f8b62a"/><circle cx="${r2(x - .5 * s)}" cy="${r2(y - .2 * s)}" r="${r2(.6 * s)}" fill="#fde68a"/>`,
+    scramble: (x, y, s = 1) => sh(x, y, 3 * s) + `<path d="M${P(x - 3 * s, y)}Q${P(x - 3 * s, y - 2.8 * s)} ${P(x, y - 2.6 * s)}Q${P(x + 3.2 * s, y - 2.8 * s)} ${P(x + 3 * s, y)}Q${P(x + 3 * s, y + 2.6 * s)} ${P(x, y + 2.4 * s)}Q${P(x - 3 * s, y + 2.6 * s)} ${P(x - 3 * s, y)}Z" fill="#f8d55a" ${rot(x, y, rr(0, 180))}/><circle cx="${r2(x - .8 * s)}" cy="${r2(y - .8 * s)}" r="${r2(1.2 * s)}" fill="#fde98f"/>`,
+    cottage: (x, y, s = 1) => `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(1.4 * s)}" fill="#fffef9" stroke="#e7e0d0" stroke-width=".25"/>`,
+    lentil: (x, y, s = 1) => `<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="${r2(.9 * s)}" ry="${r2(.7 * s)}" fill="#e98a3a"/>`,
+    pasta: (x, y, s = 1) => { const a = rr(0, 180); return `<g ${rot(x, y, a)}><path d="M${P(x - 3.4 * s, y - 1.2 * s)}L${P(x + 2.4 * s, y - 1.6 * s)}L${P(x + 3.4 * s, y + 1.2 * s)}L${P(x - 2.4 * s, y + 1.6 * s)}Z" fill="#f2c45e" stroke="#d9a238" stroke-width=".3"/>` + [-1.8, 0, 1.8].map(d => `<path d="M${P(x + d * s - .4, y - 1.4 * s)}L${P(x + d * s + .4, y + 1.4 * s)}" stroke="#dba640" stroke-width=".3"/>`).join("") + `</g>`; },
+    cubeRed: (x, y, s = 1) => `<rect x="${r2(x - 1.3 * s)}" y="${r2(y - 1.3 * s)}" width="${r2(2.6 * s)}" height="${r2(2.6 * s)}" rx=".5" fill="#d9302a" ${rot(x, y, rr(0, 90))}/>`
+  };
+
+  /* ---------- Flächen (Reis, Soße, Joghurt …) ---------- */
+  const fill = (reg, base, hi, items = [], o = {}) => {
+    const c = clip(reg.d);
+    let g = `<path d="${reg.d}" fill="${rad(0, [[0, hi], [.7, base], [1, tone(base, -.18)]], .35, .3, .85)}"/>`;
+    g += `<g ${c}>`;
+    for (const [fn, n, s = 1, md = 3] of items) for (const [x, y] of spots(reg, n, md)) g += PC[fn](x, y, s);
+    if (o.extra) g += o.extra;
+    g += `<rect x="0" y="0" width="160" height="100" fill="${speckDark()}" opacity=".45"/><rect x="0" y="0" width="160" height="100" fill="${speckLight()}" opacity=".5"/>`;
+    /* Innenschatten am Rand + Glanz oben links: wirkt wie ein Häufchen */
+    g += `<path d="${reg.d}" fill="none" stroke="${tone(base, -.35)}" stroke-width="3.2" opacity=".22"/><path d="${reg.d}" fill="none" stroke="${tone(base, -.25)}" stroke-width="1.2" opacity=".35"/>`;
+    g += `<ellipse cx="${r2(reg.cx - reg.r * .35)}" cy="${r2(reg.cy - reg.r * .38)}" rx="${r2(reg.r * .45)}" ry="${r2(reg.r * .22)}" fill="#fff" opacity="${o.gloss ?? .12}" ${rot(reg.cx - reg.r * .35, reg.cy - reg.r * .38, -25)}/></g>`;
+    return g;
+  };
+  const T = {
+    rice: reg => fill(reg, "#f4efe2", "#fffdf6", [["grain", Math.round(reg.r * reg.r * .55), 1, 1.35]]),
+    quinoa: reg => fill(reg, "#efe2c4", "#fbf3df", [["grain", Math.round(reg.r * reg.r * .5), .8, 1.2]]),
+    tomatoSauce: reg => fill(reg, "#c63a22", "#e3573a", [["herb", Math.round(reg.r * .5), .8, 4]], { gloss: .25, extra: spots(reg, Math.round(reg.r * .7), 3).map(([x, y]) => `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(rr(.5, 1.2))}" fill="#9d2a17" opacity=".5"/>`).join("") }),
+    bolognese: reg => fill(reg, "#a83a24", "#c8513a", [["mince", Math.round(reg.r * reg.r * .35), 1.1, 1.8], ["herb", Math.round(reg.r * .3), .8, 5]], { gloss: .22 }),
+    chili: reg => fill(reg, "#9e3422", "#bd4a32", [["mince", Math.round(reg.r * reg.r * .2), 1.1, 2], ["bean", Math.round(reg.r * .9), 1, 3.6], ["corn", Math.round(reg.r * .7), 1, 3]]),
+    curry: reg => fill(reg, "#d98a2b", "#f0aa48", [["chickenCube", Math.round(reg.r * .45), 1, 6], ["spinach", Math.round(reg.r * .3), .7, 6], ["lentil", Math.round(reg.r * reg.r * .1), 1, 1.8]]),
+    dal: reg => fill(reg, "#e38a2e", "#f3a74b", [["lentil", Math.round(reg.r * reg.r * .3), 1, 1.4], ["spinach", Math.round(reg.r * .3), .7, 6]]),
+    yogurt: (reg, col = "#fbfaf6") => fill(reg, col, "#ffffff", [], { extra: [0, 1, 2].map(i => `<path d="M${P(reg.cx - reg.r * .7, reg.cy - reg.r * .3 + i * reg.r * .3)}q${r2(reg.r * .35)} ${r2(-reg.r * .25)} ${r2(reg.r * .7)} 0t${r2(reg.r * .7)} 0" stroke="${tone(col, -.08)}" stroke-width="1" fill="none" opacity=".8"/>`).join("") }),
+    oats: reg => fill(reg, "#e7d3ac", "#f4e6c8", [["oat", Math.round(reg.r * reg.r * .35), 1, 1.8]]),
+    porridge: reg => fill(reg, "#ead8b4", "#f7ead0", [["oat", Math.round(reg.r * reg.r * .22), 1, 2.2]]),
+    spinachBed: reg => fill(reg, "#2f6e2a", "#3f8f3a", [["spinach", Math.round(reg.r * reg.r * .12), 1, 3.5]]),
+    lettuceBed: reg => fill(reg, "#7cbf47", "#9fd668", [["lettuce", Math.round(reg.r * reg.r * .06), 1, 5]]),
+    corn: reg => fill(reg, "#e9b21f", "#f8d24a", [["corn", Math.round(reg.r * reg.r * .6), 1, 1.6]]),
+    beans: reg => fill(reg, "#6a1a1e", "#8a2a2e", [["bean", Math.round(reg.r * reg.r * .3), 1, 2.6]]),
+    peas: reg => fill(reg, "#4f9a2c", "#6ab43c", [["pea", Math.round(reg.r * reg.r * .45), 1, 2.4]]),
+    edamame: reg => fill(reg, "#5d9e33", "#78b848", [["pea", Math.round(reg.r * reg.r * .4), 1.2, 2.6]]),
+    chickpeas: reg => fill(reg, "#d6a24f", "#e8bc6e", [["chickpea", Math.round(reg.r * reg.r * .12), 1.7, 5]]),
+    broccoli: reg => fill(reg, "#2c6b2a", "#3b8f3b", [["floret", Math.round(reg.r * reg.r * .055), 1, 6.5]]),
+    pepper: reg => fill(reg, "#b8261d", "#d9302a", [["strip", Math.round(reg.r * reg.r * .08), 1, 3.4]]),
+    pepperMix: reg => fill(reg, "#c0502a", "#d9622f", [["strip", Math.round(reg.r * reg.r * .05), 1, 3.4]], { extra: spots(reg, Math.round(reg.r * reg.r * .04), 4).map(([x, y]) => PC.strip(x, y, 1, R() > .5 ? "#f2b81c" : "#4c9a3f")).join("") }),
+    cucumber: reg => fill(reg, "#bfe08f", "#d4ecaa", [["cucumber", Math.round(reg.r * reg.r * .07), 1, 6.2]]),
+    tomato: reg => fill(reg, "#d6372a", "#ef5240", [["cherry", Math.round(reg.r * reg.r * .07), 1, 6]]),
+    zucchini: reg => fill(reg, "#7ea547", "#9ec064", [["zucchini", Math.round(reg.r * reg.r * .08), 1, 6.4]]),
+    mushrooms: reg => fill(reg, "#c9ad8a", "#ddc6a5", [["mushroom", Math.round(reg.r * reg.r * .07), 1, 5.6]]),
+    berries: reg => fill(reg, "#3c2f6e", "#5b4c98", [["blueberry", Math.round(reg.r * reg.r * .12), 1, 3.6], ["raspberry", Math.round(reg.r * reg.r * .05), 1, 4.4]]),
+    blueberries: reg => fill(reg, "#2f2b61", "#4a4590", [["blueberry", Math.round(reg.r * reg.r * .2), 1, 3.4]]),
+    banana: reg => fill(reg, "#efd890", "#f8e7ad", [["banana", Math.round(reg.r * reg.r * .07), 1, 5.6]]),
+    apple: reg => fill(reg, "#efe0a8", "#f8edc4", [["appleCube", Math.round(reg.r * reg.r * .12), 1, 4.2]]),
+    potatoes: reg => fill(reg, "#d9b05c", "#efcf82", [["potato", Math.round(reg.r * reg.r * .035), 1, 8.5]]),
+    sweetPotato: reg => fill(reg, "#c95e24", "#e3793a", [["sweetWedge", Math.round(reg.r * reg.r * .045), 1, 7]]),
+    greenBeans: reg => fill(reg, "#2f7a2b", "#4c9a3f", [["greenBean", Math.round(reg.r * reg.r * .07), 1, 3.4]]),
+    chicken: reg => fill(reg, "#c98a44", "#e2ab66", [["chickenSlice", Math.round(reg.r * reg.r * .05), 1, 6]]),
+    chickenCubes: reg => fill(reg, "#c98a44", "#e2ab66", [["chickenCube", Math.round(reg.r * reg.r * .1), 1, 4.8]]),
+    tofu: reg => fill(reg, "#d9a24f", "#ecc070", [["tofu", Math.round(reg.r * reg.r * .07), 1, 5.6]]),
+    salmonCubes: reg => fill(reg, "#e8723b", "#f59160", [["salmonCube", Math.round(reg.r * reg.r * .09), 1, 5]]),
+    mince: reg => fill(reg, "#7a3f26", "#93533a", [["mince", Math.round(reg.r * reg.r * .45), 1.2, 1.6]]),
+    shrimp: reg => fill(reg, "#e46d43", "#f39062", [["shrimp", Math.round(reg.r * reg.r * .05), 1, 7]]),
+    cottage: reg => fill(reg, "#f6f2e8", "#ffffff", [["cottage", Math.round(reg.r * reg.r * .5), 1, 1.9]]),
+    scramble: reg => fill(reg, "#f2c845", "#fbe17c", [["scramble", Math.round(reg.r * reg.r * .09), 1, 4.4], ["herb", 3, .8, 4]]),
+    pasta: reg => fill(reg, "#e7b04a", "#f6cd70", [["pasta", Math.round(reg.r * reg.r * .1), 1.2, 5]]),
+    spaghetti: reg => {
+      let x = ""; for (let i = 0; i < Math.round(reg.r * 2.2); i++) {
+        const rad0 = reg.r * rr(.25, .95), a0 = rr(0, Math.PI * 2), sw = rr(1.4, 3.2), cx = reg.cx + rr(-2, 2), cy = reg.cy + rr(-2, 2);
+        const x0 = cx + Math.cos(a0) * rad0, y0 = cy + Math.sin(a0) * rad0 * .92, x1 = cx + Math.cos(a0 + sw) * rad0, y1 = cy + Math.sin(a0 + sw) * rad0 * .92;
+        const d = `M${P(x0, y0)}A${r2(rad0)} ${r2(rad0 * .92)} 0 ${sw > Math.PI ? 1 : 0} 1 ${P(x1, y1)}`;
+        x += `<path d="${d}" stroke="#c9902e" stroke-width="2" fill="none" stroke-linecap="round" opacity=".55"/><path d="${d}" stroke="${R() > .5 ? "#f6d27a" : "#efc25a"}" stroke-width="1.3" fill="none" stroke-linecap="round"/>`;
+      }
+      return fill(reg, "#e2ac45", "#f3c968", [], { extra: x });
+    },
+    smoothie: (reg, col = "#7d3f8f") => fill(reg, col, tone(col, .25), [])
+  };
+
+  /* ---------- Geschirr und Untergrund ---------- */
+  const TABLES = { haupt: ["#efe7dc", "#e2d6c6"], frueh: ["#f6eedd", "#ecdfc4"], snack: ["#e7f0e8", "#d6e5d8"], dessert: ["#f6e5ea", "#ecd2da"] };
+  const table = type => {
+    const [a, b] = TABLES[type] || TABLES.haupt;
+    let g = `<rect width="160" height="100" fill="${a}"/>`;
+    const n = 5, h = 100 / n;
+    for (let i = 0; i < n; i++) {
+      const y = i * h, c = i % 2 ? b : a;
+      g += `<rect x="0" y="${r2(y)}" width="160" height="${r2(h)}" fill="${lin([[0, tone(c, .04)], [.5, c], [1, tone(c, -.04)]], 1, 0)}"/>`;
+      for (let k = 0; k < 7; k++) { const yy = y + 2 + k * (h - 4) / 6 + rr(-.8, .8); g += `<path d="M0 ${r2(yy)}C40 ${r2(yy + rr(-1.5, 1.5))} 90 ${r2(yy + rr(-1.5, 1.5))} 160 ${r2(yy + rr(-1, 1))}" stroke="${tone(c, -.12)}" stroke-width="${r2(rr(.2, .5))}" fill="none" opacity=".55"/>`; }
+      if (R() > .4) { const kx = rr(10, 150), ky = y + rr(5, h - 5); g += `<ellipse cx="${r2(kx)}" cy="${r2(ky)}" rx="${r2(rr(2, 3.6))}" ry="${r2(rr(.9, 1.4))}" fill="none" stroke="${tone(c, -.18)}" stroke-width=".5" opacity=".6"/><ellipse cx="${r2(kx)}" cy="${r2(ky)}" rx="1" ry=".5" fill="${tone(c, -.2)}" opacity=".6"/>`; }
+      g += `<rect x="0" y="${r2(y + h - .5)}" width="160" height=".9" fill="${tone(c, -.25)}" opacity=".7"/><rect x="0" y="${r2(y + h + .4)}" width="160" height=".5" fill="#fff" opacity=".25"/>`;
+    }
+    g += `<rect width="160" height="100" fill="${speckDark()}" opacity=".35"/>`;
+    g += `<rect width="160" height="100" fill="${rad(0, [[0, "#fff", .18], [.6, "#fff", 0], [1, "#000", .12]], .45, .4, .8)}"/>`;
+    return g;
+  };
+  const napkin = (side = 1, col = "#ffffff", stripe = "#9fb7d0") => {
+    const x = side > 0 ? 118 : 4, y = side > 0 ? 50 : 8;
+    return `<g ${rot(x + 19, y + 22, side * 8)}><rect x="${x}" y="${y}" width="38" height="46" rx="2" fill="#2a1f14" opacity=".08" transform="translate(1.2 1.6)"/><rect x="${x}" y="${y}" width="38" height="46" rx="2" fill="${col}"/>` +
+      `<rect x="${x}" y="${y + 6}" width="38" height="2.2" fill="${stripe}"/><rect x="${x}" y="${y + 38}" width="38" height="2.2" fill="${stripe}"/></g>`;
+  };
+  const fork = (x, y, a = 0) => `<g ${rot(x, y, a)} opacity=".95"><rect x="${x - 1.1}" y="${y - 2}" width="2.2" height="30" rx="1.1" fill="#c9ced6" transform="translate(.8 1)" opacity=".35"/><rect x="${x - 1.1}" y="${y + 8}" width="2.2" height="22" rx="1.1" fill="#aeb6c1"/><path d="M${x - 3} ${y - 4}V${y + 5}Q${x} ${y + 9} ${x + 3} ${y + 5}V${y - 4}" fill="none" stroke="#aeb6c1" stroke-width="1.1"/>${[-1, 1].map(d => `<line x1="${x + d}" y1="${y - 4}" x2="${x + d}" y2="${y + 4}" stroke="#aeb6c1" stroke-width=".8"/>`).join("")}</g>`;
+  const spoon = (x, y, a = 0) => `<g ${rot(x, y, a)}><ellipse cx="${x}" cy="${y}" rx="4" ry="5.6" fill="#aeb6c1"/><ellipse cx="${x - .8}" cy="${y - 1}" rx="2.2" ry="3.4" fill="#d8dde3"/><rect x="${x - 1}" y="${y + 5}" width="2" height="22" rx="1" fill="#aeb6c1"/></g>`;
+  const plate = (cx = 80, cy = 50, r = 42) => sh(cx + 1.5, cy + 2, r, r * .95, .18) +
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${rad(0, [[0, "#ffffff"], [.85, "#f3f2ef"], [1, "#dcd9d3"]], .4, .35, .75)}"/><circle cx="${cx}" cy="${cy}" r="${r * .76}" fill="${rad(0, [[0, "#ffffff"], [1, "#f1efea"]], .4, .35, .9)}" stroke="#e6e3dc" stroke-width="1.2"/>` +
+    `<path d="M${P(cx - r * .88, cy - r * .1)}A${r * .9} ${r * .9} 0 0 1 ${P(cx - r * .2, cy - r * .87)}" stroke="#fff" stroke-width="1.6" fill="none" opacity=".9"/><path d="M${P(cx + r * .5, cy + r * .78)}A${r * .92} ${r * .92} 0 0 0 ${P(cx + r * .9, cy + r * .2)}" stroke="#cfcac2" stroke-width="1.2" fill="none" opacity=".6"/>`;
+  const bowl = (cx = 80, cy = 50, r = 42, glaze = "#3b6aa0") => sh(cx + 2, cy + 2.4, r, r * .95, .2) +
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${rad(0, [[0, tone(glaze, .25)], [.7, glaze], [1, tone(glaze, -.3)]], .35, .3, .8)}"/><circle cx="${cx}" cy="${cy}" r="${r * .86}" fill="${tone(glaze, -.2)}"/>`;
+  const bowlInner = (cx = 80, cy = 50, r = 42) => circle(cx, cy, r * .84);
+  const pan = (cx = 78, cy = 50, r = 40) => sh(cx + 2, cy + 2.4, r, r * .95, .25) +
+    `<g ${rot(cx, cy, 25)}><rect x="${cx + r - 2}" y="${cy - 3.2}" width="34" height="6.4" rx="3.2" fill="#2b2b2e"/><rect x="${cx + r + 18}" y="${cy - 1}" width="12" height="2" rx="1" fill="#55555b"/></g>` +
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${rad(0, [[0, "#4a4a50"], [1, "#1f1f22"]], .35, .3, .8)}"/><circle cx="${cx}" cy="${cy}" r="${r * .88}" fill="#2a2a2e"/>`;
+  const board = (x = 30, y = 14, w = 100, h = 72) => sh(x + w / 2 + 1.5, y + h / 2 + 2, w / 2, h / 2, .16) +
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${lin([[0, "#d7a46a"], [1, "#b98149"]])}"/>` +
+    Array.from({ length: 16 }, (_, i) => `<path d="M${x + 2} ${r2(y + 3 + i * (h - 6) / 15)}C${r2(x + w * .3)} ${r2(y + 3 + i * (h - 6) / 15 + rr(-1.6, 1.6))} ${r2(x + w * .7)} ${r2(y + 3 + i * (h - 6) / 15 + rr(-1.6, 1.6))} ${x + w - 2} ${r2(y + 3 + i * (h - 6) / 15)}" stroke="#9a6431" stroke-width="${r2(rr(.2, .55))}" fill="none" opacity=".5"/>`).join("") +
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${speckDark()}" opacity=".4"/><rect x="${x + 1}" y="${y + 1}" width="${w - 2}" height="${h - 2}" rx="6" fill="none" stroke="#e6b884" stroke-width=".8" opacity=".7"/>` +
+    `<circle cx="${x + w - 7}" cy="${y + 7}" r="2.4" fill="${tone("#b98149", -.25)}"/>`;
+  const dish = (x = 32, y = 16, w = 96, h = 68, col = "#f2efe9") => sh(x + w / 2 + 1.5, y + h / 2 + 2.4, w / 2 + 4, h / 2, .2) +
+    `<rect x="${x - 7}" y="${y + h / 2 - 7}" width="${w + 14}" height="14" rx="6" fill="${tone(col, -.08)}"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${col}"/><rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="6" fill="${tone(col, -.06)}"/>`;
+  const glass = (cx, top, bottom, w, layers, o = {}) => {
+    const x0 = cx - w / 2, h = bottom - top;
+    let g = sh(cx + 1, bottom + 1, w * .62, 2.6, .2) + `<g ${clip(`M${x0} ${top}H${x0 + w}L${x0 + w - 3} ${bottom}H${x0 + 3}Z`)}>`;
+    let y = bottom;
+    for (const [col, frac, extra] of layers) { const hh = h * frac; g += `<rect x="${x0}" y="${r2(y - hh)}" width="${w}" height="${r2(hh + .5)}" fill="${col}"/>`; if (extra) g += extra(x0, y - hh, w, hh); y -= hh; }
+    g += `</g><path d="M${x0} ${top}H${x0 + w}L${x0 + w - 3} ${bottom}H${x0 + 3}Z" fill="#fff" opacity=".12" stroke="#c9d4de" stroke-width="1"/><rect x="${x0 + 2.4}" y="${top + 4}" width="2.4" height="${h - 10}" rx="1.2" fill="#fff" opacity=".55"/><ellipse cx="${cx}" cy="${top}" rx="${w / 2}" ry="2" fill="#fff" opacity=".35" stroke="#c9d4de" stroke-width=".6"/>`;
+    if (o.straw) g += `<path d="M${cx + 2} ${top + 10}L${cx + 10} ${top - 14}" stroke="${o.straw}" stroke-width="2.6" stroke-linecap="round"/>`;
+    return g;
+  };
+
+  /* ---------- Größere Einzelteile ---------- */
+  const BIG = {
+    salmon: (x, y, s = 1, a = -12, glaze) => `<g ${rot(x, y, a)}>${sh(x, y + 1, 15.5 * s, 7.5 * s, .16)}<path d="M${P(x - 15 * s, y - 6 * s)}Q${P(x, y - 9 * s)} ${P(x + 15 * s, y - 5 * s)}Q${P(x + 17 * s, y)} ${P(x + 14 * s, y + 6 * s)}Q${P(x, y + 8.5 * s)} ${P(x - 14 * s, y + 6 * s)}Q${P(x - 17 * s, y)} ${P(x - 15 * s, y - 6 * s)}Z" fill="${glaze ? "#b4521d" : "#e8743c"}"/>` +
+      `<path d="M${P(x - 13 * s, y - 4.5 * s)}Q${P(x, y - 7 * s)} ${P(x + 13 * s, y - 3.8 * s)}Q${P(x + 14 * s, y)} ${P(x + 12 * s, y + 4.5 * s)}Q${P(x, y + 6.5 * s)} ${P(x - 12 * s, y + 4.5 * s)}Q${P(x - 14.5 * s, y)} ${P(x - 13 * s, y - 4.5 * s)}Z" fill="${glaze ? "#cf6a2a" : "#f6904f"}"/>` +
+      [-9, -4, 1, 6, 11].map(d => `<path d="M${P(x + d * s, y - 6 * s)}Q${P(x + (d + 3) * s, y)} ${P(x + (d + 1) * s, y + 6 * s)}" stroke="${glaze ? "#e99a5c" : "#fde0cb"}" stroke-width="${r2(.9 * s)}" fill="none"/>`).join("") +
+      (glaze ? `<path d="M${P(x - 10 * s, y - 2 * s)}Q${P(x, y - 4 * s)} ${P(x + 10 * s, y - 2 * s)}" stroke="#fff" stroke-width="1.2" opacity=".45" fill="none"/>` : `<path d="M${P(x - 12 * s, y - 3.5 * s)}Q${P(x - 4 * s, y - 6 * s)} ${P(x + 6 * s, y - 5 * s)}" stroke="#fff" stroke-width="1" opacity=".4" fill="none"/>`) + `</g>`,
+    fishFillet: (x, y, s = 1, a = -8) => `<g ${rot(x, y, a)}>${sh(x, y + 1, 16 * s, 6.5 * s, .16)}<path d="M${P(x - 16 * s, y - 4 * s)}Q${P(x - 4 * s, y - 9 * s)} ${P(x + 14 * s, y - 5 * s)}Q${P(x + 18 * s, y)} ${P(x + 13 * s, y + 5 * s)}Q${P(x - 4 * s, y + 8 * s)} ${P(x - 16 * s, y + 3 * s)}Z" fill="#d7a259"/><path d="M${P(x - 14 * s, y - 3 * s)}Q${P(x - 4 * s, y - 7 * s)} ${P(x + 12 * s, y - 3.8 * s)}Q${P(x + 15 * s, y)} ${P(x + 11 * s, y + 3.8 * s)}Q${P(x - 4 * s, y + 6 * s)} ${P(x - 14 * s, y + 2 * s)}Z" fill="#f2d9a8"/>` + [-8, -2, 4, 9].map(d => `<path d="M${P(x + d * s, y - 5 * s)}Q${P(x + (d + 2) * s, y)} ${P(x + d * s, y + 4 * s)}" stroke="#e4c08a" stroke-width=".8" fill="none"/>`).join("") + `</g>`,
+    steak: (x, y, s = 1) => {
+      const body = `M${P(x - 16 * s, y - 6 * s)}C${P(x - 14 * s, y - 13 * s)} ${P(x + 4 * s, y - 14 * s)} ${P(x + 12 * s, y - 9 * s)}C${P(x + 17 * s, y - 5 * s)} ${P(x + 14 * s, y + 6 * s)} ${P(x + 6 * s, y + 10 * s)}C${P(x - 4 * s, y + 14 * s)} ${P(x - 18 * s, y + 6 * s)} ${P(x - 16 * s, y - 6 * s)}Z`;
+      let g = `<path d="${body}" fill="#3b2a1a" opacity=".16" transform="translate(1 1.6)"/><path d="${body}" fill="${rad(0, [[0, "#9a5530"], [.7, "#6e3418"], [1, "#4a2210"]])}"/>`;
+      g += `<g ${clip(body)}>` + [-12, -5, 2, 9, 16].map(d => `<path d="M${P(x + d * s - 8 * s, y + 12 * s)}L${P(x + d * s + 6 * s, y - 14 * s)}" stroke="#2e1408" stroke-width="${r2(1.6 * s)}" opacity=".75"/>`).join("") +
+        `<path d="M${P(x - 12 * s, y - 7 * s)}Q${P(x - 2 * s, y - 12 * s)} ${P(x + 8 * s, y - 8 * s)}" stroke="#c98a5a" stroke-width="${r2(1.2 * s)}" fill="none" opacity=".5"/></g>`;
+      /* zwei Scheiben vorne, rosa Kern */
+      for (let i = 0; i < 3; i++) {
+        const X = x - 4 * s + i * 7 * s, Y = y + 16 * s;
+        g += `<g ${rot(X, Y, 70)}><rect x="${r2(X - 8 * s)}" y="${r2(Y - 3 * s)}" width="${r2(16 * s)}" height="${r2(6 * s)}" rx="${r2(2 * s)}" fill="#4a2210"/><rect x="${r2(X - 6.8 * s)}" y="${r2(Y - 2 * s)}" width="${r2(13.6 * s)}" height="${r2(4 * s)}" rx="${r2(1.6 * s)}" fill="${rad(0, [[0, "#f19b98"], [.6, "#d3555a"], [1, "#a93a3f"]], .5, .5, .7)}"/></g>`;
+      }
+      return g + [[-8, -4], [2, -2], [8, 2]].map(([a, b]) => `<circle cx="${r2(x + a * s)}" cy="${r2(y + b * s)}" r=".7" fill="#fff" opacity=".85"/><circle cx="${r2(x + a * s + 1.6)}" cy="${r2(y + b * s + .8)}" r=".5" fill="#111" opacity=".6"/>`).join("");
+    },
+    chickenBreast: (x, y, s = 1, a = 0) => { let g = sh(x, y + 1, 16 * s, 8 * s, .2); for (let i = 0; i < 5; i++) g += PC.chickenSlice(x - 10 * s + i * 5 * s, y + (i % 2 ? .8 : -.4), 1.05 * s, 80 + a); return g; },
+    toast: (x, y, s = 1, a = 0, seeds = true) => sh(x, y + 1, 13 * s, 12 * s, .22) + `<g ${rot(x, y, a)}><path d="M${P(x - 12 * s, y + 11 * s)}V${r2(y - 5 * s)}C${P(x - 14 * s, y - 14 * s)} ${P(x - 3 * s, y - 15 * s)} ${P(x, y - 11 * s)}C${P(x + 3 * s, y - 15 * s)} ${P(x + 14 * s, y - 14 * s)} ${P(x + 12 * s, y - 5 * s)}V${r2(y + 11 * s)}Z" fill="#9b5f2c"/>` +
+      `<path d="M${P(x - 10 * s, y + 9.4 * s)}V${r2(y - 4.6 * s)}C${P(x - 11.6 * s, y - 12 * s)} ${P(x - 2.6 * s, y - 12.6 * s)} ${P(x, y - 9.2 * s)}C${P(x + 2.6 * s, y - 12.6 * s)} ${P(x + 11.6 * s, y - 12 * s)} ${P(x + 10 * s, y - 4.6 * s)}V${r2(y + 9.4 * s)}Z" fill="#d8a364"/>` +
+      `<path d="M${P(x - 10 * s, y + 9.4 * s)}V${r2(y - 4.6 * s)}C${P(x - 11.6 * s, y - 12 * s)} ${P(x - 2.6 * s, y - 12.6 * s)} ${P(x, y - 9.2 * s)}C${P(x + 2.6 * s, y - 12.6 * s)} ${P(x + 11.6 * s, y - 12 * s)} ${P(x + 10 * s, y - 4.6 * s)}V${r2(y + 9.4 * s)}Z" fill="${pores()}"/>` +
+      (seeds ? Array.from({ length: 14 }, () => { const X = x + rr(-8, 8) * s, Y = y + rr(-8, 8) * s; return `<ellipse cx="${r2(X)}" cy="${r2(Y)}" rx="${r2(.7 * s)}" ry="${r2(.35 * s)}" fill="${R() > .5 ? "#7a4a1e" : "#efd7a6"}" ${rot(X, Y, rr(0, 180))}/>`; }).join("") : "") + `</g>`,
+    wrap: (x, y, s = 1, a = 20, filling = ["#7cbf47", "#e8743c", "#f6f2e8", "#e3342a"]) => { let g = sh(x, y + 1, 16 * s, 7 * s, .2) + `<g ${rot(x, y, a)}><rect x="${r2(x - 16 * s)}" y="${r2(y - 6.5 * s)}" width="${r2(26 * s)}" height="${r2(13 * s)}" rx="${r2(5 * s)}" fill="#ecd3a2"/>` + [-10, -4, 2].map(d => `<path d="M${P(x + d * s, y - 6 * s)}Q${P(x + (d + 2) * s, y)} ${P(x + d * s, y + 6 * s)}" stroke="#d9b77c" stroke-width=".6" fill="none"/>`).join("") + `<circle cx="${r2(x - 12 * s)}" cy="${r2(y - 2 * s)}" r=".6" fill="#b88a4a"/><circle cx="${r2(x - 6 * s)}" cy="${r2(y + 3 * s)}" r=".6" fill="#b88a4a"/>`;
+      g += `<ellipse cx="${r2(x + 10 * s)}" cy="${r2(y)}" rx="${r2(6 * s)}" ry="${r2(6.5 * s)}" fill="#ecd3a2"/>`; filling.forEach((c, i) => { g += `<ellipse cx="${r2(x + 10 * s + (i - 1.5) * .6 * s)}" cy="${r2(y + (i - 1.5) * 1.6 * s)}" rx="${r2(4 * s)}" ry="${r2(1.5 * s)}" fill="${c}"/>`; }); return g + `<ellipse cx="${r2(x + 10 * s)}" cy="${r2(y)}" rx="${r2(6 * s)}" ry="${r2(6.5 * s)}" fill="none" stroke="#d9b77c" stroke-width="1.2"/></g>`; },
+    pancakes: (x, y, s = 1) => { let g = ""; for (let i = 3; i >= 0; i--) g += sh(x + i * .4, y + i * .6 + 1, 17 * s, 16 * s, .12) + `<circle cx="${r2(x + i * .4)}" cy="${r2(y + i * .6)}" r="${r2(16 * s)}" fill="${i ? "#b9732f" : rad(0, [[0, "#e7b06a"], [.8, "#cf8d43"], [1, "#a8662a"]])}"/>`; return g + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(15 * s)}" fill="${bubbles()}"/><path d="M${P(x - 8 * s, y - 4 * s)}Q${P(x - 2 * s, y + 6 * s)} ${P(x + 9 * s, y + 2 * s)}Q${P(x + 4 * s, y - 8 * s)} ${P(x - 8 * s, y - 4 * s)}Z" fill="#c8812e" opacity=".55"/><path d="M${P(x - 6 * s, y - 2 * s)}Q${P(x, y + 4 * s)} ${P(x + 6 * s, y)}" stroke="#fff" stroke-width=".9" opacity=".4" fill="none"/>`; },
+    waffle: (x, y, s = 1, a = 0) => { let g = sh(x, y + 1, 14 * s, 14 * s, .2) + `<g ${rot(x, y, a)}><rect x="${r2(x - 13 * s)}" y="${r2(y - 13 * s)}" width="${r2(26 * s)}" height="${r2(26 * s)}" rx="${r2(4 * s)}" fill="#c98a3f"/>`; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) g += `<rect x="${r2(x - 11 * s + i * 5.6 * s)}" y="${r2(y - 11 * s + j * 5.6 * s)}" width="${r2(4.4 * s)}" height="${r2(4.4 * s)}" rx="${r2(.8 * s)}" fill="#a96a28"/><rect x="${r2(x - 11 * s + i * 5.6 * s)}" y="${r2(y - 11 * s + j * 5.6 * s)}" width="${r2(4.4 * s)}" height="${r2(1.2 * s)}" rx=".4" fill="#8a5420"/>`; return g + `</g>`; },
+    brownie: (x, y, s = 1, a = 0) => sh(x, y + 1, 9 * s, 8 * s, .22) + `<g ${rot(x, y, a)}><rect x="${r2(x - 9 * s)}" y="${r2(y - 9 * s)}" width="${r2(18 * s)}" height="${r2(18 * s)}" rx="${r2(2 * s)}" fill="#3b2016"/><rect x="${r2(x - 8 * s)}" y="${r2(y - 8 * s)}" width="${r2(16 * s)}" height="${r2(16 * s)}" rx="${r2(1.6 * s)}" fill="#55301f"/><path d="M${P(x - 6 * s, y - 2 * s)}L${P(x - 1 * s, y - 4 * s)}L${P(x + 3 * s, y + 1 * s)}L${P(x + 6 * s, y - 1 * s)}" stroke="#7a4a32" stroke-width="${r2(.8 * s)}" fill="none"/>` + Array.from({ length: 4 }, () => PC.choc(x + rr(-6, 6) * s, y + rr(-6, 6) * s, 1.2 * s)).join("") + `</g>`,
+    muffin: (x, y, s = 1) => sh(x, y + 1, 9 * s, 8 * s, .22) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(10 * s)}" fill="#f1f1ee" stroke="#d6d9de" stroke-width=".8" stroke-dasharray="1.6 1"/><circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(8.4 * s)}" fill="${rad(0, [[0, "#ecc078"], [.8, "#cf8f43"], [1, "#a8662a"]])}"/>` + Array.from({ length: 4 }, () => PC.blueberry(x + rr(-4.5, 4.5) * s, y + rr(-4.5, 4.5) * s, .8 * s)).join(""),
+    cheesecake: (x, y, s = 1, a = 0) => `<g ${rot(x, y, a)}><path d="M${P(x - 15 * s, y + 9.5 * s)}L${P(x + 15 * s, y - 8.5 * s)}A${r2(30 * s)} ${r2(30 * s)} 0 0 1 ${P(x + 19 * s, y + 9.5 * s)}Z" fill="#3b2a1a" opacity=".14"/><path d="M${P(x - 16 * s, y + 8 * s)}L${P(x + 14 * s, y - 10 * s)}A${r2(30 * s)} ${r2(30 * s)} 0 0 1 ${P(x + 18 * s, y + 8 * s)}Z" fill="#c98a3f"/><path d="M${P(x - 13 * s, y + 6.5 * s)}L${P(x + 13.6 * s, y - 8 * s)}A${r2(28 * s)} ${r2(28 * s)} 0 0 1 ${P(x + 15.8 * s, y + 6.5 * s)}Z" fill="#fbf0d2"/><path d="M${P(x + 13.6 * s, y - 8 * s)}A${r2(28 * s)} ${r2(28 * s)} 0 0 1 ${P(x + 15.8 * s, y + 6.5 * s)}" stroke="#e7c27c" stroke-width="${r2(2 * s)}" fill="none"/></g>`,
+    pizza: (x, y, r = 34) => { let g = sh(x, y + 1, r, r * .95, .22) + `<circle cx="${x}" cy="${y}" r="${r}" fill="#d9a35b"/><circle cx="${x}" cy="${y}" r="${r * .88}" fill="#c4442c"/>`; const reg = circle(x, y, r * .84); for (const [X, Y] of spots(reg, 14, 7)) g += `<circle cx="${r2(X)}" cy="${r2(Y)}" r="${r2(rr(3, 4.6))}" fill="#fff6dc" opacity=".95"/>`; return g; },
+    burger: (x, y, s = 1) => sh(x, y + 1, 22 * s, 20 * s, .24) + `<path d="M${P(x - 23 * s, y)}Q${P(x - 21 * s, y + 6 * s)} ${P(x - 14 * s, y + 10 * s)}" stroke="#7cbf47" stroke-width="${r2(4 * s)}" fill="none" stroke-linecap="round"/><circle cx="${r2(x + 16 * s)}" cy="${r2(y + 12 * s)}" r="${r2(6 * s)}" fill="#e3342a"/>` +
+      `<circle cx="${x}" cy="${y}" r="${r2(21 * s)}" fill="${rad(0, [[0, "#f0b768"], [.7, "#d18a3c"], [1, "#a8662a"]])}"/>` + Array.from({ length: 22 }, () => { const a = rr(0, Math.PI * 2), d = Math.sqrt(R()) * 15 * s, X = x + Math.cos(a) * d, Y = y + Math.sin(a) * d; return `<ellipse cx="${r2(X)}" cy="${r2(Y)}" rx=".9" ry=".45" fill="#fbf1d6" ${rot(X, Y, rr(0, 180))}/>`; }).join("") + `<ellipse cx="${r2(x - 6 * s)}" cy="${r2(y - 7 * s)}" rx="${r2(7 * s)}" ry="${r2(3.5 * s)}" fill="#fff" opacity=".22"/>`,
+    pepperHalf: (x, y, s = 1, a = 0, fillCol = "#8a3a24") => sh(x, y + 1, 11 * s, 8 * s, .22) + `<g ${rot(x, y, a)}><path d="M${P(x - 12 * s, y)}C${P(x - 12 * s, y - 9 * s)} ${P(x + 10 * s, y - 10 * s)} ${P(x + 12 * s, y - 2 * s)}C${P(x + 13 * s, y + 6 * s)} ${P(x - 10 * s, y + 10 * s)} ${P(x - 12 * s, y)}Z" fill="#d9302a"/>` +
+      `<path d="M${P(x - 9.5 * s, y)}C${P(x - 9.5 * s, y - 6.8 * s)} ${P(x + 8 * s, y - 7.8 * s)} ${P(x + 9.6 * s, y - 1.6 * s)}C${P(x + 10.4 * s, y + 4.6 * s)} ${P(x - 8 * s, y + 7.6 * s)} ${P(x - 9.5 * s, y)}Z" fill="${fillCol}"/>` +
+      Array.from({ length: 8 }, () => `<circle cx="${r2(x + rr(-6, 6) * s)}" cy="${r2(y + rr(-4, 4) * s)}" r="${r2(rr(1.4, 2.4) * s)}" fill="#fff4d6"/>`).join("") + `<rect x="${r2(x + 11 * s)}" y="${r2(y - 3 * s)}" width="${r2(4 * s)}" height="${r2(2.4 * s)}" rx="1" fill="#3f8f3a"/></g>`,
+    lasagne: (x, y, w = 80, h = 56) => { const reg = rect(x - w / 2 + 4, y - h / 2 + 4, w - 8, h - 8, 5); let g = `<path d="${reg.d}" fill="${rad(0, [[0, "#f1c46b"], [.75, "#dba24c"], [1, "#b3712c"]])}"/>`; const c = clip(reg.d); g += `<g ${c}>`; for (const [X, Y] of spots(reg, 26, 7)) g += `<circle cx="${r2(X)}" cy="${r2(Y)}" r="${r2(rr(2, 3.6))}" fill="${R() > .45 ? "#b4511f" : "#f8dc8e"}" opacity=".8"/>`; for (const [X, Y] of spots(reg, 10, 10)) g += PC.herb(X, Y, 1); return g + `<path d="M${x - w / 2 + 8} ${y + h / 2 - 8}Q${x} ${y + h / 2 - 2} ${x + w / 2 - 8} ${y + h / 2 - 9}" stroke="#c63a22" stroke-width="2.4" fill="none" opacity=".7"/></g>`; },
+    riceCake: (x, y, s = 1) => sh(x, y + 1, 10 * s, 9 * s, .2) + `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(10 * s)}" fill="#f2e4c4"/>` + Array.from({ length: 26 }, () => { const a = rr(0, Math.PI * 2), d = Math.sqrt(R()) * 8.4 * s; return `<ellipse cx="${r2(x + Math.cos(a) * d)}" cy="${r2(y + Math.sin(a) * d)}" rx="1.1" ry=".7" fill="#fbf3dc" stroke="#e2cfa3" stroke-width=".2"/>`; }).join(""),
+    bar: (x, y, s = 1, a = 0) => sh(x, y + 1, 15 * s, 5 * s, .22) + `<g ${rot(x, y, a)}><rect x="${r2(x - 15 * s)}" y="${r2(y - 5 * s)}" width="${r2(30 * s)}" height="${r2(10 * s)}" rx="${r2(2.4 * s)}" fill="#b98149"/>` + Array.from({ length: 16 }, () => PC.oat(x + rr(-13, 13) * s, y + rr(-3.5, 3.5) * s, .8 * s)).join("") + `<path d="M${P(x - 13 * s, y - 2 * s)}L${P(x - 9 * s, y + 2 * s)}L${P(x - 5 * s, y - 2 * s)}L${P(x - 1 * s, y + 2 * s)}L${P(x + 3 * s, y - 2 * s)}L${P(x + 7 * s, y + 2 * s)}L${P(x + 11 * s, y - 2 * s)}" stroke="#3e2416" stroke-width="${r2(1.2 * s)}" fill="none" stroke-linecap="round"/></g>`,
+    roll: (x, y, s = 1, a = 0) => sh(x, y + 1, 13 * s, 5 * s, .2) + `<g ${rot(x, y, a)}><rect x="${r2(x - 12 * s)}" y="${r2(y - 4.5 * s)}" width="${r2(22 * s)}" height="${r2(9 * s)}" rx="${r2(4.5 * s)}" fill="#f2b3a6"/><path d="M${P(x - 9 * s, y - 4 * s)}Q${P(x - 7 * s, y)} ${P(x - 9 * s, y + 4 * s)}M${P(x - 2 * s, y - 4.4 * s)}Q${P(x, y)} ${P(x - 2 * s, y + 4.4 * s)}" stroke="#e48f86" stroke-width=".7" fill="none"/><ellipse cx="${r2(x + 10 * s)}" cy="${r2(y)}" rx="${r2(3.6 * s)}" ry="${r2(4.4 * s)}" fill="#f2b3a6"/><ellipse cx="${r2(x + 10 * s)}" cy="${r2(y)}" rx="${r2(2.4 * s)}" ry="${r2(3.2 * s)}" fill="#fbfaf6"/><ellipse cx="${r2(x + 10 * s)}" cy="${r2(y)}" rx="${r2(1 * s)}" ry="${r2(1.6 * s)}" fill="#7cbf47"/></g>`,
+    bananaBread: (x, y, s = 1) => sh(x, y + 1, 22 * s, 11 * s, .22) + `<rect x="${r2(x - 22 * s)}" y="${r2(y - 11 * s)}" width="${r2(44 * s)}" height="${r2(22 * s)}" rx="${r2(6 * s)}" fill="#8e5424"/><rect x="${r2(x - 20 * s)}" y="${r2(y - 9 * s)}" width="${r2(40 * s)}" height="${r2(18 * s)}" rx="${r2(5 * s)}" fill="${rad(0, [[0, "#d39a52"], [1, "#a8662a"]])}"/><path d="M${P(x - 14 * s, y)}Q${P(x, y - 3 * s)} ${P(x + 14 * s, y)}" stroke="#7a4a1e" stroke-width="${r2(1.6 * s)}" fill="none"/><g ${rot(x, y, -6)}><ellipse cx="${x}" cy="${r2(y - .6 * s)}" rx="${r2(13 * s)}" ry="${r2(3 * s)}" fill="#f2df9c"/><ellipse cx="${x}" cy="${r2(y - .6 * s)}" rx="${r2(10 * s)}" ry="${r2(1.4 * s)}" fill="#e9c97a"/></g>`
+  };
+
+  /* ---------- Bausteine für ganze Bilder ---------- */
+  const bowlSectors = (secs, o = {}) => {
+    const cx = 80, cy = 50, R0 = 42; let g = bowl(cx, cy, R0, o.glaze || "#3b6aa0");
+    const inner = bowlInner(cx, cy, R0);
+    g += `<circle cx="${cx}" cy="${cy}" r="${inner.r}" fill="#f4efe2"/>`;
+    const tot = secs.reduce((a, s) => a + (s[1] || 1), 0); let a = o.start ?? -90;
+    for (const [tex, w = 1] of secs) { const a1 = a + 360 * w / tot; g += T[tex](sector(cx, cy, inner.r, a, a1, .6)); a = a1; }
+    if (o.top) g += o.top(cx, cy, inner.r);
+    return g;
+  };
+  const bowlFull = (tex, o = {}) => {
+    const cx = o.cx ?? 80, cy = o.cy ?? 50, R0 = o.r ?? 42; let g = bowl(cx, cy, R0, o.glaze || "#e9e4dc");
+    const inner = bowlInner(cx, cy, R0);
+    g += typeof tex === "function" ? tex(inner) : T[tex](inner);
+    if (o.top) g += o.top(cx, cy, inner.r, inner);
+    return g;
+  };
+  const panFull = (tex, o = {}) => { let g = pan(78, 50, 40); const inner = circle(78, 50, 35); g += typeof tex === "function" ? tex(inner) : T[tex](inner); if (o.top) g += o.top(78, 50, 35, inner); return g; };
+  /* Teller mit Zonen: [Textur, cx, cy, rx, ry] oder Funktionen */
+  const plateZones = (zones, o = {}) => {
+    let g = plate(80, 50, 43);
+    for (const z of zones) g += typeof z === "function" ? z() : T[z[0]](blob(z[1], z[2], z[3], z[4] ?? z[3], .1));
+    return g;
+  };
+  const sprinkle = (reg, fn, n, s = 1, md = 3) => spots(reg, n, md).map(([x, y]) => PC[fn](x, y, s)).join("");
+  const rows = (inner, list) => {        /* Smoothie-Bowl-Reihen */
+    let g = ""; const n = list.length, cx = inner.cx, cy = inner.cy, r = inner.r;
+    list.forEach(([fn, s = 1], i) => {
+      const y = cy - r * .78 + (i + .5) * (r * 1.56 / n), half = Math.sqrt(Math.max(0, r * r - (y - cy) ** 2)) * .86;
+      const step = (PC[fn] && fn !== "oat") ? 5.4 * s : 2.6;
+      for (let x = cx - half + step / 2; x < cx + half; x += step) g += PC[fn](x + rr(-.6, .6), y + rr(-1, 1), s);
+    });
+    return g;
+  };
+  const zoom = (k, svg, cx = 80, cy = 50) => `<g transform="translate(${cx} ${cy}) scale(${k}) translate(${-cx} ${-cy})">${svg}</g>`;
+  const drizzle = (cx, cy, r, col, w = 1.6) => {
+    const pts = [], n = 7;
+    for (let i = 0; i <= n; i++) pts.push([cx - r * .62 + i * r * 1.24 / n + rr(-1, 1), cy + (i % 2 ? 1 : -1) * r * rr(.22, .34)]);
+    let d = `M${P(...pts[0])}`;
+    for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += `C${P(x0 + (x1 - x0) * .2, y0 + (y1 - y0) * .9)} ${P(x1 - (x1 - x0) * .2, y1 - (y1 - y0) * .1)} ${P(x1, y1)}`; }
+    return `<g ${rot(cx, cy, -28)}><path d="${d}" stroke="${tone(col, -.25)}" stroke-width="${r2(w + .6)}" fill="none" stroke-linecap="round" opacity=".5"/><path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round" opacity=".88"/><path d="${d}" stroke="#fff" stroke-width="${r2(w * .3)}" fill="none" stroke-linecap="round" opacity=".45" transform="translate(-.3 -.4)"/></g>`;
+  };
+  const drizzleOld = (cx, cy, r, col, w = 1.6) => `<path d="M${P(cx - r * .6, cy - r * .3)}q${r2(r * .2)} ${r2(r * .5)} ${r2(r * .4)} 0t${r2(r * .4)} 0t${r2(r * .4)} 0M${P(cx - r * .5, cy + r * .2)}q${r2(r * .2)} ${r2(r * .4)} ${r2(r * .4)} 0t${r2(r * .5)} 0" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round" opacity=".9"/>`;
+  const lemon = (x, y, a = 0) => sh(x, y, 5, 3, .15) + `<g ${rot(x, y, a)}><path d="M${x - 6} ${y}A6 6 0 0 0 ${x + 6} ${y}Z" fill="#f2c916"/><path d="M${x - 5} ${y}A5 5 0 0 0 ${x + 5} ${y}Z" fill="#fbe77a"/>${[-2.5, 0, 2.5].map(d => `<line x1="${x}" y1="${y}" x2="${x + d * 1.6}" y2="${y + 4.2}" stroke="#f2c916" stroke-width=".5"/>`).join("")}</g>`;
+  const dip = (x, y, r = 11, col = "#fbfaf6", herbs = true) => sh(x, y + 1, r + 2, r, .2) + `<circle cx="${x}" cy="${y}" r="${r + 2}" fill="#e9e4dc"/><circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>` + (herbs ? sprinkle(circle(x, y, r - 2), "herb", 7, .8, 2.4) : "") + `<path d="M${x - r * .5} ${y - r * .2}q${r * .25} ${-r * .3} ${r * .5} 0t${r * .5} 0" stroke="${tone(col, -.08)}" fill="none"/>`;
+  const smallBowl = (x, y, r, tex, glaze = "#e9e4dc") => sh(x, y + 1, r, r * .95, .2) + `<circle cx="${x}" cy="${y}" r="${r}" fill="${glaze}"/>` + T[tex](circle(x, y, r * .82));
+
+  /* ---------- Die Rezepte ---------- */
+  const D = {
+    bolo: () => plate() + T.spaghetti(blob(80, 50, 30, 28, .06)) + T.bolognese(blob(80, 47, 18, 16, .14)) + sprinkle(circle(80, 47, 13), "parmesan", 7, 1.2, 4) + sprinkle(circle(80, 47, 14), "herb", 7, 1.2, 4) + fork(132, 56, 18),
+    bowl: () => bowlSectors([["rice", 1.4], ["chicken", 1.1], ["broccoli", 1], ["pepper", .8]], { glaze: "#3b6aa0", top: (x, y, r) => sprinkle(circle(x, y, r * .9), "sesame", 26, 1, 2.5) }),
+    chili: () => bowlFull("chili", { glaze: "#2f3b4a", top: (x, y) => `<path d="M${x - 9} ${y - 4}q4 -6 9 -2t9 1q-2 7 -9 6t-9 -5Z" fill="#fbfaf6"/>` + sprinkle(circle(x, y - 2, 8), "herb", 6, 1.1, 2.5) }),
+    lachs: () => plateZones([["potatoes", 101, 34, 15, 12], ["broccoli", 101, 66, 15, 12], () => BIG.salmon(64, 50, 1.25, -72), () => lemon(70, 79, -20)]) + fork(132, 56, 18),
+    blech: () => `<rect x="24" y="12" width="112" height="76" rx="5" fill="#3d4048"/><rect x="24" y="12" width="112" height="76" rx="5" fill="none" stroke="#2a2c31" stroke-width="2"/><rect x="28" y="16" width="104" height="68" rx="3" fill="#e9e1d2"/>` + (() => { const reg = rect(30, 18, 100, 64, 3); return T.sweetPotato(reg).replace(/fill="url\(#r\d+\)"/, 'fill="#e9e1d2"') + [[48, 34, 20], [76, 62, -15], [104, 32, 10], [108, 64, -25], [62, 50, 40]].map(([x, y, a]) => BIG.chickenBreast(x, y, .7, a)).join("") + sprinkle(reg, "strip", 12, 1.1, 7) + sprinkle(reg, "onion", 10, 1.2, 6) + sprinkle(reg, "herb", 22, 1.1, 3); })(),
+    garnelen: () => panFull(inner => T.zucchini(inner) + sprinkle(inner, "shrimp", 9, 1.05, 9) + sprinkle(inner, "cherry", 6, 1, 8) + sprinkle(inner, "herb", 12, 1, 3)) + smallBowl(32, 22, 13, "rice"),
+    curry: () => bowlFull("curry", { glaze: "#2c6e6a", top: (x, y, r) => T.rice(blob(x + 12, y - 10, 13, 11, .12)) + `<path d="M${x - 16} ${y + 10}q5 -5 10 0t10 0" stroke="#fbfaf6" stroke-width="3" fill="none" stroke-linecap="round"/>` + sprinkle(circle(x - 8, y + 8, 10), "herb", 8, 1.3, 2.4) }),
+    thunsalat: () => bowlSectors([["lettuceBed", 1], ["beans", 1], ["corn", .8], ["cucumber", 1], ["tomato", 1]], { glaze: "#e9e4dc", start: -60, top: (x, y) => `<circle cx="${x}" cy="${y}" r="9.5" fill="#d9b9a0"/>` + sprinkle(circle(x, y, 8.5), "mince", 14, 1.2, 2).replace(/#6e3a24|#874a2e/g, "#c9a587") + sprinkle(circle(x, y, 13), "onion", 5, 1, 4) }),
+    wrap: () => board() + zoom(1.35, BIG.wrap(70, 42, 1.1, 18) + BIG.wrap(94, 60, 1.1, 198)) + sprinkle(circle(122, 24, 5), "cherry", 2, 1.2, 6) + PC.cucumber(40, 76, 1.4),
+    quarkbowl: () => bowlFull("yogurt", { glaze: "#e8d9c6", top: (x, y, r, inner) => rows(inner, [["oat", 1.4], ["blueberry", 1.4], ["raspberry", 1.35], ["blueberry", 1.4], ["oat", 1.4]]) + drizzle(x, y, r * .7, "#d9921c", 1) }),
+    oats: () => bowlFull("porridge", { glaze: "#7da0c4", top: (x, y, r, inner) => sprinkle(circle(x + 4, y - 4, r * .6), "banana", 7, 1.6, 8.5) + sprinkle(circle(x - 10, y + 10, 8), "oat", 8, 1.4, 2.6) }),
+    omelett: () => plate() + zoom(1.25, `<path d="M51 48A26 18 0 0 0 103 48Z" fill="#3b2a1a" opacity=".12" transform="rotate(-12 77 48)"/>` + `<path d="M50 46A26 18 0 0 0 102 46Z" fill="#f2bd38" transform="rotate(-12 76 46)"/><path d="M52 45A24 15 0 0 0 100 45Z" fill="#f8d55a" transform="rotate(-12 76 46)"/><path d="M50 46H102" stroke="#e8a822" stroke-width="1.6" transform="rotate(-12 76 46)"/>` + sprinkle(blob(76, 52, 18, 8), "spinach", 4, .8, 6) + sprinkle(blob(76, 52, 18, 8), "cherry", 3, .8, 8), 76, 44) + BIG.toast(104, 70, .75, 18) + fork(132, 56, 18),
+    pancakes: () => plate() + BIG.pancakes(79, 49, 1.55) + sprinkle(circle(79, 46, 16), "blueberry", 10, 1.6, 6) + sprinkle(circle(79, 46, 16), "raspberry", 6, 1.5, 7) + sprinkle(circle(79, 48, 9), "banana", 3, 1.6, 7.5) + fork(132, 56, 18),
+    shake: () => board(36, 12, 88, 76) + glass(80, 20, 82, 26, [["#f4e7b8", 1]], { straw: "#7ec4a4" }) + PC.banana(110, 72, 1.6) + PC.banana(116, 66, 1.4),
+    skyrapfel: () => bowlFull("yogurt", { glaze: "#c9d7e4", top: (x, y, r) => sprinkle(circle(x - 4, y + 2, r * .7), "appleCube", 12, 1.5, 6.4) + drizzle(x, y, r * .85, "#b9782f", 1.8) }) + PC.appleSlice(132, 74, 2),
+    huettenbrot: () => board() + zoom(1.4, [[62, 50, -8], [98, 50, 10]].map(([x, y, a]) => BIG.toast(x, y, 1, a) + sprinkle(blob(x, y + 1, 9, 8), "cottage", 18, 1, 2) + sprinkle(blob(x, y + 2, 8, 7), "cucumber", 2, .75, 6) + sprinkle(blob(x, y, 8, 7), "tomatoSlice", 1, .7, 6) + sprinkle(blob(x, y, 9, 8), "herb", 5, .8, 2)).join("")),
+    geschnetzelt: () => plateZones([["rice", 102, 50, 16, 20], () => T.mushrooms(blob(68, 48, 22, 20)).replace(/fill="url\(#r\d+\)"/, 'fill="#e9dcc4"') + sprinkle(blob(68, 48, 19, 17), "chickenSlice", 5, .8, 8) + sprinkle(blob(68, 48, 19, 17), "herb", 10, 1, 3)]) + fork(132, 56, 18),
+    lasagne: () => dish(36, 18, 88, 64, "#f2efe9") + BIG.lasagne(80, 50, 80, 56),
+    burrito: () => bowlSectors([["rice", 1.2], ["chicken", 1], ["beans", .8], ["corn", .8], ["pepperMix", .8], ["tomato", .8]], { glaze: "#c9572f", top: (x, y) => `<circle cx="${x}" cy="${y}" r="7" fill="#fbfaf6"/>` + sprinkle(circle(x, y, 6), "herb", 4, 1, 2.4) }),
+    teriyaki: () => plateZones([["rice", 101, 34, 15, 12], ["broccoli", 101, 66, 15, 12], () => BIG.salmon(64, 50, 1.25, -72, true) + sprinkle(blob(64, 50, 9, 18), "sesame", 18, 1.2, 2)]) + fork(132, 56, 18),
+    steak: () => plateZones([["sweetPotato", 106, 36, 14, 12], ["greenBeans", 104, 66, 15, 11], () => BIG.steak(64, 44, 1.15)]) + fork(132, 56, 18),
+    paprikafuell: () => dish(34, 18, 92, 64, "#f2efe9") + `<rect x="40" y="24" width="80" height="52" rx="5" fill="#c63a22"/>` + BIG.pepperHalf(62, 40, 1, -10) + BIG.pepperHalf(98, 60, 1, 170) + BIG.pepperHalf(62, 64, .9, 10) + BIG.pepperHalf(98, 36, .9, 190),
+    pizza: () => board(26, 8, 108, 84) + BIG.pizza(80, 50, 36) + sprinkle(circle(80, 50, 28), "chickenCube", 7, .9, 9) + sprinkle(circle(80, 50, 29), "strip", 7, .8, 8) + sprinkle(circle(80, 50, 29), "mushroom", 5, .75, 9) + sprinkle(circle(80, 50, 29), "herb", 14, 1.1, 4),
+    burger: () => board() + BIG.burger(80, 50, 1.4) + PC.cucumber(124, 76, 1.4) + PC.cucumber(118, 82, 1.4),
+    onepot: () => panFull(inner => T.pasta(inner) + sprinkle(inner, "chickenCube", 8, 1, 8) + sprinkle(inner, "zucchini", 5, .9, 9) + sprinkle(inner, "cherry", 5, 1, 8) + sprinkle(inner, "spinach", 6, .9, 6) + sprinkle(inner, "parmesan", 8, 1, 4)),
+    seelachs: () => plateZones([["potatoes", 101, 34, 15, 12], ["peas", 101, 66, 14, 11], () => BIG.fishFillet(64, 50, 1.2, -72) + lemon(70, 79, -20) + sprinkle(blob(64, 50, 9, 16), "herb", 10, 1.1, 2.6)]) + fork(132, 56, 18),
+    shakshuka: () => panFull(inner => T.tomatoSauce(inner) + sprinkle(inner, "strip", 8, .9, 8) + [[66, 40], [90, 42], [72, 62], [94, 62]].map(([x, y]) => PC.egg(x, y, 1.15)).join("") + sprinkle(inner, "herb", 18, 1.2, 3)) + BIG.toast(28, 76, .55, -20),
+    dal: () => bowlFull("dal", { glaze: "#e9e4dc", top: (x, y) => T.rice(blob(x + 12, y - 10, 13, 11, .12)) + `<path d="M${x - 16} ${y + 10}q5 -5 10 0t10 0" stroke="#fbfaf6" stroke-width="3" fill="none" stroke-linecap="round"/>` + sprinkle(circle(x - 8, y + 6, 10), "herb", 9, 1.3, 2.4) }),
+    tofu: () => bowlSectors([["rice", 1.2], ["tofu", 1.1], ["broccoli", 1], ["pepper", .8]], { glaze: "#2f3b4a", top: (x, y, r) => sprinkle(circle(x, y, r * .9), "sesame", 26, 1, 2.5) }),
+    thunpasta: () => plate() + T.pasta(blob(80, 50, 30, 28, .08)) + T.tomatoSauce(blob(80, 48, 15, 13, .14)) + sprinkle(circle(80, 48, 12), "mince", 18, 1.4, 2.2).replace(/#6e3a24|#874a2e/g, "#c9a587") + sprinkle(circle(80, 48, 16), "parmesan", 6, 1, 4) + sprinkle(circle(80, 48, 16), "herb", 6, 1, 4) + fork(132, 56, 18),
+    caesar: () => bowlFull("lettuceBed", { glaze: "#e9e4dc", top: (x, y, r, inner) => sprinkle(circle(x, y, r * .62), "chickenSlice", 5, 1.25, 10) + sprinkle(circle(x, y, r * .85), "crouton", 8, 1.3, 7) + sprinkle(circle(x, y, r * .85), "parmesan", 10, 1.3, 4) + spots(circle(x, y, r * .8), 9, 6).map(([a, b]) => `<ellipse cx="${r2(a)}" cy="${r2(b)}" rx="2" ry="1.4" fill="#fbf3dc" opacity=".95"/>`).join("") }),
+    poke: () => bowlSectors([["rice", 1.2], ["salmonCubes", 1.1], ["edamame", .9], ["cucumber", .9], ["corn", .8]], { glaze: "#2f3b4a", top: (x, y, r) => sprinkle(circle(x, y, r * .9), "sesame", 30, 1, 2.4) }),
+    ruehrei: () => plate() + zoom(1.3, BIG.toast(70, 50, 1.1, -10) + T.scramble(blob(70, 50, 11, 9)) + sprinkle(blob(70, 50, 10, 8), "spinach", 3, .7, 7), 70, 50) + sprinkle(circle(108, 50, 9), "cherry", 4, 1.2, 7) + fork(132, 56, 18),
+    brownie: () => board() + zoom(1.4, BIG.brownie(68, 44, 1.2, -6) + BIG.brownie(92, 56, 1.2, 8) + sprinkle(circle(112, 34, 6), "raspberry", 3, 1, 5) + sprinkle(circle(50, 66, 5), "choc", 4, 1.3, 3.4)),
+    cheesecake: () => plate() + BIG.cheesecake(74, 54, 1.75, -10) + sprinkle(circle(84, 50, 12), "blueberry", 7, 1.3, 5) + sprinkle(circle(86, 52, 12), "raspberry", 4, 1.3, 6) + fork(132, 56, 18),
+    nicecream: () => bowlFull(inner => `<circle cx="${inner.cx}" cy="${inner.cy}" r="${inner.r}" fill="#efe8de"/>` + [[-9, -6, "#b04a8a"], [9, -5, "#f3e3b0"], [0, 9, "#8e3f8f"]].map(([dx, dy, c]) => sh(inner.cx + dx, inner.cy + dy, 11, 9) + `<circle cx="${inner.cx + dx}" cy="${inner.cy + dy}" r="11" fill="${rad(0, [[0, tone(c, .3)], [.8, c], [1, tone(c, -.2)]])}"/><path d="M${inner.cx + dx - 6} ${inner.cy + dy}q3 -4 6 0t6 0" stroke="${tone(c, -.15)}" fill="none"/>`).join("") + sprinkle(circle(inner.cx, inner.cy, inner.r * .9), "blueberry", 5, 1, 7), { glaze: "#c9d7e4" }),
+    bananenbrot: () => board() + BIG.bananaBread(80, 50, 1.55) + PC.banana(122, 78, 2) + PC.banana(114, 82, 1.8),
+    schokocreme: () => board(36, 12, 88, 76) + glass(80, 18, 82, 30, [["#5a3420", .3], ["#f8f4ec", .1], ["#6b3f26", .25], ["#f8f4ec", .1], ["#6b3f26", .2]]) + sprinkle(circle(80, 16, 10), "raspberry", 3, 1.1, 5) + PC.raspberry(110, 76, 1.4) + PC.blueberry(116, 70, 1.4),
+    crumble: () => dish(34, 18, 92, 64, "#e9e2d6") + `<rect x="40" y="24" width="80" height="52" rx="5" fill="#c58a4a"/>` + sprinkle(rect(40, 24, 80, 52), "oat", 70, 1.5, 3).replace(/#e9d3a4/g, "#d9a85e") + sprinkle(rect(42, 26, 76, 48), "appleCube", 8, 1, 10) + dip(124, 78, 9, "#fbfaf6", false),
+    muffins: () => board() + [[58, 32], [100, 32], [62, 68], [102, 68]].map(([x, y]) => BIG.muffin(x, y, 1.6)).join(""),
+    bark: () => board() + zoom(1.35, [[58, 38, -12], [92, 32, 8], [64, 64, 10], [100, 62, -6]].map(([x, y, a]) => { const d = `M${x - 14} ${y - 8}L${x + 10} ${y - 11}L${x + 15} ${y + 6}L${x - 4} ${y + 11}L${x - 13} ${y + 4}Z`; return sh(x, y + 1, 14, 10, .2) + `<path d="${d}" fill="#fbfaf6" stroke="#ebe4d8" stroke-width=".8" ${rot(x, y, a)}/>` + sprinkle(blob(x, y, 9, 6), "blueberry", 3, .8, 5) + sprinkle(blob(x, y, 9, 6), "raspberry", 2, .8, 6) + `<path d="M${x - 9} ${y - 3}l5 6l4 -7l5 6" stroke="#3e2416" stroke-width="1.1" fill="none" ${rot(x, y, a)}/>`; }).join("")),
+    porridge: () => bowlFull("porridge", { glaze: "#c9572f", top: (x, y, r) => sprinkle(circle(x + 2, y - 2, r * .6), "appleCube", 10, 1.5, 6.4) + `<g opacity=".55">${sprinkle(circle(x, y, r * .8), "mince", 16, .5, 3)}</g>` + drizzle(x, y, r * .75, "#e9a521", 1.2) }),
+    skyrbowl: () => bowlFull("yogurt", { glaze: "#2f3b4a", top: (x, y, r, inner) => rows(inner, [["banana", 1.5], ["oat", 1.3], ["banana", 1.5]]) + drizzle(x, y, r * .85, "#b9782f", 1.8) }),
+    waffeln: () => plate() + zoom(1.3, BIG.waffle(70, 46, 1, -8) + BIG.waffle(92, 58, .9, 12) + sprinkle(circle(84, 46, 12), "blueberry", 5, 1, 5) + sprinkle(circle(78, 56, 12), "raspberry", 3, 1, 6), 80, 52) + fork(134, 56, 18),
+    lachsbrot: () => board() + zoom(1.4, [[62, 50, -8], [98, 50, 10]].map(([x, y, a]) => BIG.toast(x, y, 1, a) + sprinkle(blob(x, y + 1, 9, 8), "cottage", 16, 1, 2) + `<path d="M${x - 8} ${y - 2}q4 -6 8 -1t8 -1q-1 6 -8 7t-8 -5Z" fill="#f08a52"/><path d="M${x - 6} ${y - 2}q3 2 6 0t6 0" stroke="#fcd6bf" stroke-width=".7" fill="none"/>` + sprinkle(blob(x, y + 5, 8, 4), "cucumber", 2, .7, 6) + sprinkle(blob(x, y, 9, 8), "herb", 6, .8, 2)).join("")),
+    fruehburrito: () => board() + zoom(1.35, BIG.wrap(70, 42, 1.1, 18, ["#f8d55a", "#2f6e2a", "#e3342a", "#f6f2e8"]) + BIG.wrap(94, 60, 1.1, 198, ["#f8d55a", "#2f6e2a", "#e3342a", "#f6f2e8"])) + sprinkle(circle(122, 24, 5), "cherry", 2, 1.2, 6),
+    eiermuffins: () => board() + [[58, 32], [100, 32], [62, 68], [102, 68]].map(([x, y]) => zoom(1.55, sh(x, y + 1, 9, 8, .2) + `<circle cx="${x}" cy="${y}" r="10" fill="#f1f1ee" stroke="#d6d9de" stroke-width=".8" stroke-dasharray="1.6 1"/><circle cx="${x}" cy="${y}" r="8.4" fill="${rad(0, [[0, "#fbe08a"], [.8, "#e9b84a"], [1, "#c98a2a"]])}"/>` + sprinkle(circle(x, y, 6.5), "cubeRed", 4, 1, 3) + sprinkle(circle(x, y, 6.5), "herb", 4, 1, 2.5), x, y)).join(""),
+    bircher: () => bowlFull("porridge", { glaze: "#7da0c4", top: (x, y, r, inner) => `<g opacity=".9">${sprinkle(circle(x, y, r * .8), "appleCube", 8, .8, 6)}</g>` + sprinkle(circle(x + 6, y - 8, 9), "blueberry", 6, 1, 4) + sprinkle(circle(x - 8, y + 6, 8), "raspberry", 3, 1, 5) }),
+    frenchtoast: () => plate() + zoom(1.3, BIG.toast(68, 46, 1, -14, false).replace(/#d8a364/g, "#e2a24f").replace(/#9b5f2c/g, "#9a5420") + BIG.toast(92, 58, 1, 12, false).replace(/#d8a364/g, "#e2a24f").replace(/#9b5f2c/g, "#9a5420") + `<path d="M84 44q6 -4 10 0t8 2" stroke="#fbfaf6" stroke-width="3.4" fill="none" stroke-linecap="round"/>` + sprinkle(circle(80, 52, 14), "blueberry", 6, 1, 5) + sprinkle(circle(80, 52, 14), "strawberry", 3, .7, 7), 80, 52) + fork(134, 56, 18),
+    smoothiebowl: () => bowlFull(inner => T.smoothie(inner, "#7d3f8f"), { glaze: "#e9e4dc", top: (x, y, r, inner) => rows(inner, [["banana", 1], ["blueberry", 1.05], ["oat", 1], ["raspberry", 1]]) }),
+    spiegelei: () => plate() + zoom(1.25, BIG.toast(72, 52, 1.15, -6) + PC.egg(68, 46, 1.25) + PC.egg(78, 58, 1.15), 72, 52) + sprinkle(circle(110, 44, 8), "cherry", 3, 1.2, 7) + sprinkle(circle(108, 64, 7), "spinach", 4, .9, 5) + fork(134, 56, 18),
+    huettenbowl: () => bowlFull("cottage", { glaze: "#c9d7e4", top: (x, y, r, inner) => sprinkle(circle(x + 4, y - 4, r * .6), "blueberry", 12, 1.4, 5.2) + sprinkle(circle(x - 6, y + 4, r * .5), "raspberry", 5, 1.3, 6.4) + sprinkle(circle(x - 10, y - 10, 8), "oat", 8, 1.4, 2.8) + drizzle(x, y, r * .75, "#e9a521", 1.2) }),
+    riegel: () => board() + zoom(1.4, BIG.bar(80, 38, 1.1, -6) + BIG.bar(82, 62, 1.1, 4)),
+    gemuesesticks: () => board() + zoom(1.3, dip(62, 50, 13) + [["#2f7d32", "#cde9a6"], ["#d9302a", "#f0503f"], ["#f2b81c", "#f8d24a"]].map(([a, b], j) => [0, 1, 2].map(i => { const x = 84 + i * 4 + j * 1.5, y = 32 + j * 12; return sh(x + 6, y + 2, 14, 2.4, .16) + `<rect x="${x}" y="${y}" width="30" height="5" rx="2.4" fill="${a}" ${rot(x + 15, y + 2.5, -8 + i * 6)}/><rect x="${x + 1}" y="${y + 1}" width="28" height="2.6" rx="1.3" fill="${b}" ${rot(x + 15, y + 2.5, -8 + i * 6)}/>`; }).join("")).join("")),
+    eiergurke: () => plate() + [[62, 40], [76, 36], [66, 58], [80, 56]].map(([x, y]) => PC.eggHalf(x, y, 1.6)).join("") + sprinkle(blob(104, 50, 13, 18), "cucumber", 7, 1.2, 9) + sprinkle(circle(88, 72, 5), "cherry", 2, 1, 6) + sprinkle(circle(70, 48, 18), "sesame", 10, .8, 3).replace(/#fbf3dc/g, "#2b2b2b"),
+    putenroellchen: () => board() + zoom(1.25, [[64, 36, -8], [70, 50, 4], [64, 64, -4], [100, 42, 12], [98, 60, -10]].map(([x, y, a]) => BIG.roll(x, y, 1.05, a)).join("")) + PC.cucumber(124, 78, 1.4),
+    edamame: () => bowlFull(inner => `<circle cx="${inner.cx}" cy="${inner.cy}" r="${inner.r}" fill="#4f8f2c"/>` + sprinkle(inner, "edamame", 13, 2.3, 9) + sprinkle(inner, "sesame", 22, 1.6, 3).replace(/#2b2b2b/g, "#ffffff"), { glaze: "#2f3b4a" }),
+    thunhaeppchen: () => board() + zoom(1.2, [[56, 34], [80, 32], [104, 34], [62, 62], [86, 62], [108, 60]].map(([x, y]) => PC.cucumber(x, y, 2.4) + `<circle cx="${x}" cy="${y - .5}" r="5.4" fill="#e3cbb4"/>` + sprinkle(circle(x, y - .5, 4.6), "mince", 8, .9, 1.6).replace(/#6e3a24|#874a2e/g, "#c9a587") + PC.cherry(x + 1.5, y - 2, .5) + PC.herb(x - 2, y - 2, .9)).join("")),
+    apfelpb: () => board() + zoom(1.2, dip(62, 50, 13, "#d9a35b", false) + `<path d="M56 46q3 -3 6 0t6 0M54 53q4 -3 8 0t8 0" stroke="#9b5a24" stroke-width="1.2" fill="none" stroke-linecap="round"/>` + [[96, 30, 20], [104, 44, 60], [98, 60, 100], [110, 70, 130], [92, 74, 160]].map(([x, y, a]) => `<g ${rot(x, y, a)}>${PC.appleSlice(x, y, 2.2)}</g>`).join("")),
+    beerenshake: () => board(36, 12, 88, 76) + glass(80, 20, 82, 26, [["#c4466f", 1]], { straw: "#f2b6c6" }) + PC.raspberry(110, 72, 1.6) + PC.blueberry(116, 66, 1.6) + PC.blueberry(108, 62, 1.4),
+    reiswaffeln: () => board() + zoom(1.35, [[62, 40], [98, 40], [80, 64]].map(([x, y]) => BIG.riceCake(x, y, 1.25) + sprinkle(circle(x, y, 9), "cottage", 16, 1, 2) + PC.tomatoSlice(x - 2, y - 1, .9) + PC.cucumber(x + 4, y + 3, .8) + PC.herb(x - 4, y + 4, .9)).join("")),
+    kichererbsen: () => bowlFull(inner => T.chickpeas(inner).replace(/#e2b25e/g, "#c9782f").replace(/#f3d39a/g, "#e8a35a") + sprinkle(inner, "herb", 10, 1.2, 3), { glaze: "#2f3b4a" }),
+  };
+
+  const shadeAll = svg => {
+    const made = {};
+    return svg.replace(/(<(?:path|circle|ellipse|rect)\b[^>]*?)fill="(#[0-9a-f]{6})"/g, (m, pre, col) => {
+      if (/stroke-dasharray|opacity="\.(0|1)/.test(pre)) return m;
+      if (!made[col]) { made[col] = id("s"); defs += `<radialGradient id="${made[col]}" cx=".34" cy=".3" r=".9"><stop offset="0" stop-color="${tone(col, .2)}"/><stop offset=".55" stop-color="${col}"/><stop offset="1" stop-color="${tone(col, -.24)}"/></radialGradient>`; }
+      return `${pre}fill="url(#${made[col]})"`;
+    });
+  };
+  function art(r) {
+    if (!D[r.id]) return "";
+    R = rng("v4" + r.id); uid = 0; defs = ""; pats = {};
+    const body = shadeAll(D[r.id]());
+    const t = table(r.type);
+    const extra = ["bowl", "chili", "burrito", "tofu", "poke", "dal", "curry"].includes(r.id) ? fork(136, 22, 30) : (r.type === "frueh" && !["shake"].includes(r.id) ? spoon(136, 26, 25) : "");
+    const nap = ["lachs", "teriyaki", "steak", "seelachs", "bolo", "thunpasta", "geschnetzelt", "spiegelei", "ruehrei", "omelett", "pancakes", "waffeln", "frenchtoast", "cheesecake"].includes(r.id) ? napkin(1) : "";
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100" width="640" height="400"><defs>${defs}</defs>${t}${nap}${extra}${body}</svg>`;
+  }
+  return { art, ids: Object.keys(D) };
+})();
 function artURL(r) {
-  if (!artCache.has(r.id)) artCache.set(r.id, "data:image/svg+xml;charset=utf-8," + encodeURIComponent(recipeArt(r).replace("<svg ", '<svg width="640" height="480" ')));
+  if (!artCache.has(r.id)) {
+    const svg = RA4.art(r) || recipeArt(r).replace("<svg ", '<svg width="640" height="480" ');
+    artCache.set(r.id, "data:image/svg+xml;charset=utf-8," + svg.replace(/"/g, "'").replace(/[\r\n%#<>{}]/g, encodeURIComponent));
+  }
   return artCache.get(r.id);
 }
 const recipeImg = r => `<img src="${recipePhotos[r.id] || artURL(r)}" alt="" loading="lazy">`;
@@ -5155,8 +5624,7 @@ function updateSub() {
   let t = "";
   if (currentTab === "heute") t = new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
   else if (currentTab === "kuehlschrank") t = plural(products.filter(inStock).length, "Produkt vorrätig", "Produkte vorrätig");
-  else if (currentTab === "mahlzeit") t = plural(templates.length, "gespeicherte Mahlzeit", "gespeicherte Mahlzeiten");
-  else if (currentTab === "produkte") t = plural(products.length, "Produkt angelegt", "Produkte angelegt");
+  else if (currentTab === "produkte") t = `${plural(products.length, "Produkt", "Produkte")} · ${plural(templates.length, "Mahlzeit", "Mahlzeiten")}`;
   else if (currentTab === "training") {
     const wkN = workouts.filter(w => weekDays().includes(w.day)).length;
     t = activeWk ? "Training läuft – weiter geht's 💪" : `${plural(wkN, "Einheit", "Einheiten")} diese Woche`;
@@ -5170,7 +5638,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "27";
+const APP_VERSION = "31";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
