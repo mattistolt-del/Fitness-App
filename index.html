@@ -358,6 +358,32 @@
   }
   .update-bar.show { display: block; }
   .app-version { text-align: center; color: var(--muted); font-size: 12px; margin: 18px 0 6px; }
+  /* ---------- Ordentliche Stapel im Kühlschrank ---------- */
+  .comp-items {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 12px 6px; align-items: end; justify-items: center;
+  }
+  .cupboard .comp-items { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 10px 4px; }
+  .comp-items .group { width: 100%; align-items: center; gap: 4px; }
+  .stack { position: relative; display: flex; flex-direction: column-reverse; align-items: center; padding-top: 4px; }
+  .stack .pkg {
+    width: 40px; height: 40px; flex-shrink: 0; border-radius: 9px;
+    border: 1px solid rgba(0,0,0,.08); box-shadow: 0 1px 2px rgba(0,0,0,.18);
+  }
+  .stack .pkg + .pkg { margin-bottom: -28px; }
+  .stack .pkg img { padding: 3px; }
+  .cupboard .stack .pkg { width: 34px; height: 34px; border-radius: 7px; font-size: 15px; }
+  .cupboard .stack .pkg + .pkg { margin-bottom: -24px; }
+  .cnt {
+    position: absolute; top: -4px; right: -10px; z-index: 6; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  }
+  .fridge .group-name, .cupboard .group-name {
+    width: 100%; max-width: none; text-align: center; font-size: 10px; line-height: 1.2;
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word;
+  }
 </style>
 </head>
 <body>
@@ -1049,14 +1075,20 @@ function pkgHTML(p, fillShare) {
   return `<div class="pkg partial">${inner}<div class="fill" style="height:${Math.max(8, Math.round(fillShare * 100))}%"></div></div>`;
 }
 
+const MAX_STACK = 5;
 function groupHTML(p) {
   const { full, partial } = packageInfo(p);
-  let icons = "", shown = 0;
-  for (let i = 0; i < full && shown < MAX_ICONS; i++, shown++) icons += pkgHTML(p);
-  if (partial && shown < MAX_ICONS) { icons += pkgHTML(p, partial); shown++; }
   const total = full + (partial ? 1 : 0);
-  if (total > shown) icons += `<div class="pkg more">+${total - shown}</div>`;
-  return `<div class="group" data-id="${p.id}"><div class="pkgs">${icons}</div><div class="group-name">${esc(p.name)}</div></div>`;
+  /* Stapel von unten nach oben: volle Packungen, die angebrochene liegt oben */
+  const fullShown = Math.min(full, MAX_STACK - (partial ? 1 : 0));
+  let tiles = "";
+  for (let i = 0; i < fullShown; i++) tiles += pkgHTML(p);
+  if (partial) tiles += pkgHTML(p, partial);
+  const badge = total > 1 ? `<span class="cnt">${total}</span>` : "";
+  return `<div class="group" data-id="${p.id}">
+    <div class="stack">${tiles}${badge}</div>
+    <div class="group-name">${esc(p.name)}</div>
+  </div>`;
 }
 
 function compHTML(catId, extraClass = "") {
@@ -2026,7 +2058,7 @@ document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dat
 ["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet", "recipeSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "10";
+const APP_VERSION = "11";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
