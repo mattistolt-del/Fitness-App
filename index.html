@@ -331,6 +331,33 @@
   .fridge .group-name, .cupboard .group-name { color: #6b6b66; }
   .fridge .pkg, .cupboard .pkg { background: #fff; }
   .fridge .pkg.more, .cupboard .pkg.more { color: #8a8a85; }
+  /* ---------- Vollbild-Scanner ---------- */
+  #scanOverlay {
+    position: fixed; inset: 0; z-index: 40; background: #0b0b0b; color: #fff;
+    display: none; flex-direction: column; padding: env(safe-area-inset-top) 0 calc(14px + env(safe-area-inset-bottom));
+  }
+  #scanOverlay.open { display: flex; }
+  .scan-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
+  .scan-top b { font-size: 18px; }
+  .scan-close { background: rgba(255,255,255,.16); color: #fff; border: 0; border-radius: 20px; padding: 10px 18px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .scan-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: box-shadow .15s; }
+  .scan-wrap.hit { box-shadow: inset 0 0 0 6px #4fb386; }
+  #camReader { width: 100%; max-width: 640px; }
+  #camReader video { display: block; width: 100% !important; }
+  .scan-info { padding: 14px 16px 0; text-align: center; }
+  .scan-status { font-size: 15px; line-height: 1.45; min-height: 44px; color: #e6e6e6; }
+  .scan-status.ok { color: #7fe0ae; font-weight: 600; }
+  .scan-status.bad { color: #ffb4a8; }
+  .scan-count { font-size: 14px; color: #a9a9a9; margin-top: 2px; min-height: 18px; }
+  .scan-btns { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .toast { z-index: 50; }
+  .update-bar {
+    position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 45;
+    background: var(--accent); color: #fff; border-radius: 14px; padding: 12px 14px; font-size: 14px; text-align: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,.2); display: none; cursor: pointer;
+  }
+  .update-bar.show { display: block; }
+  .app-version { text-align: center; color: var(--muted); font-size: 12px; margin: 18px 0 6px; }
 </style>
 </head>
 <body>
@@ -360,10 +387,6 @@
     </div>
 
     <button class="btn ghost" id="scanBtn" style="width:100%">📷 Barcode scannen</button>
-    <div id="scanArea" style="display:none; margin-top:12px">
-      <div id="reader"></div>
-      <button class="btn ghost" id="stopScanBtn" style="width:100%; margin-top:10px">Scan beenden</button>
-    </div>
     <div class="grid2" style="margin-top:4px">
       <div>
         <label>Barcode (oder eintippen)</label>
@@ -419,11 +442,6 @@
     <div class="row" style="margin-top:0">
       <button class="btn ghost" id="shopScanBtn">📷 Scannen</button>
       <button class="btn ghost" id="shopNewBtn">＋ Neues Produkt</button>
-    </div>
-    <div id="shopScanArea" style="display:none; margin-top:12px">
-      <div id="shopReader"></div>
-      <div class="hint">Scanne Produkt für Produkt. Bekannte Produkte landen direkt im Wagen, neue legst du kurz an.</div>
-      <button class="btn ghost" id="shopStopScan" style="width:100%; margin-top:10px">Scan beenden</button>
     </div>
     <input class="search" id="shopSearch" placeholder="Produkt suchen" style="margin-top:14px">
     <div id="shopList"></div>
@@ -574,6 +592,22 @@
   </div>
 </div>
 
+<!-- Kamera-Scanner (Vollbild) -->
+<div id="scanOverlay">
+  <div class="scan-top"><b id="camTitle">Scannen</b><button class="scan-close" id="camDone">Fertig</button></div>
+  <div class="scan-wrap" id="camWrap"><div id="camReader"></div></div>
+  <div class="scan-info">
+    <div class="scan-status" id="camStatus"></div>
+    <div class="scan-count" id="camCount"></div>
+    <div class="scan-btns">
+      <button class="scan-close" id="camRetry" style="display:none">Nochmal versuchen</button>
+      <button class="scan-close" id="camManual">Barcode eintippen</button>
+    </div>
+  </div>
+</div>
+
+<div class="update-bar" id="updateBar">✨ Neue Version verfügbar – <b>tippen zum Aktualisieren</b></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -622,7 +656,6 @@ function saveStock() {
 }
 let editingId = null;
 let currentImage = "";
-let scanner = null;
 let searchTerm = "";
 
 const $ = id => document.getElementById(id);
@@ -734,9 +767,12 @@ function openSheet(id = null) {
 }
 
 function closeSheet() {
-  stopScan();
+  const resume = resumeShopScan && $("shopSheet").classList.contains("open");
+  resumeShopScan = false;
   returnToShop = false;
+  lookupSeq++;
   $("productSheet").classList.remove("open");
+  if (resume) setTimeout(startShopScan, 250);
 }
 
 $("addBtn").onclick = () => currentTab === "kuehlschrank" ? openShop() : currentTab === "mahlzeit" ? openMealEditor() : openSheet();
@@ -760,7 +796,7 @@ $("saveBtn").onclick = () => {
   if (editingId) {
     Object.assign(products.find(x => x.id === editingId), data);
   } else {
-    if (data.barcode && products.some(x => x.barcode === data.barcode)) {
+    if (data.barcode && products.some(x => sameCode(x.barcode, data.barcode))) {
       toast("Dieses Produkt hast du schon"); return;
     }
     const np = { id: Date.now().toString(36), ...data };
@@ -787,49 +823,159 @@ $("deleteBtn").onclick = () => {
 };
 
 /* ---------- Barcode-Scan & Open Food Facts ---------- */
-$("scanBtn").onclick = startScan;
-$("stopScanBtn").onclick = stopScan;
-$("lookupBtn").onclick = () => lookup($("fBarcode").value.trim());
+const sameCode = (a, b) => !!a && !!b && (a === b || a === "0" + b || "0" + a === b);
 
-function startScan() {
-  if (typeof Html5Qrcode === "undefined") { toast("Scanner nicht geladen – Internet prüfen"); return; }
-  $("scanArea").style.display = "block";
-  $("scanBtn").style.display = "none";
-  $("scanStatus").textContent = "Halte die Kamera auf den Barcode …";
-  scanner = new Html5Qrcode("reader", {
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E
-    ],
-    verbose: false
-  });
-  scanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 260, height: 140 } },
-    code => { $("fBarcode").value = code; stopScan(); lookup(code); },
-    () => {}
-  ).catch(() => {
-    $("scanStatus").textContent = "Kamera nicht verfügbar. Erlaube den Kamerazugriff oder tippe den Barcode ein.";
-    stopScan();
-  });
+function validBarcode(c) {
+  if (!/^(\d{8}|\d{12}|\d{13})$/.test(c)) return false;
+  if (c.length === 8) return true;
+  const d = c.split("").map(Number), check = d.pop();
+  let sum = 0;
+  d.reverse().forEach((n, i) => { sum += n * (i % 2 === 0 ? 3 : 1); });
+  return (10 - sum % 10) % 10 === check;
 }
 
-function stopScan() {
-  $("scanArea").style.display = "none";
-  $("scanBtn").style.display = "block";
-  if (scanner) {
-    const s = scanner; scanner = null;
-    s.stop().then(() => s.clear()).catch(() => {});
-  }
+/* Ein gemeinsamer Scanner. Die Kamera bleibt zwischen zwei Scans offen,
+   damit das iPhone sie nicht jedes Mal neu freigeben muss. */
+const Cam = {
+  inst: null, queue: Promise.resolve(), mode: null, onCode: null, title: "",
+  seen: {}, streak: {}, done: {}, idleTimer: null, savedCb: null,
+
+  run(fn) { const p = this.queue.catch(() => {}).then(fn); this.queue = p; return p; },
+  state() { try { return this.inst ? this.inst.getState() : 0; } catch (e) { return 0; } },
+  isOpen() { return $("scanOverlay").classList.contains("open"); },
+
+  open(mode, onCode, title) {
+    clearTimeout(this.idleTimer);
+    this.mode = mode; this.onCode = onCode; this.savedCb = onCode; this.title = title;
+    this.seen = {}; this.streak = {}; this.done = {};
+    $("camTitle").textContent = title;
+    $("camManual").style.display = mode === "single" ? "" : "none";
+    $("camRetry").style.display = "none";
+    this.status(mode === "single"
+      ? "Halte den Barcode in den Rahmen – ca. 15–20 cm Abstand."
+      : "Scanne Produkt für Produkt. Für ein zweites gleiches Produkt kurz wegziehen und nochmal scannen.");
+    $("scanOverlay").classList.add("open");
+    return this.run(async () => {
+      if (typeof Html5Qrcode === "undefined") throw new Error("nolib");
+      const st = this.state();
+      if (st === 3) { this.inst.resume(); return; }   // pausiert -> sofort weiter
+      if (st === 2) return;                             // läuft schon
+      await this.hardStop();
+      await this.boot();
+    }).catch(err => this.fail(err));
+  },
+
+  async boot() {
+    const formats = [
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E
+    ];
+    const base = {
+      fps: 12, disableFlip: true,
+      qrbox: (w, h) => ({ width: Math.max(150, Math.floor(w * 0.84)), height: Math.max(90, Math.floor(Math.min(w, h) * 0.42)) })
+    };
+    const attempts = [
+      { ...base, videoConstraints: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } },
+      base
+    ];
+    let lastErr;
+    for (const cfg of attempts) {
+      const inst = new Html5Qrcode("camReader", { formatsToSupport: formats, verbose: false, experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
+      try {
+        await inst.start({ facingMode: "environment" }, cfg, code => this.hit(code), () => {});
+        this.inst = inst;
+        /* Neuere iPhones fokussieren nah schlecht – leichter Zoom hilft */
+        try {
+          const caps = inst.getRunningTrackCapabilities();
+          if (caps && caps.zoom && caps.zoom.max >= 1.5) await inst.applyVideoConstraints({ advanced: [{ zoom: Math.min(2, caps.zoom.max) }] });
+        } catch (e) {}
+        return;
+      } catch (e) {
+        lastErr = e;
+        try { inst.clear(); } catch (_) {}
+        if (/NotAllowed|Permission|denied/i.test(String(e))) break;
+      }
+    }
+    throw lastErr;
+  },
+
+  hit(code) {
+    if (!this.onCode) return;
+    code = String(code).trim();
+    if (!validBarcode(code)) return;
+    const now = Date.now(), prev = this.seen[code] || 0;
+    this.seen[code] = now;
+    if (now - prev > 1200) { this.streak[code] = 1; this.done[code] = false; }   // neues Hinhalten
+    else this.streak[code] = (this.streak[code] || 1) + 1;
+    if (this.streak[code] < 2 || this.done[code]) return;                         // 2× gleich gelesen = sicher
+    this.done[code] = true;
+    this.flash();
+    const cb = this.onCode;
+    if (this.mode === "single") this.close();
+    cb(code);
+  },
+
+  close() {
+    $("scanOverlay").classList.remove("open");
+    this.onCode = null;
+    this.run(async () => { if (this.state() === 2) { try { this.inst.pause(true); } catch (e) {} } });
+    clearTimeout(this.idleTimer);
+    this.idleTimer = setTimeout(() => this.run(() => this.hardStop()), 25000);   // nach 25 s Kamera ganz aus
+  },
+
+  async hardStop() {
+    const inst = this.inst; this.inst = null;
+    if (!inst) return;
+    try { const st = inst.getState(); if (st === 2 || st === 3) await inst.stop(); } catch (e) {}
+    try { inst.clear(); } catch (e) {}
+  },
+
+  fail(err) {
+    const msg = String(err && (err.message || err) || "");
+    const perm = /NotAllowed|Permission|denied/i.test(msg);
+    this.status(typeof Html5Qrcode === "undefined"
+      ? "Scanner nicht geladen – prüf dein Internet und öffne die App neu."
+      : perm
+        ? "Kein Kamerazugriff. Tippe auf „Nochmal versuchen“ und dann auf „Erlauben“. Kommt keine Frage: Einstellungen › Apps › Safari › Kamera › Fragen."
+        : "Die Kamera startet gerade nicht. Tippe auf „Nochmal versuchen“ – sonst die App einmal ganz schließen.", "bad");
+    $("camRetry").style.display = "";
+  },
+
+  status(text, cls = "") { const el = $("camStatus"); el.textContent = text; el.className = "scan-status " + cls; },
+  flash() { const w = $("camWrap"); w.classList.add("hit"); setTimeout(() => w.classList.remove("hit"), 350); }
+};
+
+$("camDone").onclick = () => { Cam.close(); if (Cam.mode === "multi") renderShopList(); };
+$("camRetry").onclick = () => { const cb = Cam.savedCb; Cam.run(() => Cam.hardStop()); Cam.open(Cam.mode, cb, Cam.title); };
+$("camManual").onclick = () => { Cam.close(); setTimeout(() => $("fBarcode").focus(), 100); };
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) return;
+  if (Cam.isOpen()) Cam.close();
+  clearTimeout(Cam.idleTimer);
+  Cam.run(() => Cam.hardStop());
+});
+
+$("scanBtn").onclick = () => Cam.open("single", code => { $("fBarcode").value = code; lookup(code); }, "Produkt scannen");
+$("lookupBtn").onclick = () => lookup($("fBarcode").value.trim());
+
+let lookupSeq = 0;
+async function fetchOFF(code, fields) {
+  const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 9000);
+  try {
+    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=${fields}`, { signal: ctrl.signal });
+    return await res.json();
+  } finally { clearTimeout(t); }
 }
 
 async function lookup(code) {
   if (!code) { toast("Bitte Barcode eingeben"); return; }
+  const my = ++lookupSeq;
   $("scanStatus").textContent = "Suche Produkt …";
   try {
     const fields = "product_name,product_name_de,brands,image_front_small_url,image_front_url,nutriments,product_quantity,quantity,categories_tags";
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=${fields}`);
-    const data = await res.json();
+    let data = await fetchOFF(code, fields);
+    if ((data.status !== 1 || !data.product) && code.length === 12) data = await fetchOFF("0" + code, fields);
+    if (my !== lookupSeq) return;   // Fenster inzwischen zu oder neuer Scan
     if (data.status !== 1 || !data.product) {
       $("scanStatus").textContent = "Nicht gefunden. Trag die Nährwerte bitte selbst ein.";
       return;
@@ -851,7 +997,8 @@ async function lookup(code) {
       ? "Gefunden ✓ – einige Werte fehlen, bitte ergänzen."
       : "Gefunden ✓ – prüf kurz die Werte und tippe auf Sichern.";
   } catch (e) {
-    $("scanStatus").textContent = "Keine Verbindung. Versuch es nochmal oder trag die Werte selbst ein.";
+    if (my !== lookupSeq) return;
+    $("scanStatus").textContent = "Keine Verbindung. Tippe nochmal auf „Suchen“ oder trag die Werte selbst ein.";
   }
 }
 
@@ -945,7 +1092,7 @@ function renderFridge() {
 let cart = {};          // Produkt-ID -> Anzahl Packungen
 let pendingPack = {};   // Packungsgröße für Produkte ohne Angabe
 let shopSearch = "";
-let shopScanner = null, lastCode = "", lastCodeTime = 0;
+let resumeShopScan = false;
 let returnToShop = false;
 
 const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
@@ -1036,46 +1183,25 @@ $("shopSaveBtn").onclick = () => {
 
 /* Scannen beim Einkaufen */
 $("shopScanBtn").onclick = startShopScan;
-$("shopStopScan").onclick = stopShopScan;
 
 function startShopScan() {
-  if (typeof Html5Qrcode === "undefined") { toast("Scanner nicht geladen – Internet prüfen"); return; }
-  $("shopScanArea").style.display = "block";
-  shopScanner = new Html5Qrcode("shopReader", {
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E
-    ],
-    verbose: false
-  });
-  shopScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 240, height: 130 } },
-    onShopScan,
-    () => {}
-  ).catch(() => { toast("Kamera nicht verfügbar"); stopShopScan(); });
+  Cam.open("multi", onShopScan, "Einkauf scannen");
+  updateCamCount();
 }
-
-function stopShopScan() {
-  $("shopScanArea").style.display = "none";
-  if (shopScanner) {
-    const s = shopScanner; shopScanner = null;
-    s.stop().then(() => s.clear()).catch(() => {});
-  }
-}
+function stopShopScan() { if (Cam.isOpen() && Cam.mode === "multi") Cam.close(); }
+function updateCamCount() { const n = cartCount(); $("camCount").textContent = n ? `🛒 ${n} im Wagen` : ""; }
 
 function onShopScan(code) {
-  const now = Date.now();
-  if (code === lastCode && now - lastCodeTime < 2500) return;
-  lastCode = code; lastCodeTime = now;
-  const p = products.find(x => x.barcode === code);
+  const p = products.find(x => sameCode(x.barcode, code));
   if (p) {
     cart[p.id] = (cart[p.id] || 0) + 1;
     if (navigator.vibrate) navigator.vibrate(40);
     renderShopList();
-    toast(`+1 ${p.name}`);
+    updateCamCount();
+    Cam.status(`✓ ${p.name} – ${cart[p.id]}× im Wagen`, "ok");
   } else {
-    stopShopScan();
+    Cam.close();
+    resumeShopScan = true;
     returnToShop = true;
     openSheet();
     $("fBarcode").value = code;
@@ -1389,6 +1515,7 @@ function renderToday() {
       <button class="add-slot" data-slot="${slot.id}">＋ Hinzufügen</button>
     </div>`;
   }
+  html += `<div class="app-version">Version ${APP_VERSION}</div>`;
   view.innerHTML = html;
 
   $("dPrev").onclick = () => { viewDay = dayShift(day, -1); renderToday(); };
@@ -1897,6 +2024,23 @@ $("calcSave").onclick = () => {
 /* Fenster schließen */
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
 ["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet", "recipeSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
+
+/* ---------- Version & Update-Prüfung ---------- */
+const APP_VERSION = "10";
+async function checkUpdate() {
+  if (!/^https?:/.test(location.protocol)) return;
+  try {
+    const res = await fetch(location.pathname + "?check=" + Date.now(), { cache: "no-store" });
+    const m = (await res.text()).match(/const APP_VERSION = "(\d+)"/);
+    if (m && Number(m[1]) > Number(APP_VERSION)) {
+      const bar = $("updateBar");
+      bar.classList.add("show");
+      bar.onclick = () => location.replace(location.pathname + "?v=" + m[1]);
+    }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) checkUpdate(); });
+checkUpdate();
 
 /* ---------- Start ---------- */
 showTab("heute");
