@@ -597,6 +597,29 @@
   .wt-toggle.on { background: var(--accent); color: #fff; border-style: solid; }
   .bw-cell { text-align: center; color: var(--muted); font-weight: 700; }
   .ex-thumb, .ex-hero { background: #fff; }
+
+  /* ---------- Kühlschrank & Schrank: flach & ruhig, gezeichnete Produkte ---------- */
+  .kitchen.flat { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 10px; padding: 8px 0 16px; }
+  .kitchen.flat .fridge { background: #eef3f8; border: 0; border-radius: 22px; padding: 12px 10px 12px; box-shadow: inset 0 0 0 6px #dbe4ed, 0 6px 14px rgba(30,50,80,.10); --row: 76px; --shelf: #c3d3e3; }
+  .kitchen.flat .cupboard { background: #ecd3a9; border: 0; border-radius: 10px; padding: 12px 8px 12px; box-shadow: inset 0 0 0 6px #a5713f, 0 6px 14px rgba(0,0,0,.12); --row: 64px; --shelf: #a5713f; }
+  .kitchen.flat .fridge::before, .kitchen.flat .fridge::after, .kitchen.flat .cupboard::before, .kitchen.flat .cupboard::after { display: none; }
+  .kitchen.flat .comp { padding: 4px 0 0; min-height: 0; border: 0; background: none; box-shadow: none; }
+  .kitchen.flat .comp::after { display: none; }
+  .kitchen.flat .comp-items { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 4px; padding: 0 4px; margin: 0; min-height: var(--row);
+    grid-template-columns: none; background: repeating-linear-gradient(180deg, transparent 0 calc(var(--row) - 5px), var(--shelf) calc(var(--row) - 5px) var(--row)); border-radius: 2px; }
+  .kitchen.flat .fgrp { position: relative; height: var(--row); width: auto; display: flex; flex-direction: row; align-items: flex-end; justify-content: center; padding: 0 2px 5px; gap: 0; cursor: pointer; }
+  .kitchen.flat .fgrp svg.fi { display: block; overflow: visible; }
+  .kitchen.flat .fgrp:active { transform: scale(.94); }
+  .kitchen.flat .fcnt { position: absolute; right: -3px; bottom: 9px; background: #1f2937; color: #fff; font-size: 10px; font-weight: 700; line-height: 1; padding: 3px 5px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .kitchen.flat .fcnt.part { background: #64748b; }
+  .kitchen.flat .drawers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .kitchen.flat .comp.drawer { background: rgba(255,255,255,.6); border: 2px solid #c9d7e4; border-radius: 10px; padding: 4px 0 2px; --shelf: transparent; --row: 62px; min-height: 0; }
+  .kitchen.flat .comp.freezer { margin-top: 12px; background: #e3f1fb; border: 2px solid #b6d3ea; border-radius: 12px; padding: 6px 0 2px; --shelf: transparent; --row: 66px; }
+  .kitchen.flat .comp.freezer .comp-items { min-height: 70px; }
+  .kitchen.flat .comp.drawer .comp-items { min-height: 64px; }
+  @media (prefers-color-scheme: dark) {
+    .kitchen.flat .fridge { background: #e6edf4; }
+  }
 </style>
 </head>
 <body>
@@ -1411,6 +1434,280 @@ function guessCategory(tags, name) {
   return "sonstiges";
 }
 
+/* ---------- Lebensmittel-Icons (gezeichnet, flach, ohne Fotos) ----------
+   Jedes Icon: Ursprung = Mitte unten (steht auf dem Regal), y nach oben negativ. */
+const FI = (() => {
+  const r2 = n => +(+n).toFixed(2);
+  const sh = w => `<ellipse cx="0" cy="0" rx="${r2(w / 2)}" ry="${r2(Math.max(1.2, w * .08))}" fill="#000" opacity=".13"/>`;
+  const hl = (x, y, h, w = 1.6) => `<rect x="${r2(x)}" y="${r2(y)}" width="${w}" height="${r2(h)}" rx="${w / 2}" fill="#fff" opacity=".38"/>`;
+  const side = (x, y, w, h, op = .12) => `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" fill="#000" opacity="${op}"/>`;
+  const txt = (t, y, size, col = "#fff", w = 800) => t ? `<text x="0" y="${r2(y)}" font-size="${size}" font-weight="${w}" fill="${col}" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,sans-serif" letter-spacing=".2">${t}</text>` : "";
+  const I = (w, h, svg) => ({ w, h, svg });
+
+  /* --- Verpackungen --- */
+  const carton = ({ c = "#2f7fe0", c2, t = "", w = 24, h = 40, top = 10, body = "#fbfcfd" }) => I(w + 2, h + top + 4,
+    sh(w + 2) + `<path d="M${-w / 2} 0V${-h}L${-w / 2 + 4} ${-h - top}H${w / 2 - 4}L${w / 2} ${-h}V0Z" fill="${body}"/>` +
+    `<path d="M${-w / 2} ${-h}H${w / 2}" stroke="#d3d9e0" stroke-width=".7"/>` + side(w / 2 - 5, -h, 5, h) +
+    `<rect x="${-w / 2}" y="${r2(-h * .72)}" width="${w}" height="${r2(h * .3)}" fill="${c}"/>` + (c2 ? `<rect x="${-w / 2}" y="${r2(-h * .72)}" width="${w}" height="2.6" fill="${c2}"/>` : "") +
+    txt(t, -h * .52, Math.min(5.4, 30 / Math.max(3, t.length)), "#fff") +
+    `<rect x="${w / 2 - 9}" y="${-h - top - 3}" width="5" height="4" rx="1" fill="${c}"/>` + hl(-w / 2 + 2, -h + 3, h - 6));
+  const tub = ({ c = "#e94b3c", lid, t = "", w = 30, h = 18, body = "#fbfcfd", band = .45 }) => I(w + 2, h + 5,
+    sh(w) + `<path d="M${-w / 2} ${-h}L${-w / 2 + 2.5} 0H${w / 2 - 2.5}L${w / 2} ${-h}Z" fill="${body}"/>` +
+    `<path d="M${-w / 2 + 1} ${r2(-h * .72)}L${-w / 2 + 1 + 2.5 * band} ${r2(-h * .25)}H${w / 2 - 1 - 2.5 * band}L${w / 2 - 1} ${r2(-h * .72)}Z" fill="${c}"/>` +
+    txt(t, -h * .36, Math.min(4.6, 26 / Math.max(3, t.length))) + side(w / 2 - 6, -h, 5, h, .08) +
+    `<ellipse cx="0" cy="${-h}" rx="${w / 2 + .6}" ry="3" fill="${lid || c}"/><ellipse cx="-3" cy="${-h - .6}" rx="${w / 4}" ry="1" fill="#fff" opacity=".35"/>`);
+  const bag = ({ c = "#fff8e4", band = "#1f5fae", t = "", w = 26, h = 34, win, line = "#e4d6ae", top = "flat" }) => I(w + 2, h + 4,
+    sh(w) + `<path d="M${-w / 2} 0V${-h + 2}${top === "crimp" ? `L${-w / 2 + 2} ${-h}L${-w / 2 + 4} ${-h + 2}L${-w / 2 + 6} ${-h}L${-w / 2 + 8} ${-h + 2}L${-w / 2 + 10} ${-h}L${-w / 2 + 12} ${-h + 2}L${-w / 2 + 14} ${-h}L${-w / 2 + 16} ${-h + 2}L${-w / 2 + 18} ${-h}L${-w / 2 + 20} ${-h + 2}L${-w / 2 + 22} ${-h}L${w / 2} ${-h + 2}` : `Q0 ${-h - 2} ${w / 2} ${-h + 2}`}V0Z" fill="${c}" stroke="${line}" stroke-width=".6"/>` +
+    `<rect x="${-w / 2}" y="${-h + 3}" width="${w}" height="6.5" fill="${band}"/>` + txt(t, -h + 8, Math.min(4.6, 28 / Math.max(3, t.length))) +
+    (win ? `<rect x="${-w / 2 + 4}" y="${-h + 12}" width="${w - 8}" height="${h - 17}" rx="2.5" fill="#fff" opacity=".55"/>` + win(w - 8, h - 17, -w / 2 + 4, -h + 12) : "") +
+    side(w / 2 - 4, -h + 3, 4, h - 3, .08) + hl(-w / 2 + 1.5, -h + 11, h - 15));
+  const box = ({ c = "#e6c181", top = "#3f7d3a", t = "", w = 22, h = 36, motif = "" }) => I(w + 2, h + 3,
+    sh(w) + `<rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="1.2" fill="${c}"/>` + `<rect x="${-w / 2}" y="${-h}" width="${w}" height="7" fill="${top}"/>` +
+    txt(t, -h + 5.2, Math.min(4.2, 24 / Math.max(3, t.length))) + motif + side(w / 2 - 4, -h, 4, h) + hl(-w / 2 + 1.4, -h + 9, h - 12));
+  const jar = ({ glass = "#f6e7b5", fill = "#e8a92b", lid = "#c0392b", t = "", w = 20, h = 24, fillTo = .85 }) => I(w + 2, h + 6,
+    sh(w) + `<rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="4" fill="${glass}" opacity=".9"/>` +
+    `<rect x="${-w / 2 + 1}" y="${r2(-h * fillTo)}" width="${w - 2}" height="${r2(h * fillTo - 1)}" rx="3.4" fill="${fill}"/>` +
+    `<rect x="${-w / 2 + 1}" y="${-h - 5}" width="${w - 2}" height="6" rx="1.5" fill="${lid}"/>` +
+    (t ? `<rect x="${-w / 2 + 2}" y="${r2(-h * .62)}" width="${w - 4}" height="${r2(h * .34)}" rx="1" fill="#fff"/>` + txt(t, -h * .4, Math.min(4.2, 22 / Math.max(3, t.length)), "#555") : "") +
+    side(w / 2 - 4, -h + 2, 3, h - 4, .1) + hl(-w / 2 + 2, -h + 3, h - 7));
+  const bottle = ({ c = "#a9951c", cap = "#2b5a2a", label = "#f4f0e2", t = "", w = 14, h = 46, neck = 10, alpha = .95, lc = "#555" }) => I(w + 2, h + 6,
+    sh(w) + `<path d="M${-w / 2} 0V${-h + neck + 6}Q${-w / 2} ${-h + neck} -3 ${-h + neck - 4}V${-h}H3V${-h + neck - 4}Q${w / 2} ${-h + neck} ${w / 2} ${-h + neck + 6}V0Z" fill="${c}" opacity="${alpha}"/>` +
+    `<rect x="-3.6" y="${-h - 5}" width="7.2" height="6" rx="1.2" fill="${cap}"/>` +
+    (label ? `<rect x="${-w / 2}" y="${r2(-h * .5)}" width="${w}" height="${r2(h * .26)}" fill="${label}"/>` + txt(t, -h * .34, Math.min(4, 20 / Math.max(3, t.length)), lc) : "") +
+    side(w / 2 - 3, -h + neck + 4, 3, h - neck - 4, .12) + hl(-w / 2 + 1.5, -h + neck + 6, h - neck - 10));
+  const can = ({ c = "#c0392b", t = "", w = 18, h = 26, top = "#c9ced5", band = "#fff", tc }) => I(w + 2, h + 3,
+    sh(w) + `<rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" rx="1.5" fill="${c}"/>` +
+    `<rect x="${-w / 2}" y="${-h}" width="${w}" height="2.4" fill="${top}"/><rect x="${-w / 2}" y="-2.4" width="${w}" height="2.4" fill="${top}"/>` +
+    (t ? `<rect x="${-w / 2}" y="${r2(-h * .62)}" width="${w}" height="${r2(h * .3)}" fill="${band}"/>` + txt(t, -h * .42, Math.min(4.4, 24 / Math.max(3, t.length)), tc || c) : "") +
+    side(w / 2 - 4, -h, 4, h) + hl(-w / 2 + 2, -h + 3, h - 6));
+  const tray = ({ base = "#2d3036", rim = "#4b4f57", w = 38, h = 9, food }) => I(w + 2, h + 10,
+    sh(w) + food + `<path d="M${-w / 2} ${-h}H${w / 2}L${w / 2 - 2} 0H${-w / 2 + 2}Z" fill="${base}"/><path d="M${-w / 2} ${-h}H${w / 2}" stroke="${rim}" stroke-width="1"/>` +
+    `<path d="M${-w / 2 + 4} ${-h - 7}L${-w / 2 + 12} ${-h - 8.5}" stroke="#fff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/>`);
+
+  /* --- Obst & Gemüse --- */
+  const round = ({ c, d, r = 9, leaf = "#4c9a3f", stem = "#6b4426", shape = "apple", spot }) => {
+    let body;
+    if (shape === "apple") body = `<path d="M0 ${-2 * r + 3}C${-r * .65} ${-2 * r - .5} ${-r * 1.2} ${-2 * r + 6} ${-r * 1.1} ${-r * .9}C${-r} ${-1} ${-r * .4} 1 0 -1C${r * .4} 1 ${r} -1 ${r * 1.1} ${-r * .9}C${r * 1.2} ${-2 * r + 6} ${r * .65} ${-2 * r - .5} 0 ${-2 * r + 3}Z" fill="${c}"/>`;
+    else if (shape === "lemon") body = `<ellipse cx="0" cy="${-r * .8}" rx="${r * 1.25}" ry="${r * .8}" fill="${c}"/><circle cx="${r * 1.25}" cy="${-r * .8}" r="1.4" fill="${c}"/><circle cx="${-r * 1.25}" cy="${-r * .8}" r="1.4" fill="${c}"/>`;
+    else if (shape === "pear") body = `<path d="M0 ${-2.4 * r}C${-r * .5} ${-2.4 * r} ${-r * .6} ${-1.6 * r} ${-r * .7} ${-1.3 * r}C${-r * 1.2} ${-r} ${-r * 1.1} 0 0 0C${r * 1.1} 0 ${r * 1.2} ${-r} ${r * .7} ${-1.3 * r}C${r * .6} ${-1.6 * r} ${r * .5} ${-2.4 * r} 0 ${-2.4 * r}Z" fill="${c}"/>`;
+    else body = `<circle cx="0" cy="${-r}" r="${r}" fill="${c}"/>`;
+    const topY = shape === "pear" ? -2.4 * r : shape === "lemon" ? -1.6 * r : -2 * r + 2;
+    return I(r * 2.6, -topY + 6, sh(r * 2) + body +
+      `<path d="M${r * .45} ${-r * .55}A${r * .8} ${r * .8} 0 0 0 ${r * .75} ${-r * 1.3}" stroke="${d}" stroke-width="${r * .45}" fill="none" opacity=".45" stroke-linecap="round"/>` +
+      (spot || "") + (stem ? `<path d="M0 ${topY + 1}L${r * .12} ${topY - 3}" stroke="${stem}" stroke-width="1.3" stroke-linecap="round"/>` : "") +
+      (leaf ? `<path d="M${r * .12} ${topY - 2}Q${r * .7} ${topY - 5} ${r * .95} ${topY - 1.5}Q${r * .45} ${topY} ${r * .12} ${topY - 2}Z" fill="${leaf}"/>` : "") +
+      `<ellipse cx="${-r * .4}" cy="${r2(topY * .62)}" rx="${r * .22}" ry="${r * .35}" fill="#fff" opacity=".4"/>`);
+  };
+  const oblong = ({ c, d, len = 30, r = 4.5, tip, end, curve = 0, lines }) => I(len + 4, r * 2 + 4,
+    sh(len) + `<path d="M${-len / 2} ${-r}Q0 ${-r - curve} ${len / 2} ${-r}" stroke="${c}" stroke-width="${r * 2}" stroke-linecap="round" fill="none"/>` +
+    `<path d="M${-len / 2 + 2} ${-r * .4}Q0 ${-r * .4 - curve} ${len / 2 - 2} ${-r * .4}" stroke="${d}" stroke-width="${r * .7}" stroke-linecap="round" fill="none" opacity=".5"/>` +
+    `<path d="M${-len / 2 + 3} ${-r * 1.55}Q0 ${-r * 1.55 - curve} ${len / 2 - 6} ${-r * 1.55}" stroke="#fff" stroke-width="1.1" stroke-linecap="round" fill="none" opacity=".45"/>` +
+    (tip || "") + (end || "") + (lines || ""));
+
+  const L = {};
+  /* ===== Milchprodukte ===== */
+  L.milk = carton({ t: "MILCH", c: "#2f7fe0", c2: "#62a3f0" });
+  L.oatmilk = carton({ t: "HAFER", c: "#c9953f", c2: "#e2b868" });
+  L.cream = carton({ t: "SAHNE", c: "#3b6fd1", w: 18, h: 26, top: 7 });
+  L.buttermilk = carton({ t: "BUTTERM.", c: "#2a9d8f", w: 22, h: 34 });
+  L.juice = carton({ t: "SAFT", c: "#f28c28", c2: "#f7b05b" });
+  L.quark = tub({ t: "QUARK", c: "#e94b3c" });
+  L.skyr = tub({ t: "SKYR", c: "#3d7be0", w: 24, h: 22 });
+  L.yogurt = tub({ t: "JOGHURT", c: "#7bb661", w: 22, h: 20 });
+  L.greek = tub({ t: "GREEK", c: "#2b5fae", w: 28, h: 18 });
+  L.cottage = tub({ t: "HÜTTENK.", c: "#2a9d8f", w: 28, h: 16 });
+  L.creamcheese = tub({ t: "FRISCHK.", c: "#9b59b6", w: 26, h: 12, lid: "#c39bd3" });
+  L.pudding = tub({ t: "PROTEIN", c: "#6d4c41", w: 20, h: 20 });
+  L.butter = I(32, 14, sh(30) + `<path d="M-15 0V-9L-12 -12H15V-3L12 0Z" fill="#f6d35b"/><path d="M-15 -9H12V0" fill="none" stroke="#e0b83a" stroke-width=".8"/><path d="M-15 -9L-12 -12H15L12 -9Z" fill="#fbe48f"/>` + txt("BUTTER", -3, 4.4, "#b7791f"));
+  L.cheese = I(34, 22, sh(32) + `<path d="M-16 0V-12L14 -20V0Z" fill="#f4c84a"/><path d="M-16 -12L14 -20L16 -18L-14 -10Z" fill="#fbe08a"/><path d="M14 -20V0H16V-18Z" fill="#d9a92a"/>` + [[-8, -6, 2.2], [2, -9, 1.6], [8, -4, 2.4], [-2, -3, 1.3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#e2ad2e"/>`).join(""));
+  L.slices = I(32, 14, sh(30) + `<rect x="-15" y="-10" width="30" height="10" rx="2" fill="#e8eef4"/><rect x="-13" y="-12" width="26" height="9" rx="1.5" fill="#f4c84a"/><rect x="-11" y="-13" width="22" height="2" rx="1" fill="#fbe08a"/>` + txt("KÄSE", -4.5, 4.2, "#8a6d1d"));
+  L.mozzarella = I(26, 22, sh(24) + `<path d="M-12 -4C-12 -16 12 -16 12 -4C12 0 -12 0 -12 -4Z" fill="#f7f9fb" stroke="#d6dee6" stroke-width=".6"/><path d="M-12 -6H12" stroke="#2f9e44" stroke-width="2.4"/><path d="M0 -15L-3 -19M0 -15L3 -19" stroke="#2f9e44" stroke-width="1.4"/>` + hl(-8, -12, 6));
+  L.feta = I(30, 14, sh(28) + `<rect x="-14" y="-11" width="28" height="11" rx="2" fill="#2f6fbf"/><rect x="-11" y="-9" width="22" height="7" rx="1" fill="#f7f9fb"/>` + txt("FETA", -3.8, 4.4, "#2f6fbf"));
+  L.eggs = I(38, 18, sh(36) + [-12, -4, 4, 12].map(x => `<ellipse cx="${x}" cy="-10.5" rx="4.2" ry="5.4" fill="#f1d9b8"/><ellipse cx="${x - 1.4}" cy="-12.5" rx="1.2" ry="1.8" fill="#fff" opacity=".6"/>`).join("") +
+    `<path d="M-18 -8H18L16 0H-16Z" fill="#c9bfae"/><path d="M-18 -8H18" stroke="#b3a893" stroke-width=".8"/>` + [-12, -4, 4, 12].map(x => `<path d="M${x - 3.6} -8Q${x} -4 ${x + 3.6} -8" fill="none" stroke="#b3a893" stroke-width=".6"/>`).join(""));
+
+  /* ===== Fleisch & Fisch ===== */
+  L.chicken = tray({ food: `<path d="M-15 -9C-15 -16 -4 -17 -1 -12C1 -9 -2 -8 -6 -8.5Z" fill="#f2b3a6"/><path d="M-2 -9C-1 -17 12 -18 15 -11C16 -8 10 -8 6 -8.6Z" fill="#eea597"/><path d="M-12 -13Q-7 -15 -3 -12.5M2 -13Q8 -16 12 -12" stroke="#fff" stroke-width=".8" fill="none" opacity=".5"/>` });
+  L.turkey = tray({ base: "#3a5a40", rim: "#557a5b", food: `<path d="M-15 -9C-14 -15 -2 -16 0 -11Z" fill="#f4c2b5"/><path d="M-1 -9C0 -15 12 -16 15 -10Z" fill="#efb5a6"/>` });
+  L.mince = tray({ base: "#d9dee4", rim: "#c0c8d0", food: `<path d="M-15 -9C-14 -17 14 -17 15 -9Z" fill="#c8545a"/>` + Array.from({ length: 16 }, (_, i) => `<circle cx="${-11 + (i % 8) * 3.1}" cy="${-11 - Math.floor(i / 8) * 2.4}" r="1" fill="#e98a8f"/>`).join("") });
+  L.steak = tray({ base: "#2d3036", food: `<path d="M-14 -9C-15 -16 -2 -18 6 -15C14 -13 15 -10 12 -9Z" fill="#b8323a"/><path d="M-10 -12Q-2 -14 6 -12" stroke="#f3d6d0" stroke-width="1" fill="none"/><path d="M12 -9C14 -11 14 -13 10 -14" stroke="#f6e3c7" stroke-width="2" fill="none"/>` });
+  L.salmon = tray({ base: "#e9eef3", rim: "#c4ccd6", food: `<path d="M-14 -8C-13 -15 12 -16 15 -9Z" fill="#f08a4b"/>` + [-8, -3, 2, 7, 11].map(x => `<path d="M${x} -14Q${x + 2} -11 ${x + 1} -9" stroke="#fde3cf" stroke-width=".9" fill="none"/>`).join("") });
+  L.fish = tray({ base: "#e9eef3", rim: "#c4ccd6", food: `<path d="M-14 -9C-12 -15 10 -15 14 -9Z" fill="#f4efe6"/><path d="M-9 -12Q0 -14 9 -12" stroke="#ddd3c3" stroke-width=".8" fill="none"/>` });
+  L.shrimp = tray({ base: "#e9eef3", rim: "#c4ccd6", food: [-9, 0, 9].map(x => `<path d="M${x - 4} -9C${x - 5} -14 ${x + 3} -16 ${x + 4} -11C${x + 2} -12 ${x - 1} -12 ${x - 1} -9Z" fill="#f59a7a"/>`).join("") });
+  L.ham = I(34, 14, sh(32) + `<rect x="-16" y="-11" width="32" height="11" rx="2" fill="#e9eef3"/><ellipse cx="-2" cy="-7" rx="11" ry="4.5" fill="#f1a7a9"/><ellipse cx="2" cy="-8" rx="11" ry="4.5" fill="#f4b6b7"/><path d="M-9 -8Q2 -11 13 -8" stroke="#fbe1e1" stroke-width="1" fill="none"/>` + hl(-14, -10, 7, 1.2));
+  L.sausage = I(34, 14, sh(32) + [-6, -2, 2].map((y, i) => `<path d="M-14 ${y - 4}Q0 ${y - 7} 14 ${y - 4}" stroke="${["#c66b3d", "#d27a47", "#c66b3d"][i]}" stroke-width="4.4" stroke-linecap="round" fill="none"/>`).join("") + `<path d="M-12 -12Q0 -14 12 -12" stroke="#fff" stroke-width=".9" fill="none" opacity=".4"/>`);
+  L.tuna = I(26, 12, sh(24) + `<rect x="-12" y="-9" width="24" height="9" rx="2" fill="#2f6fbf"/><rect x="-12" y="-9" width="24" height="2" fill="#c9ced5"/>` + txt("THUNFISCH", -2.6, 3.4) + hl(-10, -6, 4, 1.2));
+  L.bacon = I(34, 12, sh(32) + `<rect x="-16" y="-10" width="32" height="10" rx="2" fill="#e9eef3"/>` + [-7.5, -5, -2.5].map((y, i) => `<path d="M-13 ${y}Q-6 ${y - 2} 0 ${y}T13 ${y}" stroke="${i % 2 ? "#f6dcd0" : "#c94b4b"}" stroke-width="2.2" fill="none"/>`).join(""));
+
+  /* ===== Gemüse ===== */
+  L.broccoli = I(28, 34, sh(24) + `<path d="M-3 0L-2.5 -14H2.5L3 0Z" fill="#9cc56a"/><path d="M0 -12L-6 -18M0 -12L6 -18" stroke="#9cc56a" stroke-width="2.4"/>` +
+    [[-6, -22, 6.5], [5, -23, 7], [0, -29, 6.5], [-9, -15, 5], [9, -16, 5]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#3f8f3a"/><circle cx="${x - r * .3}" cy="${y - r * .3}" r="${r * .5}" fill="#5aac4c"/>`).join(""));
+  L.cauliflower = I(30, 28, sh(28) + `<path d="M-14 -6Q-16 -2 -10 0H10Q16 -2 14 -6Z" fill="#7fae5a"/>` + [[-7, -12, 6.5], [6, -12, 6.5], [0, -18, 7], [-10, -7, 4], [10, -7, 4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f5efd9"/><circle cx="${x - 1.5}" cy="${y - 1.5}" r="${r * .45}" fill="#fffaf0"/>`).join(""));
+  L.pepper = I(24, 30, sh(20) + `<path d="M-10 -16C-11 -6 -6 0 -2 0C0 -2 2 -2 3 0C7 0 11 -7 10 -16C9 -21 -9 -21 -10 -16Z" fill="#d9261a"/><path d="M4 -14Q6 -7 3 -2" stroke="#a5150d" stroke-width="2.4" fill="none" opacity=".5"/>` +
+    `<path d="M-1 -19C-1 -23 1 -25 4 -26" stroke="#3f8f3a" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="0" cy="-19" rx="4" ry="1.6" fill="#3f8f3a"/><path d="M-6 -15Q-7 -9 -5 -5" stroke="#fff" stroke-width="1.4" opacity=".45" fill="none" stroke-linecap="round"/>`);
+  L.pepperY = { ...L.pepper, svg: L.pepper.svg.replace("#d9261a", "#f2c12e").replace("#a5150d", "#c99a12") };
+  L.pepperG = { ...L.pepper, svg: L.pepper.svg.replace("#d9261a", "#4c9a3f").replace("#a5150d", "#2f6e2a") };
+  L.tomato = round({ c: "#e8392b", d: "#a71d14", r: 8, shape: "round", stem: "", leaf: "", spot: `<path d="M-4 -16L0 -14L4 -16L2 -13L5 -12L0 -12.5L-5 -12L-2 -13Z" fill="#3f8f3a"/>` });
+  L.cucumber = oblong({ c: "#3e8a3a", d: "#2a6a27", len: 32, r: 4, lines: [-8, 0, 8].map(x => `<circle cx="${x}" cy="-5" r=".6" fill="#a9d18e"/>`).join("") });
+  L.zucchini = oblong({ c: "#2f6e2a", d: "#1f4f1c", len: 32, r: 4.4, end: `<rect x="14" y="-6" width="4" height="3" rx="1" fill="#9cc56a"/>` });
+  L.carrot = I(34, 12, sh(30) + `<path d="M-12 -9Q4 -8 16 -4Q4 -1 -12 -1Z" fill="#f28c28"/><path d="M-8 -7L-6 -4M-2 -7L0 -4M4 -6L5 -4" stroke="#d26b12" stroke-width=".7"/><path d="M-12 -6L-17 -10M-12 -5L-18 -6M-12 -5L-16 -2" stroke="#4c9a3f" stroke-width="1.6" stroke-linecap="round"/>`);
+  L.onion = round({ c: "#d79b4b", d: "#a8692a", r: 8, shape: "round", leaf: "", stem: "#a8692a", spot: `<path d="M-4 -14Q0 -2 4 -14" stroke="#b97c35" stroke-width=".7" fill="none"/><path d="M-2 0L-3 2M0 0V2.4M2 0L3 2" stroke="#8a5a2a" stroke-width=".6"/>` });
+  L.redonion = round({ c: "#8e3b6e", d: "#5e2247", r: 8, shape: "round", leaf: "", stem: "#5e2247" });
+  L.garlic = I(18, 18, sh(16) + `<path d="M0 -15C-8 -12 -9 -2 -4 0H4C9 -2 8 -12 0 -15Z" fill="#f4efe6"/><path d="M0 -15V-18M-3 -12Q-4 -5 -2 0M3 -12Q4 -5 2 0" stroke="#d8cfc0" stroke-width=".8" fill="none"/>`);
+  L.potato = I(24, 16, sh(22) + `<path d="M-11 -6C-12 -12 -2 -14 6 -12C12 -10 12 -2 6 -1C0 0 -10 0 -11 -6Z" fill="#c9a26b"/><circle cx="-4" cy="-8" r=".8" fill="#9c7a48"/><circle cx="4" cy="-6" r=".7" fill="#9c7a48"/><circle cx="1" cy="-10" r=".6" fill="#9c7a48"/>` + hl(-8, -10, 4, 1.2));
+  L.sweetpotato = I(30, 14, sh(28) + `<path d="M-14 -6C-10 -12 8 -12 14 -6C8 -1 -10 -1 -14 -6Z" fill="#b8573a"/><path d="M-8 -8Q0 -9 8 -8" stroke="#d47a5c" stroke-width=".8" fill="none"/>`);
+  L.potatoes = I(36, 22, sh(34) + `<path d="M-16 0V-14Q0 -22 16 -14V0Z" fill="#c9a26b" opacity=".35"/>` + [[-8, -5], [3, -5], [-3, -12], [8, -11]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="4.6" fill="#c9a26b"/><circle cx="${x - 1.5}" cy="${y - 1}" r=".6" fill="#9c7a48"/>`).join("") +
+    `<path d="M-16 0V-14Q0 -22 16 -14V0" fill="none" stroke="#d24b3a" stroke-width=".7" stroke-dasharray="1.6 1.4"/><rect x="-6" y="-21" width="12" height="4" rx="1" fill="#d24b3a"/>`);
+  L.mushroom = I(30, 18, sh(28) + [[-7, 0], [6, 1]].map(([x, s]) => `<rect x="${x - 2}" y="-7" width="4" height="7" rx="1.5" fill="#efe6da"/><path d="M${x - 7} -6C${x - 7} -14 ${x + 7} -14 ${x + 7} -6Z" fill="${s ? "#c8a98a" : "#d9bfa3"}"/>`).join(""));
+  L.lettuce = I(30, 24, sh(28) + [[-7, -9, 8], [7, -9, 8], [0, -14, 9], [0, -7, 8]].map(([x, y, r], i) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${["#7fbf4d", "#6aa83d", "#92cf5c", "#5d9a34"][i]}"/>`).join("") + `<path d="M0 -20V-2M-6 -14L0 -8L6 -14" stroke="#c8e6a0" stroke-width=".8" fill="none"/>`);
+  L.spinach = bag({ c: "#e8f3df", band: "#3f8f3a", t: "SPINAT", w: 26, h: 30, line: "#cfe3bc", win: (w, h, x, y) => [0, 1, 2, 3, 4].map(i => `<ellipse cx="${x + 4 + (i % 3) * 7}" cy="${y + 5 + Math.floor(i / 3) * 7}" rx="3.4" ry="2.2" fill="#3f8f3a" transform="rotate(${i * 30 - 30} ${x + 4 + (i % 3) * 7} ${y + 5 + Math.floor(i / 3) * 7})"/>`).join("") });
+  L.avocado = I(20, 26, sh(18) + `<path d="M0 -24C-5 -24 -6 -16 -8 -12C-11 -6 -8 0 0 0C8 0 11 -6 8 -12C6 -16 5 -24 0 -24Z" fill="#3d5a1e"/><path d="M0 -18C-3 -18 -4 -12 -5 -10C-7 -6 -5 -3 0 -3C5 -3 7 -6 5 -10C4 -12 3 -18 0 -18Z" fill="#c5d96a"/><circle cx="0" cy="-8" r="3.2" fill="#8a5a2a"/>`);
+  L.corn = can({ c: "#f2c12e", t: "MAIS", band: "#2f7d32", tc: "#fff" });
+  L.beans = can({ c: "#8e3b2b", t: "BOHNEN", band: "#f4efe6" });
+  L.chickpeas = can({ c: "#d9a441", t: "KICHERERB.", band: "#fff", tc: "#8a5a1a" });
+  L.passata = jar({ glass: "#f4d6d0", fill: "#c0392b", lid: "#2f7d32", t: "TOMATE", w: 18, h: 30 });
+  L.tomatocan = can({ c: "#c0392b", t: "TOMATEN", band: "#fff" });
+  L.frozenveg = bag({ c: "#2f6fbf", band: "#1d4f96", t: "GEMÜSE", w: 28, h: 34, line: "#2a5fa6", top: "crimp", win: (w, h, x, y) => [["#f28c28", 0], ["#3f8f3a", 1], ["#f2c12e", 2], ["#3f8f3a", 3], ["#f28c28", 4], ["#e8392b", 5]].map(([c, i]) => `<circle cx="${x + 4 + (i % 3) * 6.5}" cy="${y + 4 + Math.floor(i / 3) * 6}" r="2.4" fill="${c}"/>`).join("") });
+  L.peas = bag({ c: "#2f6fbf", band: "#1d4f96", t: "ERBSEN", w: 26, h: 32, line: "#2a5fa6", top: "crimp", win: (w, h, x, y) => Array.from({ length: 8 }, (_, i) => `<circle cx="${x + 3 + (i % 4) * 4.5}" cy="${y + 4 + Math.floor(i / 4) * 5}" r="2" fill="#6abf4b"/>`).join("") });
+
+  /* ===== Obst ===== */
+  L.apple = round({ c: "#e0322a", d: "#a51a14", r: 9 });
+  L.greenapple = round({ c: "#8cc63f", d: "#5d9a23", r: 9 });
+  L.pear = round({ c: "#c8d65a", d: "#93a431", r: 8, shape: "pear" });
+  L.orange = round({ c: "#f7941d", d: "#c96c08", r: 9, shape: "round", stem: "", spot: `<circle cx="0" cy="-17" r="1" fill="#6b8e23"/>` });
+  L.lemon = round({ c: "#f7d633", d: "#d4ae12", r: 7, shape: "lemon", stem: "", leaf: "" });
+  L.lime = round({ c: "#8cc63f", d: "#5d9a23", r: 6.5, shape: "lemon", stem: "", leaf: "" });
+  L.kiwi = I(22, 16, sh(20) + `<ellipse cx="0" cy="-7" rx="10" ry="7" fill="#8b6a3e"/><ellipse cx="4" cy="-7.5" rx="5.5" ry="5.5" fill="#9ccc3a"/><ellipse cx="4" cy="-7.5" rx="2" ry="2" fill="#f4f1c9"/>` + Array.from({ length: 8 }, (_, i) => `<circle cx="${4 + Math.cos(i * .785) * 3.3}" cy="${-7.5 + Math.sin(i * .785) * 3.3}" r=".45" fill="#222"/>`).join(""));
+  L.banana = I(36, 18, sh(30) + `<path d="M-16 -6C-10 2 10 2 16 -10C14 -11 12 -10 11 -9C6 -3 -8 -2 -13 -8Z" fill="#f4cd3a"/><path d="M-15 -10C-8 -2 10 -3 16 -14C14 -15 12 -14 11 -13C6 -6 -7 -6 -12 -12Z" fill="#ffdc4f"/>` +
+    `<path d="M16 -14L18 -16M16 -10L18 -11" stroke="#6b5426" stroke-width="1.6" stroke-linecap="round"/><path d="M-14 -11L-16 -12" stroke="#5a4420" stroke-width="1.6" stroke-linecap="round"/>`);
+  L.grapes = I(24, 30, sh(18) + [[0, -24], [-5, -20], [5, -20], [-7, -14], [0, -15], [7, -14], [-4, -9], [4, -9], [0, -4]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#7b4fa0"/><circle cx="${x - 1}" cy="${y - 1}" r="1" fill="#b48fd6"/>`).join("") + `<path d="M0 -27L1 -31" stroke="#6b4426" stroke-width="1.2"/>`);
+  L.berries = I(28, 20, sh(26) + `<path d="M-13 -11H13L11 0H-11Z" fill="#f4efe6" stroke="#d8cfc0" stroke-width=".6"/>` + [[-8, -12], [-3, -13], [2, -12], [7, -13], [-5, -15], [1, -16], [6, -15.5]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.7" fill="#3a2a6e"/><circle cx="${x - .8}" cy="${y - .8}" r=".8" fill="#8a7bd8"/>`).join(""));
+  L.strawberry = I(28, 20, sh(26) + `<path d="M-13 -10H13L11 0H-11Z" fill="#f4efe6" stroke="#d8cfc0" stroke-width=".6"/>` + [[-7, -11], [0, -12], [7, -11], [-3, -15], [4, -15]].map(([x, y]) => `<path d="M${x} ${y + 4}C${x - 4} ${y} ${x - 3} ${y - 4} ${x} ${y - 3}C${x + 3} ${y - 4} ${x + 4} ${y} ${x} ${y + 4}Z" fill="#e22d36"/><path d="M${x - 2} ${y - 3.5}L${x} ${y - 2.5}L${x + 2} ${y - 3.5}" stroke="#3f8f3a" stroke-width="1.1" fill="none"/>`).join(""));
+  L.mango = I(24, 20, sh(22) + `<path d="M-11 -8C-11 -16 8 -18 11 -9C12 -3 4 0 -3 0C-8 0 -11 -3 -11 -8Z" fill="#f6a723"/><path d="M-2 -16C4 -17 10 -13 11 -9" stroke="#e25d2b" stroke-width="3" fill="none" opacity=".6"/>`);
+  L.pineapple = I(20, 38, sh(18) + `<ellipse cx="0" cy="-10" rx="8" ry="10" fill="#e8a92b"/>` + [-4, 0, 4].map(x => `<path d="M${x - 4} -16L${x + 4} -4M${x + 4} -16L${x - 4} -4" stroke="#b97c1a" stroke-width=".6"/>`).join("") + `<path d="M0 -20L-5 -32M0 -20L0 -35M0 -20L5 -32M0 -20L-8 -27M0 -20L8 -27" stroke="#3f8f3a" stroke-width="2" stroke-linecap="round"/>`);
+  L.melon = I(32, 26, sh(30) + `<circle cx="0" cy="-12" r="12" fill="#4c9a3f"/><path d="M-6 -23Q-9 -12 -6 -1M0 -24V0M6 -23Q9 -12 6 -1" stroke="#2f6e2a" stroke-width="1.4" fill="none"/>` + hl(-8, -18, 8, 1.6));
+  L.dates = I(26, 10, sh(24) + [-8, -2, 4, 9].map(x => `<ellipse cx="${x}" cy="-3.5" rx="3.4" ry="2.6" fill="#7a4520"/>`).join(""));
+
+  /* ===== Tiefkühl ===== */
+  L.frozenberries = bag({ c: "#4a69d9", band: "#26409e", t: "BEEREN", w: 26, h: 34, line: "#3653b8", top: "crimp", win: (w, h, x, y) => [[3, 4], [9, 3], [15, 5], [6, 9], [12, 10]].map(([a, b]) => `<circle cx="${x + a}" cy="${y + b}" r="2.6" fill="#3a2a6e"/>`).join("") });
+  L.pizza = I(40, 8, sh(38) + `<rect x="-19" y="-6" width="38" height="6" rx="1" fill="#c0392b"/><rect x="-19" y="-6" width="38" height="1.6" fill="#e74c3c"/>` + txt("PIZZA", -1.5, 4, "#fff"));
+  L.icecream = tub({ t: "EIS", c: "#f3a6c8", w: 30, h: 16, lid: "#e57fae" });
+  L.fishsticks = box({ c: "#2f6fbf", top: "#f2c12e", t: "FISCH", w: 30, h: 14, motif: [-8, 0, 8].map(x => `<rect x="${x - 3}" y="-6" width="6" height="3" rx="1" fill="#f2c12e"/>`).join("") });
+  L.fries = bag({ c: "#f2c12e", band: "#c0392b", t: "POMMES", w: 26, h: 34, line: "#d6a51e", top: "crimp", win: (w, h, x, y) => Array.from({ length: 6 }, (_, i) => `<rect x="${x + 2 + i * 3}" y="${y + 2 + (i % 2) * 2}" width="2" height="9" rx=".6" fill="#f7dd77" transform="rotate(${(i % 3) * 8 - 8} ${x + 3 + i * 3} ${y + 6})"/>`).join("") });
+
+  /* ===== Kartoffeln, Reis, Nudeln, Brot ===== */
+  L.rice = bag({ c: "#f7f3ea", band: "#c43c2f", t: "REIS", w: 26, h: 34, line: "#d8cfbb", win: (w, h, x, y) => Array.from({ length: 14 }, (_, i) => `<ellipse cx="${x + 2.5 + (i % 5) * 3.5}" cy="${y + 3 + Math.floor(i / 5) * 4}" rx="1.2" ry=".6" fill="#fff" stroke="#e1d7c0" stroke-width=".25"/>`).join("") });
+  L.pasta = bag({ c: "#fff8e4", band: "#1f5fae", t: "PENNE", w: 26, h: 34, win: (w, h, x, y) => Array.from({ length: 9 }, (_, i) => { const cx = x + 3 + (i % 3) * 6, cy = y + 3 + Math.floor(i / 3) * 5.5; return `<rect x="${cx}" y="${cy}" width="5" height="2" rx=".6" fill="#f0c55a" transform="rotate(${(i * 37) % 60 - 30} ${cx + 2.5} ${cy + 1})"/>`; }).join("") });
+  L.spaghetti = I(14, 46, sh(12) + `<rect x="-5" y="-44" width="10" height="44" rx="2" fill="#fff8e4" stroke="#e4d6ae" stroke-width=".5"/>` + [-3, -1, 1, 3].map(x => `<line x1="${x}" y1="-42" x2="${x}" y2="-2" stroke="#f0c55a" stroke-width=".9"/>`).join("") + `<rect x="-5" y="-28" width="10" height="10" fill="#1f5fae"/>`);
+  L.oats = box({ t: "HAFER", motif: `<ellipse cx="0" cy="-15" rx="7" ry="5" fill="#fbf1dc"/>` + [[-3, -16], [1, -14], [3, -17], [-1, -18]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="1.6" ry="1" fill="#d9b673"/>`).join("") });
+  L.cereal = box({ c: "#f2c12e", top: "#c0392b", t: "MÜSLI", w: 24, h: 40, motif: `<ellipse cx="0" cy="-16" rx="8" ry="5" fill="#fff"/>` + [[-4, -17], [0, -15], [4, -17], [-2, -19], [2, -19]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.4" fill="#b8742a"/>`).join("") });
+  L.bread = I(34, 18, sh(32) + `<path d="M-15 0V-8C-15 -17 15 -17 15 -8V0Z" fill="#c98b45"/><path d="M-8 -14L-5 -9M-1 -15L2 -10M6 -14L9 -9" stroke="#f2d3a0" stroke-width="1.4" stroke-linecap="round"/>` + hl(-11, -10, 7, 1.4));
+  L.toast = I(30, 22, sh(28) + `<path d="M-14 0V-14C-16 -21 -6 -21 -4 -18C-2 -21 2 -21 4 -18C6 -21 16 -21 14 -14V0Z" fill="#fbe9c8" stroke="#e2c38f" stroke-width=".7"/><rect x="-14" y="-10" width="28" height="6" fill="#d24b3a" opacity=".85"/>` + txt("TOAST", -5.6, 4));
+  L.rolls = I(32, 14, sh(30) + [[-8, 0], [8, 0]].map(([x]) => `<ellipse cx="${x}" cy="-6" rx="7.5" ry="5.5" fill="#d79b4b"/><path d="M${x - 3} -9Q${x} -6 ${x + 3} -9" stroke="#f2d3a0" stroke-width="1" fill="none"/>`).join(""));
+  L.wraps = I(30, 10, sh(28) + `<rect x="-14" y="-8" width="28" height="8" rx="2" fill="#f4e3c1"/><rect x="-14" y="-8" width="28" height="3" fill="#2f7d32"/>` + txt("WRAPS", -1.6, 3.6, "#7a5a2a"));
+  L.ricecakes = I(20, 24, sh(18) + `<rect x="-8" y="-22" width="16" height="22" rx="7" fill="#f7f3ea" stroke="#d8cfbb" stroke-width=".6"/>` + [-18, -13, -8, -3].map(y => `<line x1="-7" y1="${y}" x2="7" y2="${y}" stroke="#e1d7c0" stroke-width=".7"/>`).join("") + `<rect x="-8" y="-15" width="16" height="6" fill="#d24b3a"/>`);
+
+  /* ===== Öl, Backen, Gewürze, Saucen ===== */
+  L.oil = bottle({ t: "OLIVE" });
+  L.rapeoil = bottle({ c: "#f2c12e", cap: "#d4ae12", t: "RAPS", alpha: .85 });
+  L.vinegar = bottle({ c: "#7a2e1d", cap: "#222", t: "ESSIG", alpha: .9, h: 40 });
+  L.soy = bottle({ c: "#3a1f12", cap: "#c0392b", t: "SOJA", h: 36, w: 12 });
+  L.ketchup = bottle({ c: "#c0392b", cap: "#fff", t: "KETCHUP", h: 36, w: 16, neck: 6, label: "#fff", lc: "#c0392b" });
+  L.mustard = bottle({ c: "#f2c12e", cap: "#c0392b", t: "SENF", h: 32, w: 14, neck: 6 });
+  L.mayo = jar({ glass: "#fbf8ef", fill: "#f7efd2", lid: "#1f5fae", t: "MAYO", w: 20, h: 22 });
+  L.pesto = jar({ glass: "#dbe7c9", fill: "#4c7a25", lid: "#c0392b", t: "PESTO", w: 18, h: 18 });
+  L.honey = jar({ glass: "#f6e7b5", fill: "#e8a92b", lid: "#6b4426", t: "HONIG" });
+  L.jam = jar({ glass: "#f2d0d6", fill: "#b3203a", lid: "#e8eef4", t: "MARM.", w: 18, h: 22 });
+  L.pb = jar({ glass: "#f2e4cc", fill: "#b8742a", lid: "#c0392b", t: "ERDNUSS", w: 22, h: 22 });
+  L.nutella = jar({ glass: "#ece2d6", fill: "#5a3a22", lid: "#fff", t: "CREME", w: 20, h: 22 });
+  L.flour = bag({ c: "#fbf8f1", band: "#2f6fbf", t: "MEHL", w: 24, h: 32, line: "#e3dccb" });
+  L.sugar = bag({ c: "#fbf8f1", band: "#d24b3a", t: "ZUCKER", w: 24, h: 30, line: "#e3dccb" });
+  L.bakingpowder = I(12, 12, sh(10) + `<rect x="-5" y="-10" width="10" height="10" rx="1" fill="#f4e3c1"/><rect x="-5" y="-10" width="10" height="3" fill="#c0392b"/>`);
+  L.salt = I(14, 28, sh(12) + `<rect x="-6" y="-24" width="12" height="24" rx="2" fill="#2f6fbf"/><path d="M-6 -24L-3 -27H3L6 -24Z" fill="#9fb8dc"/>` + txt("SALZ", -10, 3.6) + hl(-4.5, -21, 18, 1.2));
+  L.peppermill = I(12, 34, sh(10) + `<path d="M-4 0V-20Q-6 -26 -3 -30H3Q6 -26 4 -20V0Z" fill="#5a3a22"/><circle cx="0" cy="-32" r="2" fill="#3a2414"/>` + hl(-2.6, -26, 22, 1));
+  L.spice = I(12, 24, sh(10) + `<rect x="-5" y="-18" width="10" height="18" rx="1.5" fill="#fff" opacity=".7" stroke="#d8dee6" stroke-width=".5"/><rect x="-4.3" y="-12" width="8.6" height="11.5" rx="1" fill="#c0392b"/><rect x="-5" y="-22" width="10" height="4" rx="1" fill="#e8eef4"/>`);
+  L.cinnamon = { ...L.spice, svg: L.spice.svg.replace("#c0392b", "#8a4b1f") };
+  L.herbs = { ...L.spice, svg: L.spice.svg.replace("#c0392b", "#4c7a25") };
+  L.stock = box({ c: "#f2c12e", top: "#c0392b", t: "BRÜHE", w: 20, h: 16 });
+
+  /* ===== Süßes & Snacks ===== */
+  L.chocolate = I(36, 10, sh(34) + `<rect x="-17" y="-8" width="34" height="8" rx="1" fill="#6d3b1f"/><rect x="-17" y="-8" width="20" height="8" fill="#7d4bb3"/>` + txt("SCHOKO", -2.2, 3.6) + `<path d="M3 -8H17" stroke="#8a5233" stroke-width=".6"/>`);
+  L.proteinbar = I(32, 8, sh(30) + `<rect x="-15" y="-7" width="30" height="7" rx="1.4" fill="#222b38"/><path d="M-15 -7L-17 -5.5L-15 -4L-17 -2.5L-15 -1" fill="none" stroke="#222b38" stroke-width="1"/><rect x="-7" y="-6" width="14" height="5" rx="1" fill="#f28c28"/>` + txt("PROTEIN", -2.6, 3, "#fff", 800));
+  L.gummies = bag({ c: "#f7d633", band: "#d24b3a", t: "GUMMI", w: 24, h: 30, line: "#d4ae12", top: "crimp", win: (w, h, x, y) => [["#e22d36", 4, 4], ["#2f9e44", 10, 5], ["#f28c28", 15, 3], ["#e22d36", 7, 10], ["#2f6fbf", 13, 10]].map(([c, a, b]) => `<circle cx="${x + a}" cy="${y + b}" r="2.3" fill="${c}"/>`).join("") });
+  L.chips = bag({ c: "#f2c12e", band: "#c0392b", t: "CHIPS", w: 26, h: 34, line: "#d6a51e", top: "crimp", win: (w, h, x, y) => [[5, 5], [12, 4], [8, 10], [14, 11]].map(([a, b]) => `<ellipse cx="${x + a}" cy="${y + b}" rx="3.6" ry="2.6" fill="#f7dd77" stroke="#d6a51e" stroke-width=".4"/>`).join("") });
+  L.cookies = I(32, 12, sh(30) + `<rect x="-15" y="-10" width="30" height="10" rx="2" fill="#2f6fbf"/>` + [-9, -3, 3, 9].map(x => `<circle cx="${x}" cy="-5" r="3.4" fill="#c98b45"/><circle cx="${x - 1}" cy="-6" r=".6" fill="#5a3a22"/>`).join(""));
+  L.nuts = bag({ c: "#f2e4cc", band: "#6b4426", t: "NÜSSE", w: 24, h: 30, line: "#d8c49e", win: (w, h, x, y) => [[4, 4], [10, 3], [15, 5], [6, 9], [12, 9]].map(([a, b]) => `<ellipse cx="${x + a}" cy="${y + b}" rx="2.6" ry="1.8" fill="#b8742a"/>`).join("") });
+  L.protein = I(30, 36, sh(28) + `<rect x="-13" y="-30" width="26" height="30" rx="4" fill="#222b38"/><rect x="-12" y="-35" width="24" height="6" rx="2" fill="#f28c28"/><rect x="-13" y="-22" width="26" height="12" fill="#f28c28"/>` + txt("WHEY", -14, 5.4, "#222b38") + side(9, -30, 4, 30) + hl(-11, -28, 24, 1.6));
+  L.creatine = I(20, 26, sh(18) + `<rect x="-8" y="-20" width="16" height="20" rx="3" fill="#f4f6f8"/><rect x="-7" y="-25" width="14" height="5" rx="1.5" fill="#2f6fbf"/><rect x="-8" y="-14" width="16" height="7" fill="#2f6fbf"/>` + txt("KREATIN", -9.4, 2.8));
+
+  /* ===== Getränke ===== */
+  L.water = bottle({ c: "#cfe8f7", cap: "#2f7fe0", label: "#2f7fe0", t: "WASSER", alpha: .9, h: 50, w: 15, lc: "#fff" });
+  L.cola = can({ c: "#c4161c", t: "COLA", band: "#c4161c", tc: "#fff", w: 14, h: 26 });
+  L.energy = can({ c: "#1f2937", t: "ENERGY", band: "#2ecc71", tc: "#1f2937", w: 12, h: 30 });
+  L.coffee = bag({ c: "#3a2414", band: "#c98b45", t: "KAFFEE", w: 24, h: 32, line: "#2a1a0e" });
+  L.tea = box({ c: "#2f7d32", top: "#f2c12e", t: "TEE", w: 26, h: 16 });
+  L.wine = bottle({ c: "#5a1022", cap: "#5a1022", t: "WEIN", h: 50, w: 13, neck: 16, alpha: .95 });
+  L.beer = bottle({ c: "#7a4a16", cap: "#c9a227", t: "BIER", h: 42, w: 13, neck: 12 });
+
+  /* ===== Sonstiges ===== */
+  L.jarGeneric = jar({ glass: "#e8eef4", fill: "#b5c3d1", lid: "#7a8a99" });
+  L.boxGeneric = box({ c: "#d8dee6", top: "#8a96a3", t: "", w: 22, h: 26 });
+  L.canGeneric = can({ c: "#8a96a3", t: "" });
+  L.tofu = I(28, 14, sh(26) + `<rect x="-13" y="-12" width="26" height="12" rx="2" fill="#e9eef3"/><rect x="-10" y="-10" width="20" height="8" rx="1" fill="#fbf7ea"/>` + txt("TOFU", -4.2, 3.8, "#2f7d32"));
+  L.hummus = tub({ t: "HUMMUS", c: "#d9a441", w: 24, h: 12, lid: "#e8c27a" });
+  return L;
+})();
+
+/* Produktname → Icon. Reihenfolge = Priorität (spezifisch vor allgemein). */
+const FOOD_RULES = [
+  [/erdnussbutter|peanut|mandelmus|nussmus|nussbutter/, "pb"], [/reiswaffel/, "ricecakes"], [/basmati|jasmin|milchreis|\breis\b|rice/, "rice"],
+  [/protein ?pudding|high protein pud|pudding/, "pudding"], [/whey|proteinpulver|protein ?pulver|isolat/, "protein"], [/kreatin|creatin/, "creatine"],
+  [/proteinriegel|protein ?bar|riegel/, "proteinbar"], [/skyr/, "skyr"], [/griech|greek/, "greek"], [/hüttenkäse|körniger frischkäse|cottage/, "cottage"],
+  [/frischkäse|philadelphia/, "creamcheese"], [/quark/, "quark"], [/joghurt|yogurt|jogurt/, "yogurt"], [/hafer ?milch|haferdrink|mandelmilch|sojamilch|oat/, "oatmilk"],
+  [/buttermilch|kefir/, "buttermilk"], [/sahne|schmand|crème|creme fraiche|saure sahne/, "cream"], [/milch|milk/, "milk"], [/butter|margarine/, "butter"],
+  [/mozzarella/, "mozzarella"], [/feta|hirtenkäse/, "feta"], [/scheiben|scheibletten|toastkäse/, "slices"], [/käse|cheese|parmesan|emmentaler/, "cheese"], [/eier|ei$|eggs?/, "eggs"],
+  [/lachs|salmon/, "salmon"], [/thunfisch|tuna/, "tuna"], [/garnele|shrimp|scampi/, "shrimp"], [/fischstäbchen/, "fishsticks"], [/fisch|kabeljau|seelachs|forelle|pangasius/, "fish"],
+  [/hack|mince/, "mince"], [/pute|truthahn|turkey/, "turkey"], [/hähnchen|haehnchen|huhn|chicken|geflügel/, "chicken"], [/steak|rind|beef|schwein|kotelett|schnitzel/, "steak"],
+  [/speck|bacon/, "bacon"], [/schinken|aufschnitt|salami|ham/, "ham"], [/würstchen|wurst|bratwurst|wiener/, "sausage"], [/tofu|tempeh/, "tofu"], [/hummus/, "hummus"],
+  [/pizza/, "pizza"], [/(^|\s)eis(\s|$)|eiscreme|speiseeis|ice ?cream/, "icecream"], [/pommes|fries/, "fries"], [/erbsen/, "peas"], [/beeren tk|tk.?beeren|tiefkühl.?beeren|beerenmisch/, "frozenberries"],
+  [/brokkoli|broccoli/, "broccoli"], [/blumenkohl/, "cauliflower"], [/gelbe paprika/, "pepperY"], [/grüne paprika/, "pepperG"], [/paprika/, "pepper"], [/tomatenmark|passata|passiert|tomatensoße|tomatensauce/, "passata"],
+  [/gehackte tomaten|dosentomaten|stückige tomaten/, "tomatocan"], [/tomate/, "tomato"], [/gurke/, "cucumber"], [/zucchini/, "zucchini"], [/möhre|karotte|rübe/, "carrot"],
+  [/rote zwiebel/, "redonion"], [/zwiebel|lauch|schalotte/, "onion"], [/knoblauch/, "garlic"], [/süßkartoffel/, "sweetpotato"], [/kartoffeln|potatoes/, "potatoes"], [/kartoffel|potato/, "potato"],
+  [/champignon|pilz/, "mushroom"], [/spinat|rucola|feldsalat/, "spinach"], [/salat|eisberg|romana/, "lettuce"], [/avocado/, "avocado"], [/mais/, "corn"],
+  [/kichererbse/, "chickpeas"], [/bohne|linse|kidney/, "beans"], [/gemüse|wok|gemuese/, "frozenveg"],
+  [/grüner apfel|granny/, "greenapple"], [/apfel|äpfel|apple/, "apple"], [/birne/, "pear"], [/orange|mandarine|clementine/, "orange"], [/zitrone|lemon/, "lemon"], [/limette/, "lime"],
+  [/kiwi/, "kiwi"], [/banane|banana/, "banana"], [/traube|weintraube/, "grapes"], [/erdbeer/, "strawberry"], [/heidelbeer|blaubeer|himbeer|beere/, "berries"], [/mango/, "mango"],
+  [/ananas/, "pineapple"], [/melone/, "melon"], [/dattel/, "dates"],
+  [/basmati|jasmin|reis(?!waffel)|rice/, "rice"], [/reiswaffel/, "ricecakes"], [/spaghetti|linguine/, "spaghetti"], [/nudel|penne|pasta|fusilli|makkaroni|tortellini/, "pasta"],
+  [/hafer|oat|porridge/, "oats"], [/müsli|muesli|granola|cornflakes|cerealien/, "cereal"], [/toast/, "toast"], [/brötchen|semmel/, "rolls"], [/wrap|tortilla/, "wraps"], [/brot|bread/, "bread"],
+  [/rapsöl|sonnenblumenöl/, "rapeoil"], [/öl\b|olivenöl|oil/, "oil"], [/essig|balsamico/, "vinegar"], [/soja ?soße|sojasauce|soy/, "soy"], [/ketchup/, "ketchup"], [/senf/, "mustard"],
+  [/mayo/, "mayo"], [/pesto/, "pesto"], [/honig|honey|sirup/, "honey"], [/marmelade|konfitüre|gelee/, "jam"], [/erdnussbutter|peanut|mandelmus|nussmus/, "pb"], [/nutella|nougat|schoko ?creme/, "nutella"],
+  [/mehl|flour/, "flour"], [/zucker|sugar|erythrit|xylit/, "sugar"], [/backpulver|natron|hefe|vanille/, "bakingpowder"], [/salz|salt/, "salt"], [/pfeffer/, "peppermill"], [/zimt/, "cinnamon"],
+  [/kräuter|oregano|basilikum|petersilie|thymian/, "herbs"], [/brühe|bouillon|fond/, "stock"], [/gewürz|curry|kurkuma|chili|paprikapulver/, "spice"],
+  [/schoko|chocolate|kakao/, "chocolate"], [/gummi|haribo|fruchtgummi/, "gummies"], [/chips|flips/, "chips"], [/keks|cookie|kekse|waffel/, "cookies"], [/nüsse|nuss|mandel|cashew|walnuss|studentenfutter/, "nuts"],
+  [/wasser|water|sprudel/, "water"], [/cola|limo|fanta|sprite/, "cola"], [/energy|red bull|monster/, "energy"], [/kaffee|coffee|espresso/, "coffee"], [/tee\b|tea/, "tea"],
+  [/saft|juice|smoothie/, "juice"], [/wein|wine|sekt/, "wine"], [/bier|beer/, "beer"]
+];
+const FOOD_CAT_FALLBACK = { milch: "yogurt", fleisch: "chicken", gemuese: "pepper", obst: "apple", tiefkuehl: "frozenveg", kohlenhydrate: "rice", oel: "oil", backen: "flour", gewuerze: "spice", suess: "chocolate", sonstiges: "boxGeneric" };
+function foodIconKey(p) {
+  const n = (p.name || "").toLowerCase();
+  for (const [re, k] of FOOD_RULES) if (re.test(n)) return k;
+  return FOOD_CAT_FALLBACK[p.cat] || "boxGeneric";
+}
+/* SVG für ein Produkt im Regal: bei mehreren Packungen bis zu 3 hintereinander */
+function foodSVG(key, copies, unit = 1.2, partial) {
+  const it = FI[key] || FI.boxGeneric;
+  const n = Math.max(1, Math.min(3, copies));
+  const off = it.w * .32, lift = 2.6;
+  const W = it.w + off * (n - 1) + 4, H = it.h + lift * (n - 1) + 4;
+  let g = "";
+  for (let i = n - 1; i >= 0; i--) {
+    const x = W / 2 + (i - (n - 1) / 2) * off, y = H - 2 - i * lift;
+    g += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"${i ? ` opacity=".93"` : ""}>${it.svg}</g>`;
+  }
+  return `<svg class="fi" viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" width="${(W * unit).toFixed(0)}" height="${(H * unit).toFixed(0)}"${partial ? ` style="opacity:.75"` : ""}>${g}</svg>`;
+}
+
 /* ---------- Kühlschrank ---------- */
 const FRIDGE_CATS = ["milch", "fleisch", "gemuese", "obst", "tiefkuehl"];
 const CUPBOARD_CATS = ["kohlenhydrate", "oel", "backen", "gewuerze", "suess", "sonstiges"];
@@ -1446,16 +1743,9 @@ const MAX_STACK = 5;
 function groupHTML(p) {
   const { full, partial } = packageInfo(p);
   const total = full + (partial ? 1 : 0);
-  /* Stapel von unten nach oben: volle Packungen, die angebrochene liegt oben */
-  const fullShown = Math.min(full, MAX_STACK - (partial ? 1 : 0));
-  let tiles = "";
-  for (let i = 0; i < fullShown; i++) tiles += pkgHTML(p);
-  if (partial) tiles += pkgHTML(p, partial);
-  const badge = total > 1 ? `<span class="cnt">${total}</span>` : "";
-  return `<div class="group" data-id="${p.id}">
-    <div class="stack">${tiles}${badge}</div>
-    <div class="group-name">${esc(p.name)}</div>
-  </div>`;
+  const unit = CUPBOARD_CATS.includes(p.cat) ? 1.0 : (p.cat === "gemuese" || p.cat === "obst") ? .95 : 1.2;
+  const badge = total > 1 ? `<span class="fcnt">${total}×</span>` : (partial && !full ? `<span class="fcnt part">½</span>` : "");
+  return `<div class="group fgrp" data-id="${p.id}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${foodSVG(foodIconKey(p), total, unit)}${badge}</div>`;
 }
 
 function compHTML(catId, extraClass = "") {
@@ -1469,7 +1759,7 @@ function renderFridge() {
   const view = $("view");
   const anything = products.some(inStock);
   view.innerHTML = `
-    <div class="kitchen">
+    <div class="kitchen flat">
       <div class="fridge">
         <div class="unit-title">Kühlschrank</div>
         ${compHTML("milch")}
@@ -4880,7 +5170,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "26";
+const APP_VERSION = "27";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
