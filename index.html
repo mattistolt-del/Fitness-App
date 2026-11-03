@@ -285,7 +285,7 @@
   .rmain { flex: 1; min-width: 0; }
   .rmain .mc-head b { font-size: 16px; line-height: 1.25; }
   .rmain .mc-kcal { font-size: 15px; }
-  .rhero { width: 100%; height: 210px; border-radius: 18px; overflow: hidden; margin-bottom: 10px; }
+  .rhero { width: 100%; aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; margin-bottom: 10px; }
   .rhero svg, .rhero img { width: 100%; height: 100%; display: block; object-fit: cover; }
   .photo-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 12px; }
   /* ---------- Realistischer Kühlschrank & Schrank ---------- */
@@ -384,12 +384,85 @@
     white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word;
   }
+  /* =========================================================
+     Farbiges Design (Version 12)
+     ========================================================= */
+  :root {
+    --bg: #f3f4f8; --card: #ffffff; --line: #e7e8ee; --muted: #858791; --ok: #16a34a;
+    --p: #3b82f6; --c: #f59e0b; --f: #ec4899; --radius: 18px;
+    --t1: #f43f5e; --t2: #fb923c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1115; --card: #1a1d23; --line: #2a2e36; --muted: #9a9ca6; --ok: #4ade80; }
+  }
+  body[data-tab="heute"]        { --t1: #f43f5e; --t2: #fb923c; --accent: #e11d48; --accent-soft: #ffe4e9; }
+  body[data-tab="kuehlschrank"] { --t1: #0ea5e9; --t2: #4f46e5; --accent: #2563eb; --accent-soft: #e0ebff; }
+  body[data-tab="mahlzeit"]     { --t1: #a855f7; --t2: #6366f1; --accent: #7c3aed; --accent-soft: #efe7ff; }
+  body[data-tab="produkte"]     { --t1: #10b981; --t2: #0891b2; --accent: #059669; --accent-soft: #d9f5ea; }
+  body[data-tab="vorschlaege"]  { --t1: #f59e0b; --t2: #ef4444; --accent: #ea580c; --accent-soft: #ffedd5; }
+  @media (prefers-color-scheme: dark) {
+    body[data-tab] { --accent-soft: color-mix(in srgb, var(--accent) 26%, #1a1d23); }
+  }
+
+  body { padding-top: 0; }
+  header {
+    position: relative; z-index: 5; color: #fff; margin: 0 0 16px;
+    padding: calc(16px + env(safe-area-inset-top)) 18px 20px;
+    border-radius: 0 0 28px 28px;
+    background:
+      radial-gradient(circle at 88% -30%, rgba(255,255,255,.28) 0 70px, transparent 71px),
+      radial-gradient(circle at 108% 95%, rgba(255,255,255,.14) 0 64px, transparent 65px),
+      radial-gradient(circle at 8% 130%, rgba(255,255,255,.10) 0 50px, transparent 51px),
+      linear-gradient(135deg, var(--t1), var(--t2));
+    box-shadow: 0 10px 26px -14px var(--t2);
+    transition: background .3s;
+  }
+  header h1 { color: #fff; font-size: 30px; text-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .h-text { min-width: 0; }
+  .subtitle { font-size: 14px; opacity: .92; margin-top: 3px; font-weight: 500; }
+  header .btn.round, header .btn.pill { background: #fff; color: var(--accent); box-shadow: 0 4px 14px rgba(0,0,0,.16); }
+
+  .card, .list, .shop-list, .chip { box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 6px 16px rgba(16,24,40,.05); border-radius: var(--radius); }
+  @media (prefers-color-scheme: dark) { .card, .list, .shop-list, .chip { box-shadow: none; } }
+  .cat-title { color: var(--accent); font-weight: 700; }
+  .search { border-radius: 14px; }
+
+  nav { background: color-mix(in srgb, var(--card) 90%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  nav button { padding-top: 7px; }
+  nav button .ic { width: 46px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+  nav button.active .ic { background: var(--accent-soft); }
+  nav button.active { color: var(--accent); }
+
+  /* Kalorien */
+  .ring-center b { color: var(--text); }
+  .bar { height: 10px; }
+  .bar > i { background-image: linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,0)); }
+  .slot { position: relative; overflow: hidden; padding-left: 18px; }
+  .slot::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--sc); }
+  .slot-head > span:first-child { display: flex; align-items: center; }
+  .slot-ic {
+    display: inline-flex; width: 34px; height: 34px; border-radius: 11px; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--sc) 18%, transparent); margin-right: 10px; font-size: 18px;
+  }
+  .slot .add-slot { color: var(--sc); }
+  .slot-kcal { color: var(--sc); }
+
+  /* Mahlzeiten & Ideen */
+  .meal-card { position: relative; overflow: hidden; padding-left: 18px; }
+  .meal-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, var(--t1), var(--t2)); }
+  .have { color: var(--ok); }
+  .tag { background: var(--accent-soft); color: var(--accent); }
+  .filters button.on { background: linear-gradient(135deg, var(--t1), var(--t2)); border-color: transparent; }
+  .btn { background: var(--accent); }
+  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+  .btn.danger { background: transparent; }
+  .rimg { box-shadow: 0 2px 8px rgba(0,0,0,.12); }
 </style>
 </head>
 <body>
 
 <header>
-  <h1 id="title">Produkte</h1>
+  <div class="h-text"><h1 id="title">Produkte</h1><div class="subtitle" id="subtitle"></div></div>
   <button class="btn round" id="addBtn" aria-label="Produkt hinzufügen">+</button>
 </header>
 
@@ -706,6 +779,7 @@ let currentTab = "produkte";
 
 function showTab(tab) {
   currentTab = tab;
+  document.body.dataset.tab = tab;
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   $("title").textContent = TABS[tab].title;
   const ab = $("addBtn");
@@ -713,6 +787,7 @@ function showTab(tab) {
   if (tab === "kuehlschrank") { ab.className = "btn pill"; ab.textContent = "🛒 Einkaufen"; }
   else { ab.className = "btn round"; ab.textContent = "+"; }
   TABS[tab].render();
+  if (typeof updateSub === "function") updateSub();
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
@@ -1285,11 +1360,11 @@ let log = loadJSON(LOG_KEY, []);           // Einträge im Kalorien-Tab
 let templates = loadJSON(TPL_KEY, []);     // gespeicherte Mahlzeiten
 
 const SLOTS = [
-  { id: "fruehstueck", name: "Frühstück",   icon: "🌅" },
-  { id: "snack1",      name: "Snack",       icon: "🍎" },
-  { id: "mittag",      name: "Mittagessen", icon: "🍽️" },
-  { id: "snack2",      name: "Snack",       icon: "🥨" },
-  { id: "abend",       name: "Abendbrot",   icon: "🌙" }
+  { id: "fruehstueck", name: "Frühstück",   icon: "🌅", color: "#f59e0b" },
+  { id: "snack1",      name: "Snack",       icon: "🍎", color: "#22c55e" },
+  { id: "mittag",      name: "Mittagessen", icon: "🍽️", color: "#f97316" },
+  { id: "snack2",      name: "Snack",       icon: "🥨", color: "#ec4899" },
+  { id: "abend",       name: "Abendbrot",   icon: "🌙", color: "#6366f1" }
 ];
 /* Einträge aus Version 4 einem Slot zuordnen */
 log.forEach(e => {
@@ -1507,8 +1582,9 @@ function renderToday() {
       <div class="ring-wrap">
         <div class="ring">
           <svg viewBox="0 0 132 132">
+            <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--t1)"/><stop offset="1" style="stop-color:var(--t2)"/></linearGradient></defs>
             <circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="12"/>
-            <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "var(--accent)"}" stroke-width="12"
+            <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "url(#ringGrad)"}" stroke-width="12"
               stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.min(1, share))}"/>
           </svg>
           <div class="ring-center"><b>${fmt(m.kcal)}</b><small>von ${fmt(targets.kcal)} kcal</small></div>
@@ -1534,8 +1610,8 @@ function renderToday() {
   for (const slot of SLOTS) {
     const se = entries.filter(e => e.slot === slot.id);
     const sk = sumMacros(se.map(e => e.totals)).kcal;
-    html += `<div class="card">
-      <div class="slot-head"><span>${slot.icon} <b>${slot.name}</b></span><span class="slot-kcal">${se.length ? `${Math.round(sk)} kcal` : ""}</span></div>
+    html += `<div class="card slot" style="--sc:${slot.color}">
+      <div class="slot-head"><span><span class="slot-ic">${slot.icon}</span><b>${slot.name}</b></span><span class="slot-kcal">${se.length ? `${Math.round(sk)} kcal` : ""}</span></div>
       ${se.map(e => `<div class="entry">
         <div class="item-main">
           <div class="item-name">${esc(e.name)}</div>
@@ -1768,88 +1844,487 @@ function seeded(seed) {
   for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
 }
-const rot = (a, x, y) => `transform="rotate(${a.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"`;
-const ART = {
-  haehnchen: { n: 5,  d: (x, y, a) => `<rect x="${x - 7}" y="${y - 3.5}" width="14" height="7" rx="3" fill="#ecc48f" stroke="#c98f4e" stroke-width="1" ${rot(a, x, y)}/>` },
-  pute:      { n: 5,  d: (x, y, a) => `<rect x="${x - 7}" y="${y - 3}" width="14" height="6" rx="3" fill="#f1d3a8" stroke="#d2a066" stroke-width="1" ${rot(a, x, y)}/>` },
-  hack:      { n: 16, d: (x, y, a, R) => `<circle cx="${x}" cy="${y}" r="${(2 + R() * 1.6).toFixed(1)}" fill="${R() > .5 ? "#7a4a2e" : "#8e5a37"}"/>` },
-  lachs:     { n: 1,  d: (x, y, a) => `<g ${rot(a, x, y)}><rect x="${x - 14}" y="${y - 8}" width="28" height="16" rx="4" fill="#f08a5d"/><path d="M${x - 8} ${y - 8}v16M${x - 1} ${y - 8}v16M${x + 6} ${y - 8}v16" stroke="#fde3d3" stroke-width="1.6"/></g>` },
-  thunfisch: { n: 8,  d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="4" ry="2.6" fill="#d9a99b" ${rot(a, x, y)}/>` },
-  garnelen:  { n: 6,  d: (x, y, a) => `<path d="M${x - 5} ${y} a5 5 0 1 1 5 5" fill="none" stroke="#f4978e" stroke-width="4" stroke-linecap="round" ${rot(a, x, y)}/>` },
-  eier:      { n: 2,  d: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="9" ry="7.5" fill="#fffdf7" stroke="#eee6d2"/><circle cx="${x + 1}" cy="${y}" r="3.6" fill="#f5b82e"/>` },
-  huettenkaese: { n: 12, d: (x, y) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#fffdf6" stroke="#e7e1d1" stroke-width=".8"/>` },
-  hafer:     { n: 18, d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="2.8" ry="1.8" fill="#d8bf8a" ${rot(a, x, y)}/>` },
-  reis:      { n: 34, d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.1" fill="#fffdf5" stroke="#e3dcc6" stroke-width=".5" ${rot(a, x, y)}/>` },
-  nudeln:    { n: 6,  d: (x, y, a) => `<path d="M${x - 9} ${y} q3 -4 6 0 t6 0 t6 0" fill="none" stroke="#f2cf6b" stroke-width="2.6" stroke-linecap="round" ${rot(a, x, y)}/>` },
-  kartoffel: { n: 5,  d: (x, y, a) => `<rect x="${x - 5}" y="${y - 4}" width="10" height="8" rx="3.5" fill="#e8c37a" stroke="#cfa255" stroke-width=".8" ${rot(a, x, y)}/>` },
-  suesskart: { n: 6,  d: (x, y, a) => `<rect x="${x - 5}" y="${y - 4}" width="10" height="8" rx="3" fill="#f39c4f" stroke="#d97c2b" stroke-width=".8" ${rot(a, x, y)}/>` },
-  wrap:      { n: 2,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#ead6aa" stroke="#cfae6e"/><path d="M${x} ${y} m-3 0 a3 3 0 1 1 3 3 a6 6 0 1 1 6 -6" fill="none" stroke="#c49a52" stroke-width="1.4"/><circle cx="${x + 4}" cy="${y - 5}" r="2" fill="#7cc04b"/>` },
-  brot:      { n: 1,  d: (x, y) => `<g ${rot(-8, x, y)}><path d="M${x - 13} ${y + 12} v-14 a13 9 0 0 1 26 0 v14 z" fill="#b87a3e"/><path d="M${x - 10} ${y + 9.5} v-11 a10 6.5 0 0 1 20 0 v11 z" fill="#f0d6a6"/></g>` },
-  paprika:   { n: 6,  d: (x, y, a, R) => `<rect x="${x - 6}" y="${y - 1.8}" width="12" height="3.6" rx="1.8" fill="${R() > .5 ? "#e8453c" : "#f5b82e"}" ${rot(a, x, y)}/>` },
-  brokkoli:  { n: 4,  d: (x, y) => `<rect x="${x - 1.5}" y="${y}" width="3" height="6" rx="1" fill="#8cbf5a"/><circle cx="${x - 3}" cy="${y - 1}" r="3.6" fill="#3f8f3a"/><circle cx="${x + 3}" cy="${y - 1}" r="3.6" fill="#3f8f3a"/><circle cx="${x}" cy="${y - 4}" r="3.8" fill="#4ea245"/>` },
-  zucchini:  { n: 6,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#5d9c41"/><circle cx="${x}" cy="${y}" r="3.6" fill="#dcecb4"/>` },
-  spinat:    { n: 5,  d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="3.4" fill="#2f6b2f" ${rot(a, x, y)}/>` },
-  tomate:    { n: 5,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="4.6" fill="#e74c3c"/><circle cx="${x - 1.5}" cy="${y - 1.5}" r="1.2" fill="#f7a59a"/>` },
-  zwiebel:   { n: 4,  d: (x, y, a) => `<path d="M${x - 4} ${y} a4 4 0 0 1 8 0" fill="none" stroke="#c39bd3" stroke-width="1.6" ${rot(a, x, y)}/>` },
-  kidney:    { n: 10, d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.2" fill="#7b1e2b" ${rot(a, x, y)}/>` },
-  mais:      { n: 12, d: (x, y, a) => `<rect x="${x - 1.6}" y="${y - 1.6}" width="3.2" height="3.2" rx=".8" fill="#f7d038" ${rot(a, x, y)}/>` },
-  gurke:     { n: 5,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#7fb24a"/><circle cx="${x}" cy="${y}" r="3.8" fill="#e6f4c8"/>` },
-  salat:     { n: 5,  d: (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="4" fill="#7cc04b" ${rot(a, x, y)}/>` },
-  banane:    { n: 4,  d: (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#f8e7a1" stroke="#e9cf72" stroke-width=".8"/><circle cx="${x}" cy="${y}" r="1" fill="#c9a24a"/>` },
-  beeren:    { n: 11, d: (x, y, a, R) => `<circle cx="${x}" cy="${y}" r="${(2.4 + R()).toFixed(1)}" fill="${["#4b3a8c", "#c0392b", "#6c4fb0"][Math.floor(R() * 3)]}"/>` },
-  apfel:     { n: 6,  d: (x, y, a) => `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" rx="1.4" fill="#f5edc4" stroke="#d6453b" stroke-width="1.2" ${rot(a, x, y)}/>` },
-  linsen:    { n: 16, d: (x, y) => `<circle cx="${x}" cy="${y}" r="1.6" fill="#f0a24a"/>` },
-  erdnuss:   { drizzle: "#a0652b" },
-  honig:     { drizzle: "#f2b84b" }
+/* ---------- Rezeptbilder (realistisch gezeichnet) ---------- */
+let artSeq = 0;
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const t = f < 0 ? 0 : 255, p = Math.abs(f);
+  r = Math.round((t - r) * p + r); g = Math.round((t - g) * p + g); b = Math.round((t - b) * p + b);
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function makeArt(seed) {
+  const R = seeded(seed), u = "a" + (++artSeq) + "_", defs = new Map();
+  const f1 = n => +n.toFixed(1);
+  const stopsHTML = st => st.map(([o, c, op]) => `<stop offset="${o}" stop-color="${c}"${op != null ? ` stop-opacity="${op}"` : ""}/>`).join("");
+  const A = {
+    R, u, f1,
+    rnd: (a, b) => a + R() * (b - a),
+    rg(name, st, o = {}) {
+      const id = u + name;
+      if (!defs.has(id)) defs.set(id, `<radialGradient id="${id}" cx="${o.cx ?? .38}" cy="${o.cy ?? .34}" r="${o.r ?? .75}">${stopsHTML(st)}</radialGradient>`);
+      return `url(#${id})`;
+    },
+    lg(name, st, o = {}) {
+      const id = u + name;
+      if (!defs.has(id)) defs.set(id, `<linearGradient id="${id}" x1="${o.x1 ?? 0}" y1="${o.y1 ?? 0}" x2="${o.x2 ?? 0}" y2="${o.y2 ?? 1}">${stopsHTML(st)}</linearGradient>`);
+      return `url(#${id})`;
+    },
+    rot: (a, x, y) => `transform="translate(${f1(x)} ${f1(y)}) rotate(${a.toFixed(0)})"`,
+    /* unregelmäßige, weiche Form */
+    blob(cx, cy, r, wob = .12, n = 12, ry) {
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        const a = i / n * Math.PI * 2, k = 1 + (R() - .5) * 2 * wob;
+        pts.push([cx + Math.cos(a) * r * k, cy + Math.sin(a) * (ry ?? r) * k]);
+      }
+      const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      let d = `M${mid(pts[n - 1], pts[0]).map(f1).join(" ")}`;
+      for (let i = 0; i < n; i++) { const m = mid(pts[i], pts[(i + 1) % n]); d += `Q${f1(pts[i][0])} ${f1(pts[i][1])} ${f1(m[0])} ${f1(m[1])}`; }
+      return d + "Z";
+    },
+    /* Punkte in einer Fläche verteilen, ohne dass alles übereinander klebt */
+    place(reg, n, minD = 4) {
+      const pts = [];
+      for (let t = 0; t < n * 40 && pts.length < n; t++) {
+        let x, y;
+        if (reg.a0 != null) {
+          const a = A.rnd(reg.a0, reg.a1), r = Math.sqrt(A.rnd((reg.r0 || 0) ** 2 / reg.r ** 2, 1)) * reg.r;
+          x = reg.cx + Math.cos(a) * r; y = reg.cy + Math.sin(a) * r;
+        } else if (reg.w) {
+          x = reg.x + R() * reg.w; y = reg.y + R() * reg.h;
+        } else {
+          const a = R() * Math.PI * 2, r = Math.sqrt(R()) * reg.r;
+          x = reg.cx + Math.cos(a) * r; y = reg.cy + Math.sin(a) * (reg.ry ?? reg.r) / reg.r * r;
+        }
+        if (pts.every(p => (p[0] - x) ** 2 + (p[1] - y) ** 2 >= minD * minD)) pts.push([x, y]);
+      }
+      return pts.sort((a, b) => a[1] - b[1]);
+    },
+    many(reg, n, minD, fn) { return A.place(reg, n, minD).map(([x, y]) => fn(x, y, A.rnd(0, 360))).join(""); },
+    shadowGroup: body => `<g filter="url(#${u}sh)">${body}</g>`,
+
+    /* ---- Untergründe ---- */
+    table(kind) {
+      let b = "";
+      if (kind === "wood") {
+        b += `<rect width="160" height="120" fill="${A.lg("wood", [[0, "#8a5d3b"], [1, "#5e3c24"]], { x2: 1, y2: 1 })}"/>`;
+        for (let i = 0; i < 4; i++) {
+          b += `<rect y="${i * 30}" width="160" height="30" fill="${["#000", "#fff"][i % 2]}" opacity="${f1(.04 + R() * .05)}"/>`;
+          b += `<path d="M0 ${i * 30}H160" stroke="#2b1a0e" stroke-opacity=".45" stroke-width=".8"/>`;
+          for (let k = 0; k < 4; k++) {
+            const y = i * 30 + 4 + R() * 22;
+            b += `<path d="M0 ${f1(y)}C40 ${f1(y + A.rnd(-3, 3))} 90 ${f1(y + A.rnd(-3, 3))} 160 ${f1(y + A.rnd(-2, 2))}" stroke="${R() > .5 ? "#2b1a0e" : "#c9935f"}" stroke-opacity=".18" stroke-width="${f1(A.rnd(.4, .9))}" fill="none"/>`;
+          }
+        }
+      } else if (kind === "linen") {
+        const pid = u + "lin";
+        defs.set(pid, `<pattern id="${pid}" width="2.4" height="2.4" patternUnits="userSpaceOnUse"><path d="M0 .6H2.4M.6 0V2.4" stroke="#8b7a5e" stroke-opacity=".10" stroke-width=".5"/></pattern>`);
+        b += `<rect width="160" height="120" fill="#ece3d3"/><rect width="160" height="120" fill="url(#${pid})"/>`;
+        b += `<path d="M118 0L160 0L160 120L136 120Z" fill="#cfd9c8" opacity=".55"/><path d="M118 0L136 120" stroke="#b3c2a9" stroke-width=".8" opacity=".7"/>`;
+      } else {
+        b += `<rect width="160" height="120" fill="${A.lg("marble", [[0, "#f7f7f8"], [1, "#e6e6ea"]], { x2: 1 })}"/>`;
+        for (let i = 0; i < 6; i++) {
+          let x = A.rnd(-20, 160), y = A.rnd(-10, 40), d = `M${f1(x)} ${f1(y)}`;
+          for (let k = 0; k < 5; k++) { x += A.rnd(10, 35); y += A.rnd(8, 28); d += `Q${f1(x - A.rnd(0, 20))} ${f1(y - A.rnd(-12, 12))} ${f1(x)} ${f1(y)}`; }
+          b += `<path d="${d}" stroke="#9a9aa8" stroke-opacity="${f1(A.rnd(.12, .3))}" stroke-width="${f1(A.rnd(.3, 1.1))}" fill="none"/>`;
+        }
+      }
+      return b;
+    },
+    light: () => `<rect width="160" height="120" fill="${A.rg("vig", [[0, "#fff", .14], [.55, "#fff", 0], [1, "#000", .28]], { cx: .32, cy: .25, r: .95 })}"/>`,
+
+    /* ---- Geschirr ---- */
+    castShadow: (cx, cy, rx, ry, op = .32) => `<ellipse cx="${f1(cx + 4)}" cy="${f1(cy + 6)}" rx="${rx}" ry="${ry}" fill="#000" opacity="${op}" filter="url(#${u}bl)"/>`,
+    plate(cx, cy, r) {
+      return A.castShadow(cx, cy, r, r * .97) +
+        `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${A.rg("plate", [[0, "#ffffff"], [.8, "#f6f6f3"], [.94, "#e3e3de"], [1, "#cfcfc9"]], { cx: .42, cy: .4, r: .62 })}"/>` +
+        `<circle cx="${cx}" cy="${cy}" r="${f1(r * .74)}" fill="${A.rg("well", [[0, "#fdfdfc"], [.86, "#f2f2ee"], [1, "#dcdcd6"]], { cx: .46, cy: .44, r: .58 })}"/>` +
+        `<path d="M${f1(cx - r * .88 * .94)} ${f1(cy + r * .88 * .34)}A${f1(r * .88)} ${f1(r * .88)} 0 0 1 ${f1(cx - r * .88 * .17)} ${f1(cy - r * .88 * .98)}" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".95"/>`;
+    },
+    bowl(cx, cy, r, glaze = "#f4f1ea") {
+      return A.castShadow(cx, cy, r, r * .97, .36) +
+        `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${A.rg("bowlO", [[0, shade(glaze, .5)], [.85, glaze], [1, shade(glaze, -.22)]], { cx: .4, cy: .38, r: .65 })}"/>` +
+        `<circle cx="${cx}" cy="${cy}" r="${f1(r * .87)}" fill="${A.rg("bowlI", [[0, shade(glaze, .45)], [.65, shade(glaze, .1)], [1, shade(glaze, -.35)]], { cx: .58, cy: .62, r: .62 })}"/>` +
+        `<path d="M${f1(cx - r * .94 * .94)} ${f1(cy + r * .94 * .34)}A${f1(r * .94)} ${f1(r * .94)} 0 0 1 ${f1(cx - r * .94 * .17)} ${f1(cy - r * .94 * .98)}" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".9"/>`;
+    },
+    board(x, y, w, h) {
+      return A.castShadow(x + w / 2, y + h / 2, w / 2, h / 2, .3) +
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${A.lg("board", [[0, "#d8a86c"], [1, "#b98345"]], { x2: 1, y2: .4 })}"/>` +
+        Array.from({ length: 6 }, () => { const yy = y + 4 + R() * (h - 8); return `<path d="M${x + 3} ${f1(yy)}Q${x + w / 2} ${f1(yy + A.rnd(-2, 2))} ${x + w - 3} ${f1(yy + A.rnd(-1.5, 1.5))}" stroke="#8b5a2b" stroke-opacity=".2" stroke-width=".6" fill="none"/>`; }).join("") +
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="none" stroke="#9a6a35" stroke-opacity=".6"/>`;
+    },
+    tray(x, y, w, h) {
+      return A.castShadow(x + w / 2, y + h / 2, w / 2, h / 2, .35) +
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${A.lg("tray", [[0, "#5b5f66"], [1, "#2f3237"]])}"/>` +
+        `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="3" fill="#f3ead8"/>` +
+        `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="3" fill="${A.rg("paper", [[0, "#fff", .25], [1, "#a08050", .25]], { r: .9 })}"/>`;
+    },
+    fork(x, y, a = 0) {
+      const g = A.lg("steel", [[0, "#f4f5f7"], [.5, "#b9bec6"], [1, "#e9ecf0"]], { x2: 1, y2: 0 });
+      return `<g ${A.rot(a, x, y)}><g filter="url(#${u}sh)"><path d="M-1.6 -6 L-1.6 30 Q0 33 1.6 30 L1.6 -6 Z" fill="${g}"/><path d="M-4.6 -8 Q-4.6 -2 0 -1 Q4.6 -2 4.6 -8 Z" fill="${g}"/>${[-4.2, -1.5, 1.5, 4.2].map(t => `<rect x="${t - .6}" y="-24" width="1.2" height="17" rx=".6" fill="${g}"/>`).join("")}</g></g>`;
+    },
+    napkin(x, y, w, h, col = "#9fb8a0") {
+      return `<g filter="url(#${u}sh)"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="${col}"/><path d="M${x + w * .5} ${y}V${y + h}" stroke="#000" stroke-opacity=".08"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="${A.lg("nap", [[0, "#fff", .18], [1, "#000", .08]], { x2: 1, y2: 0 })}"/></g>`;
+    },
+
+    /* ---- Soßen & Grundlagen ---- */
+    sauce(cx, cy, r, col, wob = .14, ry) {
+      return `<path d="${A.blob(cx, cy, r, wob, 14, ry)}" fill="${A.rg("sauce" + col.slice(1), [[0, shade(col, .22)], [.7, col], [1, shade(col, -.3)]], { cx: .42, cy: .4, r: .7 })}"/>` +
+        `<ellipse cx="${f1(cx - r * .32)}" cy="${f1(cy - r * .38)}" rx="${f1(r * .32)}" ry="${f1(r * .16)}" fill="#fff" opacity=".22" filter="url(#${u}bs)"/>`;
+    },
+    porridge(cx, cy, r, col) {
+      let b = A.sauce(cx, cy, r, col, .04);
+      b += A.many({ cx, cy, r: r * .92 }, 70, 1.6, (x, y, a) => `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="1.5" ry=".9" fill="${shade(col, R() > .5 ? -.12 : .12)}" opacity=".7" ${`transform="rotate(${a.toFixed(0)} ${f1(x)} ${f1(y)})"`}/>`);
+      return b;
+    },
+    creamy(cx, cy, r, col) {
+      let b = A.sauce(cx, cy, r, col, .03);
+      for (let i = 0; i < 4; i++) b += `<path d="M${f1(cx - r * .7 + i * 4)} ${f1(cy - r * .2 + i * 5)}q${f1(r * .4)} ${f1(-r * .3)} ${f1(r * .8)} 0" stroke="#fff" stroke-width="1.4" opacity=".55" fill="none"/>`;
+      return b;
+    },
+    drizzle(cx, cy, w, col, rows = 3) {
+      let out = "";
+      for (let r = 0; r < rows; r++) {
+        const y0 = cy - (rows - 1) * 5 + r * 10 + A.rnd(-2, 2), seg = w / 3, amp = A.rnd(4, 7);
+        let x = cx - w / 2 + A.rnd(-3, 3), y = y0, d = `M${f1(x)} ${f1(y)}`;
+        for (let i = 0; i < 3; i++) {
+          const nx = x + seg, ny = y0 + A.rnd(-2, 2), s2 = i % 2 ? 1 : -1;
+          d += `C${f1(x + seg * .35)} ${f1(y + amp * s2)} ${f1(x + seg * .65)} ${f1(ny - amp * s2)} ${f1(nx)} ${f1(ny)}`;
+          x = nx; y = ny;
+        }
+        out += `<path d="${d}" stroke="${shade(col, -.18)}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".92"/><path d="${d}" stroke="${shade(col, .4)}" stroke-width=".8" fill="none" stroke-linecap="round" opacity=".85" transform="translate(-.4 -.5)"/>`;
+      }
+      return out;
+    },
+
+    /* ---- Zutaten ---- */
+    tomato(x, y, s = 4.6) {
+      return `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="${A.rg("tom", [[0, "#ff9e88"], [.5, "#ea3a2a"], [1, "#9c160e"]])}"/>` +
+        `<path d="M${f1(x)} ${f1(y - 1.6)}l.7 1.3 1.3-.3-.9 1 .6 1.2-1.7-.6-1.7.6.6-1.2-.9-1 1.3.3z" fill="#3f7a2a"/>` +
+        `<ellipse cx="${f1(x - s * .38)}" cy="${f1(y - s * .42)}" rx="${f1(s * .28)}" ry="${f1(s * .18)}" fill="#fff" opacity=".6"/>`;
+    },
+    tomatoSlice(x, y, s = 6.5) {
+      let b = `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="#d42c1e"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(s * .84)}" fill="#f0503e"/>`;
+      for (let i = 0; i < 4; i++) {
+        const a = i * Math.PI / 2 + .4, cx = x + Math.cos(a) * s * .45, cy = y + Math.sin(a) * s * .45;
+        b += `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(s * .3)}" ry="${f1(s * .2)}" fill="#ff8a70" transform="rotate(${(a * 57.3).toFixed(0)} ${f1(cx)} ${f1(cy)})"/><circle cx="${f1(cx)}" cy="${f1(cy)}" r=".6" fill="#f6e3a0"/>`;
+      }
+      return b + `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(s * .16)}" fill="#ffb3a0"/>`;
+    },
+    pepper(x, y, a, col, s = 1) {
+      const g = col === "y" ? A.lg("pepY", [[0, "#ffe05c"], [1, "#e09600"]]) : col === "g" ? A.lg("pepG", [[0, "#7cc455"], [1, "#2a6f1d"]]) : A.lg("pepR", [[0, "#ff5a42"], [1, "#a8130a"]]);
+      return `<g ${A.rot(a, x, y)}><path d="M${-5 * s} ${-1.5 * s}Q0 ${-2.4 * s} ${5 * s} ${-1.5 * s}L${5 * s} ${1.2 * s}Q0 ${.4 * s} ${-5 * s} ${1.2 * s}Z" fill="${g}" stroke="${g}" stroke-width="${f1(.8 * s)}" stroke-linejoin="round"/><path d="M${-4 * s} ${-1.1 * s}Q0 ${-1.8 * s} ${4 * s} ${-1.1 * s}" stroke="#fff" stroke-width=".5" opacity=".6" fill="none"/></g>`;
+    },
+    chickenSlice(x, y, a, s = 1) {
+      return `<g ${A.rot(a, x, y)} ><rect x="${-8 * s}" y="${-3.6 * s}" width="${16 * s}" height="${7.2 * s}" rx="${3.2 * s}" fill="${A.rg("chk", [[0, "#f6d39a"], [.6, "#dc953f"], [1, "#9a571c"]], { cx: .4, cy: .3, r: .8 })}"/>` +
+        `<path d="M${-5 * s} ${-3 * s}l${2.6 * s} ${6 * s}M${-.6 * s} ${-3.2 * s}l${2.6 * s} ${6.4 * s}M${3.8 * s} ${-3 * s}l${2.4 * s} ${6 * s}" stroke="#7a4517" stroke-opacity=".5" stroke-width="${f1(.9 * s)}"/>` +
+        `<rect x="${-8 * s}" y="${-3.6 * s}" width="${16 * s}" height="${2.2 * s}" rx="${1.1 * s}" fill="#fff" opacity=".18"/></g>`;
+    },
+    chickenCube(x, y, a, s = 1) {
+      return `<g ${A.rot(a, x, y)}><rect x="${-3.8 * s}" y="${-3.4 * s}" width="${7.6 * s}" height="${6.8 * s}" rx="${2 * s}" fill="${A.rg("chk", [[0, "#f6d39a"], [.6, "#dc953f"], [1, "#9a571c"]], { cx: .4, cy: .3, r: .8 })}"/><rect x="${-3 * s}" y="${-2.8 * s}" width="${4 * s}" height="${1.6 * s}" rx=".8" fill="#fff" opacity=".22"/></g>`;
+    },
+    turkeySlice(x, y, a) {
+      return `<g ${A.rot(a, x, y)}><rect x="-7" y="-3" width="14" height="6" rx="3" fill="${A.rg("tur", [[0, "#fbe9cc"], [.75, "#e9bf86"], [1, "#c58d4b"]], { cx: .4, cy: .3, r: .8 })}"/><path d="M-4 -2.6l2 5.2M1 -2.8l2 5.4" stroke="#8a5221" stroke-opacity=".45" stroke-width=".8"/></g>`;
+    },
+    crumb(x, y, s = 2.4) { return `<path d="${A.blob(x, y, s, .45, 6)}" fill="${A.rg("hack", [[0, "#9b6440"], [.7, "#6b3c20"], [1, "#43230f"]])}"/>`; },
+    salmon(x, y, a, s = 1) {
+      const g = A.lg("sal", [[0, "#ffa77a"], [.6, "#f2733f"], [1, "#d9552a"]], { x2: .3 });
+      let b = `<g ${A.rot(a, x, y)}><path d="M${-17 * s} ${-9 * s}Q${-2 * s} ${-12 * s} ${15 * s} ${-8 * s}Q${20 * s} 0 ${15 * s} ${8 * s}Q0 ${12 * s} ${-17 * s} ${9 * s}Q${-21 * s} 0 ${-17 * s} ${-9 * s}Z" fill="${g}"/>`;
+      for (let i = -3; i <= 3; i++) b += `<path d="M${(i * 4.6 - 2) * s} ${-9.5 * s}Q${(i * 4.6 + 3) * s} 0 ${(i * 4.6 - 2) * s} ${9.5 * s}" stroke="#ffe0cf" stroke-width="${f1(.9 * s)}" fill="none" opacity=".85"/>`;
+      b += `<path d="M${-16 * s} ${-8 * s}Q0 ${-11 * s} ${14 * s} ${-7 * s}" stroke="#a5481f" stroke-width="${f1(2 * s)}" fill="none" opacity=".55" stroke-linecap="round"/>`;
+      b += `<ellipse cx="${-4 * s}" cy="${-3 * s}" rx="${7 * s}" ry="${2.4 * s}" fill="#fff" opacity=".22"/></g>`;
+      return b;
+    },
+    broccoli(x, y, s = 1) {
+      const g = A.rg("broc", [[0, "#7cc95a"], [.65, "#3c8a2e"], [1, "#1f5418"]]);
+      let b = `<path d="M${f1(x - 1.6 * s)} ${f1(y + 1 * s)}L${f1(x - 1.2 * s)} ${f1(y + 7 * s)}L${f1(x + 1.4 * s)} ${f1(y + 7 * s)}L${f1(x + 1.8 * s)} ${f1(y + 1 * s)}Z" fill="#9fcf6f"/>`;
+      [[-3.2, -.6, 3.4], [3.1, -.4, 3.3], [0, -3.6, 3.7], [-1.6, 1.4, 2.8], [1.8, 1.6, 2.6]].forEach(([dx, dy, r]) => {
+        b += `<circle cx="${f1(x + dx * s)}" cy="${f1(y + dy * s)}" r="${f1(r * s)}" fill="${g}"/>`;
+      });
+      for (let i = 0; i < 6; i++) b += `<circle cx="${f1(x + A.rnd(-4, 4) * s)}" cy="${f1(y + A.rnd(-5, 2) * s)}" r=".55" fill="#bde39b" opacity=".8"/>`;
+      return b;
+    },
+    bean(x, y, a) { return `<g ${A.rot(a, x, y)}><path d="M-3.8 0Q-3.8 -2.6 -.6 -2.4Q1 -1.2 2.2 -2.4Q4 -2 3.8 .4Q3.4 2.6 0 2.4Q-3.8 2.4 -3.8 0Z" fill="${A.rg("bean", [[0, "#b8394a"], [.7, "#7a1726"], [1, "#4a0a14"]])}"/><ellipse cx="-1.4" cy="-1" rx="1.4" ry=".55" fill="#fff" opacity=".35"/></g>`; },
+    corn(x, y, a) { return `<rect x="${f1(x - 1.6)}" y="${f1(y - 1.7)}" width="3.2" height="3.4" rx="1.1" fill="${A.rg("corn", [[0, "#fff0a0"], [.6, "#f6cf2c"], [1, "#d39a07"]])}" transform="rotate(${a.toFixed(0)} ${f1(x)} ${f1(y)})"/>`; },
+    cucumber(x, y, s = 5.4) {
+      let b = `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="#3f7a28"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(s - 1)}" fill="${A.rg("cuc", [[0, "#f4fbdf"], [.7, "#d8eda8"], [1, "#a9d070"]], { cx: .5, cy: .5, r: .55 })}"/>`;
+      for (let i = 0; i < 5; i++) { const a = i / 5 * 6.28; b += `<ellipse cx="${f1(x + Math.cos(a) * s * .35)}" cy="${f1(y + Math.sin(a) * s * .35)}" rx=".9" ry=".5" fill="#eaf3cf" stroke="#b9d68a" stroke-width=".3"/>`; }
+      return b;
+    },
+    zucchini(x, y, s = 5.6) {
+      let b = `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="#2c5e1f"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(s - .9)}" fill="${A.rg("zuc", [[0, "#f6f4cf"], [.75, "#e2e6a8"], [1, "#b8c977"]], { cx: .5, cy: .5, r: .55 })}"/>`;
+      b += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(s * .38)}" fill="none" stroke="#d6d79a" stroke-width=".5"/>`;
+      return b + `<path d="M${f1(x - s * .5)} ${f1(y - s * .55)}a${f1(s * .7)} ${f1(s * .7)} 0 0 1 ${f1(s * .8)} -.2" stroke="#c9a23a" stroke-width=".9" opacity=".6" fill="none"/>`;
+    },
+    potato(x, y, a, s = 7) {
+      return `<g ${A.rot(a, x, y)}><ellipse rx="${s}" ry="${f1(s * .78)}" fill="#b88746"/><ellipse rx="${f1(s * .86)}" ry="${f1(s * .64)}" fill="${A.rg("pot", [[0, "#fff1b8"], [.7, "#f0cb6a"], [1, "#d7a43f"]])}"/><ellipse cx="${f1(-s * .3)}" cy="${f1(-s * .25)}" rx="${f1(s * .3)}" ry="${f1(s * .14)}" fill="#fff" opacity=".45"/></g>`;
+    },
+    sweetCube(x, y, a, s = 6) {
+      return `<g ${A.rot(a, x, y)}><rect x="${-s / 2}" y="${-s / 2}" width="${s}" height="${s}" rx="${f1(s * .28)}" fill="${A.rg("swt", [[0, "#ffc27a"], [.65, "#f07a1f"], [1, "#a8460a"]])}"/><rect x="${-s / 2}" y="${-s / 2}" width="${s}" height="${s}" rx="${f1(s * .28)}" fill="none" stroke="#6b2a05" stroke-opacity=".35" stroke-width=".8"/><ellipse cx="${f1(-s * .15)}" cy="${f1(-s * .2)}" rx="${f1(s * .22)}" ry="${f1(s * .1)}" fill="#fff" opacity=".4"/></g>`;
+    },
+    banana(x, y, s = 5) {
+      return `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="${A.rg("ban", [[0, "#fffbe6"], [.75, "#f8eab0"], [1, "#e6cf78"]], { cx: .45, cy: .42, r: .6 })}"/>` +
+        `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(s * .45)}" fill="none" stroke="#efdb94" stroke-width=".5"/>` +
+        [0, 2.1, 4.2].map(a => `<circle cx="${f1(x + Math.cos(a) * s * .2)}" cy="${f1(y + Math.sin(a) * s * .2)}" r=".45" fill="#8a6a2a"/>`).join("");
+    },
+    blueberry(x, y, s = 2.8) {
+      return `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="${A.rg("blu", [[0, "#8b96df"], [.55, "#3b418f"], [1, "#1b1d4d"]])}"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="#c9d2ff" opacity=".18"/><circle cx="${f1(x + s * .25)}" cy="${f1(y + s * .2)}" r=".7" fill="#141533"/><circle cx="${f1(x - s * .38)}" cy="${f1(y - s * .4)}" r="${f1(s * .25)}" fill="#fff" opacity=".55"/>`;
+    },
+    raspberry(x, y, s = 3.4) {
+      const g = A.rg("ras", [[0, "#ff8fa7"], [.6, "#e01c4b"], [1, "#8c0a2a"]]);
+      return [[0, 0], [-1.3, -1], [1.3, -1], [-1.4, 1], [1.4, 1], [0, -1.8], [0, 1.9]].map(([dx, dy]) => `<circle cx="${f1(x + dx * s / 3)}" cy="${f1(y + dy * s / 3)}" r="${f1(s * .38)}" fill="${g}"/>`).join("");
+    },
+    berries(x, y, a) { return R() > .45 ? A.blueberry(x, y) : A.raspberry(x, y); },
+    apple(x, y, a, s = 5.4) {
+      return `<g ${A.rot(a, x, y)}><rect x="${-s / 2}" y="${-s / 2}" width="${s}" height="${s}" rx="1.3" fill="${A.rg("app", [[0, "#fffbe8"], [1, "#efe3b3"]])}"/><path d="M${-s / 2 + .6} ${-s / 2 + .2}H${s / 2 - .6}" stroke="#c9241c" stroke-width="1.6" stroke-linecap="round"/></g>`;
+    },
+    oat(x, y, a) { return `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="2.6" ry="1.7" fill="${A.rg("oat", [[0, "#f6e6bf"], [1, "#cfae6c"]])}" transform="rotate(${a.toFixed(0)} ${f1(x)} ${f1(y)})"/>`; },
+    rice(cx, cy, r, ry) {
+      let b = `<path d="${A.blob(cx, cy, r, .07, 12, ry)}" fill="${A.rg("riceB", [[0, "#ffffff"], [.8, "#f1ede2"], [1, "#d6d0bf"]])}"/>`;
+      b += A.many({ cx, cy, r: r * .95, ry: (ry ?? r) * .95 }, Math.round(r * r * .5), 1.25, (x, y, a) => `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="1.9" ry=".85" fill="#fffef9" stroke="#cfc8b4" stroke-width=".25" transform="rotate(${a.toFixed(0)} ${f1(x)} ${f1(y)})"/>`);
+      return b;
+    },
+    pastaNest(cx, cy, r) {
+      let lo = "", hi = "";
+      for (let i = 0; i < 46; i++) {
+        const a1 = R() * 6.28, a2 = a1 + A.rnd(1.2, 2.6), r1 = A.rnd(.25, 1) * r, r2 = A.rnd(.25, 1) * r;
+        const p = `M${f1(cx + Math.cos(a1) * r1)} ${f1(cy + Math.sin(a1) * r1)}Q${f1(cx + Math.cos((a1 + a2) / 2) * r * 1.05)} ${f1(cy + Math.sin((a1 + a2) / 2) * r * 1.05)} ${f1(cx + Math.cos(a2) * r2)} ${f1(cy + Math.sin(a2) * r2)}`;
+        lo += `<path d="${p}" stroke="#d3a645" stroke-width="2.1" fill="none" stroke-linecap="round"/>`;
+        hi += `<path d="${p}" stroke="#f9e19a" stroke-width=".8" fill="none" stroke-linecap="round" transform="translate(-.35 -.45)"/>`;
+      }
+      return lo + hi;
+    },
+    shrimp(x, y, a, s = 1) {
+      const g = A.lg("shr", [[0, "#ffc3a8"], [1, "#ee6f45"]]);
+      let b = `<g ${A.rot(a, x, y)}><path d="M${-5 * s} ${-2 * s}A${5 * s} ${5 * s} 0 1 1 ${-1 * s} ${4.6 * s}" stroke="${g}" stroke-width="${f1(4.4 * s)}" fill="none" stroke-linecap="round"/>`;
+      for (let i = 0; i < 4; i++) { const t = -2.6 + i * 1.3; b += `<path d="M${f1(Math.cos(t) * 3 * s)} ${f1(Math.sin(t) * 3 * s)}L${f1(Math.cos(t) * 7 * s)} ${f1(Math.sin(t) * 7 * s)}" stroke="#fff" stroke-width=".5" opacity=".7"/>`; }
+      return b + `<path d="M${-1.6 * s} ${4.4 * s}l${-2.6 * s} ${2.2 * s}l${3.4 * s} ${.8 * s}z" fill="#d9431c"/></g>`;
+    },
+    leaf(x, y, a, s, kind) {
+      const g = kind === "spin" ? A.lg("spin", [[0, "#4f9440"], [1, "#1f4f19"]]) : kind === "basil" ? A.lg("bas", [[0, "#7fd05a"], [1, "#2f8a22"]]) : A.lg("let", [[0, "#c8ec8c"], [1, "#5fae3a"]]);
+      const wavy = kind === "let";
+      const d = wavy
+        ? `M0 ${-7 * s}Q${4 * s} ${-6 * s} ${5 * s} ${-2 * s}Q${6.5 * s} ${1 * s} ${4 * s} ${4 * s}Q${2 * s} ${7 * s} 0 ${7 * s}Q${-2 * s} ${7 * s} ${-4 * s} ${4 * s}Q${-6.5 * s} ${1 * s} ${-5 * s} ${-2 * s}Q${-4 * s} ${-6 * s} 0 ${-7 * s}Z`
+        : `M0 ${-6 * s}Q${4.2 * s} ${-2 * s} 0 ${6 * s}Q${-4.2 * s} ${-2 * s} 0 ${-6 * s}Z`;
+      return `<g ${A.rot(a, x, y)}><path d="${d}" fill="${g}"/><path d="M0 ${-5.4 * s}L0 ${5.6 * s}" stroke="#e9f7d4" stroke-opacity=".6" stroke-width=".5"/>${[-2, 1].map(t => `<path d="M0 ${t * s}l${2.2 * s} ${-1.8 * s}M0 ${t * s}l${-2.2 * s} ${-1.8 * s}" stroke="#e9f7d4" stroke-opacity=".4" stroke-width=".35"/>`).join("")}</g>`;
+    },
+    herbs(cx, cy, r, n = 14) { return A.many({ cx, cy, r }, n, 1.4, (x, y) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(A.rnd(.5, .9))}" fill="${R() > .5 ? "#3e8a2c" : "#5aa83a"}"/>`); },
+    onion(x, y, a) { return `<g ${A.rot(a, x, y)}><path d="M-3.4 0A3.4 3.4 0 0 1 3.4 0" stroke="#b27cc2" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M-2.4 .2A2.4 2.4 0 0 1 2.4 .2" stroke="#f3e6f5" stroke-width=".6" fill="none"/></g>`; },
+    tuna(x, y, a) { return `<g ${A.rot(a, x, y)}><path d="${A.blob(0, 0, 3.4, .35, 7, 2.4)}" fill="${A.rg("tun", [[0, "#e9c7b4"], [1, "#b98a74"]])}"/><path d="M-2 -.6L1.8 -.2M-1.6 .9L1.5 1.1" stroke="#9c6d58" stroke-width=".4" opacity=".6"/></g>`; },
+    cottage(x, y, s = 2.2) { return `<circle cx="${f1(x)}" cy="${f1(y)}" r="${s}" fill="${A.rg("cot", [[0, "#ffffff"], [.7, "#f6f3ea"], [1, "#d9d3c2"]])}"/>`; },
+    lentil(x, y) { return `<circle cx="${f1(x)}" cy="${f1(y)}" r="1.1" fill="#f0a347" stroke="#c97a22" stroke-width=".3"/>`; },
+    lemon(x, y, a, s = 1) {
+      return `<g ${A.rot(a, x, y)}><path d="M${-8 * s} 0A${8 * s} ${8 * s} 0 0 1 ${8 * s} 0Z" fill="#f2c51b"/><path d="M${-7 * s} 0A${7 * s} ${7 * s} 0 0 1 ${7 * s} 0Z" fill="${A.rg("lem", [[0, "#fff8c4"], [1, "#f6dc4a"]], { cx: .5, cy: 1, r: .9 })}"/>${[-55, -90, -125].map(d => `<path d="M0 0L${f1(Math.cos(d / 57.3) * 6.6 * s)} ${f1(Math.sin(d / 57.3) * 6.6 * s)}" stroke="#fffbe0" stroke-width=".6"/>`).join("")}</g>`;
+    },
+    egg(cx, cy, s = 1) {
+      return `<path d="${A.blob(cx, cy, 11 * s, .16, 10)}" fill="${A.rg("eggW", [[0, "#ffffff"], [.85, "#fbfaf5"], [1, "#e9e3d2"]])}"/><circle cx="${f1(cx + 1)}" cy="${f1(cy)}" r="${f1(4.4 * s)}" fill="${A.rg("yolk", [[0, "#ffd65a"], [.7, "#f5a00e"], [1, "#d97f00"]])}"/><ellipse cx="${f1(cx - .4)}" cy="${f1(cy - 1.6)}" rx="1.5" ry=".8" fill="#fff" opacity=".75"/>`;
+    },
+    bread(x, y, a, s = 1, topping = "") {
+      return `<g ${A.rot(a, x, y)}><path d="M${-12 * s} ${12 * s}V${-3 * s}Q${-14 * s} ${-13 * s} ${-4 * s} ${-13 * s}Q0 ${-16 * s} ${4 * s} ${-13 * s}Q${14 * s} ${-13 * s} ${12 * s} ${-3 * s}V${12 * s}Z" fill="${A.lg("crust", [[0, "#8a5226"], [1, "#5e3415"]])}"/>` +
+        `<path d="M${-10.4 * s} ${10.6 * s}V${-2.6 * s}Q${-12 * s} ${-11 * s} ${-3.6 * s} ${-11.2 * s}Q0 ${-13.6 * s} ${3.6 * s} ${-11.2 * s}Q${12 * s} ${-11 * s} ${10.4 * s} ${-2.6 * s}V${10.6 * s}Z" fill="${A.rg("crumbB", [[0, "#c79a63"], [1, "#9b6a3a"]], { r: .9 })}"/>` +
+        Array.from({ length: 22 }, () => `<circle cx="${f1(A.rnd(-9, 9) * s)}" cy="${f1(A.rnd(-9, 9) * s)}" r="${f1(A.rnd(.4, 1))}" fill="${R() > .5 ? "#6e4420" : "#e0bb84"}" opacity=".7"/>`).join("") + topping + `</g>`;
+    },
+    wrapHalf(x, y, a, s = 1) {
+      const t = A.lg("tortR", [[0, "#f7e4b8"], [.55, "#eccb8c"], [1, "#c9984f"]]);
+      let b = `<g ${A.rot(a, x, y)}><rect x="${-24 * s}" y="${-10 * s}" width="${30 * s}" height="${20 * s}" rx="${9 * s}" fill="${t}"/>`;
+      for (let i = 0; i < 4; i++) b += `<path d="M${(-18 + i * 6) * s} ${-9 * s}l${3 * s} ${18 * s}" stroke="#a86e2c" stroke-opacity=".45" stroke-width="${f1(1.4 * s)}" stroke-linecap="round"/>`;
+      b += `<ellipse cx="${6 * s}" cy="0" rx="${7 * s}" ry="${10 * s}" fill="#e7c47f"/><ellipse cx="${6 * s}" cy="0" rx="${5.6 * s}" ry="${8.6 * s}" fill="#f4e3bd"/>`;
+      const fills = ["#5fb13c", "#e2412c", "#fffaf0", "#d9a35c", "#5fb13c", "#fffaf0"];
+      for (let i = 0; i < 14; i++) { const ang = R() * 6.28, rr = Math.sqrt(R()) * .8; b += `<ellipse cx="${f1((6 + Math.cos(ang) * 5 * rr) * s)}" cy="${f1(Math.sin(ang) * 7.6 * rr * s)}" rx="${f1(A.rnd(1.1, 1.9) * s)}" ry="${f1(A.rnd(.9, 1.5) * s)}" fill="${fills[i % fills.length]}"/>`; }
+      return b + `<ellipse cx="${-12 * s}" cy="${-5 * s}" rx="${9 * s}" ry="${2 * s}" fill="#fff" opacity=".25"/></g>`;
+    },
+    pancake(cx, cy, r) {
+      return `<circle cx="${f1(cx)}" cy="${f1(cy)}" r="${r}" fill="${A.rg("pan", [[0, "#f3c47f"], [.75, "#d89040"], [1, "#9a5a1f"]], { cx: .45, cy: .42, r: .62 })}"/>` +
+        Array.from({ length: 10 }, () => `<circle cx="${f1(cx + A.rnd(-.6, .6) * r)}" cy="${f1(cy + A.rnd(-.6, .6) * r)}" r="${f1(A.rnd(.6, 1.6))}" fill="#a8641f" opacity=".35"/>`).join("");
+    },
+    swirl(cx, cy, w, col) {
+      const d = `M${f1(cx - w / 2)} ${f1(cy + 2)}C${f1(cx - w / 4)} ${f1(cy - 7)} ${f1(cx + w / 4)} ${f1(cy + 8)} ${f1(cx + w / 2)} ${f1(cy - 1)}`;
+      return `<path d="${d}" stroke="${shade(col, -.12)}" stroke-width="7.4" fill="none" stroke-linecap="round" opacity=".55" transform="translate(.6 .9)"/><path d="${d}" stroke="${col}" stroke-width="6.6" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".9" transform="translate(-.8 -1.4)"/>`;
+    },
+    dollop(cx, cy, r, col) {
+      return `<path d="${A.blob(cx, cy, r, .14, 9)}" fill="${A.rg("dol" + col.slice(1), [[0, "#ffffff"], [.7, col], [1, shade(col, -.15)]])}"/><path d="M${f1(cx - r * .5)} ${f1(cy)}q${f1(r * .5)} ${f1(-r * .6)} ${f1(r)} 0" stroke="#fff" stroke-width="1.1" fill="none" opacity=".8"/>`;
+    },
+
+    svg(body) {
+      return `<svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><defs>${[...defs.values()].join("")}` +
+        `<filter id="${u}sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx=".5" dy=".9" stdDeviation=".7" flood-color="#000" flood-opacity=".38"/></filter>` +
+        `<filter id="${u}bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.4"/></filter>` +
+        `<filter id="${u}bs" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.2"/></filter></defs>${body}</svg>`;
+    }
+  };
+  return A;
+}
+
+/* Ein Bild pro Rezept – wie angerichtet */
+const DISH = {
+  bolo: A => {
+    let b = A.table("wood") + A.napkin(126, 18, 30, 86) + A.plate(78, 60, 50) + A.fork(141, 66, 0);
+    b += A.shadowGroup(A.pastaNest(78, 60, 33));
+    b += A.sauce(77, 57, 21, "#b2301d", .18);
+    b += A.shadowGroup(A.many({ cx: 77, cy: 57, r: 17 }, 40, 2.3, (x, y) => A.crumb(x, y, A.rnd(1.3, 2.2))) +
+      A.many({ cx: 77, cy: 57, r: 15 }, 6, 5, (x, y, a) => A.pepper(x, y, a, "r", .55)));
+    b += A.many({ cx: 74, cy: 55, r: 10 }, 9, 2.4, (x, y, a) => `<rect x="${A.f1(x)}" y="${A.f1(y)}" width="2.4" height="1.1" rx=".3" fill="#fff6d8" transform="rotate(${a.toFixed(0)} ${A.f1(x)} ${A.f1(y)})"/>`);
+    b += A.herbs(77, 56, 16, 16) + A.shadowGroup(A.leaf(85, 46, 30, .9, "basil") + A.leaf(90, 50, 75, .75, "basil"));
+    return b + A.light();
+  },
+  bowl: A => {
+    let b = A.table("wood") + A.bowl(78, 60, 51, "#2f3a46");
+    const c = { cx: 78, cy: 60 };
+    b += A.rice(64, 50, 19, 17);
+    b += A.shadowGroup(
+      A.many({ ...c, r: 40, r0: 12, a0: -.4, a1: 1.35 }, 10, 6.5, (x, y, a) => A.chickenSlice(x, y, 60 + A.rnd(-15, 15), 1)) +
+      A.many({ ...c, r: 40, r0: 14, a0: 1.45, a1: 2.85 }, 8, 7, (x, y) => A.broccoli(x, y, 1.05)) +
+      A.many({ ...c, r: 40, r0: 18, a0: 4.6, a1: 6.1 }, 16, 3.6, (x, y, a) => A.pepper(x, y, a, A.R() > .5 ? "r" : "y", .75)));
+    b += A.many({ cx: 78, cy: 60, r: 34 }, 40, 2.4, (x, y, a) => `<ellipse cx="${A.f1(x)}" cy="${A.f1(y)}" rx=".8" ry=".45" fill="${A.R() > .3 ? "#f7f0d8" : "#2b2b2b"}" transform="rotate(${a.toFixed(0)} ${A.f1(x)} ${A.f1(y)})"/>`);
+    b += A.shadowGroup(A.many({ cx: 80, cy: 62, r: 32 }, 10, 5, (x, y) => `<circle cx="${A.f1(x)}" cy="${A.f1(y)}" r="1.1" fill="#7ac142"/>`));
+    return b + A.light();
+  },
+  chili: A => {
+    let b = A.table("wood") + A.bowl(78, 60, 50, "#e9e1d4");
+    b += A.sauce(78, 60, 41, "#9b2a17", .04);
+    b += A.shadowGroup(
+      A.many({ cx: 78, cy: 60, r: 37 }, 55, 2.6, (x, y) => A.crumb(x, y, A.rnd(1.4, 2.3))) +
+      A.many({ cx: 78, cy: 60, r: 36 }, 22, 4.4, (x, y, a) => A.bean(x, y, a)) +
+      A.many({ cx: 78, cy: 60, r: 36 }, 24, 3.4, (x, y, a) => A.corn(x, y, a)) +
+      A.many({ cx: 78, cy: 60, r: 34 }, 8, 6, (x, y, a) => A.pepper(x, y, a, "g", .7)));
+    b += A.swirl(72, 50, 18, "#fbf8f2") + A.herbs(72, 52, 12, 16) + A.herbs(84, 66, 20, 12);
+    return b + A.light();
+  },
+  lachs: A => {
+    let b = A.table("wood") + A.napkin(4, 20, 22, 80, "#c7d3e0") + A.plate(80, 60, 50) + A.fork(14, 64, 0);
+    b += A.shadowGroup(
+      A.salmon(73, 46, -8, 1.2) +
+      A.many({ cx: 100, cy: 70, r: 15 }, 7, 8, (x, y, a) => A.potato(x, y, a, 6.8)) +
+      A.many({ cx: 63, cy: 78, r: 13 }, 6, 7, (x, y) => A.broccoli(x, y, 1.2)) +
+      A.lemon(103, 38, 25, .85));
+    b += A.herbs(100, 70, 15, 18) + A.herbs(73, 44, 9, 8);
+    return b + A.light();
+  },
+  blech: A => {
+    let b = A.table("wood") + A.tray(8, 12, 144, 96);
+    b += A.many({ x: 14, y: 18, w: 132, h: 84 }, 14, 12, (x, y) => `<ellipse cx="${A.f1(x)}" cy="${A.f1(y)}" rx="${A.f1(A.rnd(4, 9))}" ry="${A.f1(A.rnd(3, 6))}" fill="#b07a3a" opacity=".18"/>`);
+    const area = { x: 16, y: 20, w: 128, h: 80 };
+    b += A.shadowGroup(
+      A.many(area, 30, 7.2, (x, y, a) => A.sweetCube(x, y, a, 7)) +
+      A.many(area, 12, 10, (x, y, a) => A.chickenCube(x, y, a, 1.6)) +
+      A.many(area, 16, 7, (x, y, a) => A.pepper(x, y, a, A.R() > .5 ? "r" : "y", .9)) +
+      A.many(area, 10, 9, (x, y, a) => A.onion(x, y, a)));
+    b += A.many(area, 50, 3, (x, y) => `<circle cx="${A.f1(x)}" cy="${A.f1(y)}" r=".7" fill="${A.R() > .5 ? "#2f6b22" : "#5c3a1a"}"/>`);
+    return b + A.light();
+  },
+  garnelen: A => {
+    let b = A.table("wood") + A.plate(80, 60, 50) + A.fork(144, 62, 0);
+    b += A.rice(60, 62, 19, 17);
+    const side = { cx: 80, cy: 60, r: 38, r0: 10, a0: -1.7, a1: 1.7 };
+    b += A.shadowGroup(
+      A.many(side, 13, 6, (x, y) => A.zucchini(x, y, 5.4)) +
+      A.many({ ...side, r: 36 }, 9, 8, (x, y, a) => A.shrimp(x, y, a, 1.1)) +
+      A.many({ ...side, r: 35 }, 7, 7, (x, y) => A.tomato(x, y, 3.8)));
+    b += A.herbs(92, 60, 20, 22) + A.shadowGroup(A.lemon(56, 40, -30, .7));
+    return b + A.light();
+  },
+  curry: A => {
+    let b = A.table("wood") + A.bowl(78, 60, 50, "#2c4a5e");
+    b += A.sauce(78, 60, 41, "#d4821c", .04);
+    b += A.many({ cx: 78, cy: 60, r: 37 }, 90, 2.2, (x, y) => A.lentil(x, y));
+    b += A.shadowGroup(
+      A.many({ cx: 78, cy: 60, r: 34 }, 15, 7.5, (x, y, a) => A.chickenCube(x, y, a, 1.3)) +
+      A.many({ cx: 78, cy: 60, r: 34 }, 9, 8, (x, y, a) => A.leaf(x, y, a, 1, "spin")));
+    b += `<path d="M56 50q12 -8 26 0t24 2" stroke="#fff6e6" stroke-width="1.6" fill="none" opacity=".8"/><path d="M60 72q10 -6 22 0t20 1" stroke="#fff6e6" stroke-width="1.2" fill="none" opacity=".6"/>` + A.herbs(80, 58, 24, 22);
+    return b + A.light();
+  },
+  thunsalat: A => {
+    let b = A.table("marble") + A.bowl(78, 60, 51, "#ffffff");
+    const c = { cx: 78, cy: 60, r: 41 };
+    b += A.shadowGroup(
+      A.many({ ...c, a0: 0, a1: 6.28 }, 14, 8, (x, y, a) => A.leaf(x, y, a, 1.5, "let")) +
+      A.many({ ...c, r: 37, r0: 4, a0: -1.5, a1: -.2 }, 14, 4, (x, y, a) => A.tuna(x, y, a)) +
+      A.many({ ...c, r: 37, r0: 4, a0: -.1, a1: 1.1 }, 16, 4, (x, y, a) => A.bean(x, y, a)) +
+      A.many({ ...c, r: 37, r0: 4, a0: 1.2, a1: 2.3 }, 20, 3.2, (x, y, a) => A.corn(x, y, a)) +
+      A.many({ ...c, r: 37, r0: 6, a0: 2.4, a1: 3.7 }, 8, 8, (x, y) => A.cucumber(x, y, 5)) +
+      A.many({ ...c, r: 37, r0: 6, a0: 3.8, a1: 4.9 }, 7, 7.4, (x, y) => A.tomato(x, y, 4)) +
+      A.many({ cx: 78, cy: 60, r: 16 }, 7, 5, (x, y, a) => A.onion(x, y, a)));
+    return b + A.herbs(78, 60, 30, 14) + A.light();
+  },
+  wrap: A => {
+    let b = A.table("wood") + A.board(14, 16, 132, 88);
+    b += A.shadowGroup(A.leaf(40, 82, 40, 1.6, "let") + A.leaf(118, 34, -30, 1.4, "let"));
+    b += A.shadowGroup(A.wrapHalf(70, 46, 12, 1.25) + A.wrapHalf(84, 74, 168, 1.25));
+    b += A.shadowGroup(A.tomatoSlice(124, 78, 6) + A.tomatoSlice(132, 64, 5.5) + A.cucumber(32, 34, 5.5) + A.cucumber(42, 28, 5.2));
+    return b + A.light();
+  },
+  quarkbowl: A => {
+    let b = A.table("linen") + A.bowl(76, 60, 50, "#b8d4e8");
+    b += A.creamy(76, 60, 41, "#f7f4ee");
+    b += A.many({ cx: 76, cy: 60, r: 38, r0: 8, a0: 3.2, a1: 5.3 }, 40, 2.6, (x, y, a) => A.oat(x, y, a));
+    b += A.shadowGroup(A.many({ cx: 76, cy: 60, r: 38, r0: 2, a0: -.6, a1: 2.3 }, 30, 4.6, (x, y, a) => A.berries(x, y, a)));
+    b += A.drizzle(74, 58, 40, "#f0b440", 2);
+    return b + A.light();
+  },
+  oats: A => {
+    let b = A.table("linen") + A.bowl(76, 60, 50, "#e7c9a9");
+    b += A.porridge(76, 60, 41, "#e6d6b6");
+    b += A.swirl(70, 70, 34, "#fbf9f3");
+    b += A.shadowGroup(A.many({ cx: 76, cy: 60, r: 36, r0: 8, a0: -1.8, a1: 1 }, 12, 8.5, (x, y) => A.banana(x, y, 5.2)));
+    b += A.many({ cx: 70, cy: 58, r: 26 }, 26, 2.4, (x, y) => `<circle cx="${A.f1(x)}" cy="${A.f1(y)}" r=".55" fill="#8a5426" opacity=".8"/>`);
+    return b + A.light();
+  },
+  omelett: A => {
+    let b = A.table("linen") + A.plate(74, 60, 50) + A.fork(140, 62, 0);
+    b += A.shadowGroup(`<path d="M38 64 A36 30 0 0 1 108 54 Q74 78 38 64Z" fill="${A.rg("om", [[0, "#ffe27e"], [.65, "#f5bd2e"], [1, "#cf8c0e"]], { cx: .5, cy: .75, r: .75 })}"/>`);
+    b += A.many({ x: 46, y: 36, w: 56, h: 24 }, 14, 5, (x, y) => `<circle cx="${A.f1(x)}" cy="${A.f1(y)}" r="${A.f1(A.rnd(1, 2.6))}" fill="#b8680a" opacity=".3"/>`);
+    b += A.shadowGroup(A.leaf(52, 70, 120, 1, "spin") + A.leaf(62, 73, 100, .9, "spin") + A.leaf(72, 73, 80, .85, "spin") + A.tomatoSlice(84, 72, 5.4) + A.tomatoSlice(96, 66, 5));
+    b += A.shadowGroup(A.bread(70, 90, 8, .7) + A.bread(88, 92, -14, .66));
+    b += A.herbs(74, 48, 16, 16);
+    return b + A.light();
+  },
+  pancakes: A => {
+    let b = A.table("linen") + A.plate(76, 60, 50) + A.fork(141, 62, 0);
+    b += A.shadowGroup(A.pancake(80, 65, 32) + A.pancake(78, 62, 32) + A.pancake(76, 59, 32));
+    b += A.drizzle(76, 56, 38, "#c9781e", 2);
+    b += A.shadowGroup(A.many({ cx: 78, cy: 58, r: 17 }, 16, 4.6, (x, y, a) => A.berries(x, y, a)) + A.banana(60, 52, 5.4) + A.banana(66, 44, 5.4) + A.banana(94, 70, 5.4));
+    return b + A.light();
+  },
+  shake: A => {
+    let b = A.table("marble");
+    b += A.castShadow(80, 96, 28, 8, .35);
+    const glass = A.lg("gl", [[0, "#ffffff", .6], [.22, "#ffffff", .12], [.78, "#ffffff", .06], [1, "#ffffff", .5]], { x2: 1, y2: 0 });
+    const milk = A.lg("milk", [[0, "#fbefc0"], [1, "#e6c873"]]);
+    b += `<path d="M58 20 L102 20 L97 100 Q80 105 63 100 Z" fill="${milk}"/>`;
+    b += `<path d="M58 20 L102 20 L101 31 L59 31 Z" fill="#fffaf0"/>` + A.many({ x: 61, y: 22, w: 38, h: 8 }, 16, 2.6, (x, y) => `<circle cx="${A.f1(x)}" cy="${A.f1(y)}" r="${A.f1(A.rnd(.5, 1.3))}" fill="#fff" stroke="#e8dcb8" stroke-width=".3"/>`);
+    b += `<path d="M58 20 L102 20 L97 100 Q80 105 63 100 Z" fill="${glass}" stroke="#d3d9e0" stroke-width="1.2"/>`;
+    b += `<path d="M63 28 L67 94" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".6"/><path d="M95 30 L93 60" stroke="#fff" stroke-width="1" stroke-linecap="round" opacity=".45"/>`;
+    b += `<g filter="url(#${A.u}sh)"><path d="M86 30 L104 4" stroke="#2fb380" stroke-width="4.6" stroke-linecap="round"/><path d="M86 30 L104 4" stroke="#fff" stroke-width="1.1" stroke-dasharray="3 3" stroke-linecap="round" opacity=".7"/></g>`;
+    b += A.shadowGroup(A.banana(60, 22, 9));
+    b += A.shadowGroup(A.banana(124, 92, 6) + A.banana(134, 84, 6) + A.banana(28, 90, 6));
+    return b + A.light();
+  },
+  skyrapfel: A => {
+    let b = A.table("marble") + A.bowl(78, 60, 50, "#d5c4e8");
+    b += A.creamy(78, 60, 41, "#fbfaf6");
+    b += A.shadowGroup(A.many({ cx: 78, cy: 60, r: 37, r0: 4, a0: -2, a1: 1.5 }, 24, 5.6, (x, y, a) => A.apple(x, y, a, 5.6)));
+    b += A.drizzle(76, 60, 40, "#a8682a", 2);
+    b += A.many({ cx: 70, cy: 64, r: 22 }, 30, 2.2, (x, y) => `<circle cx="${A.f1(x)}" cy="${A.f1(y)}" r=".5" fill="#8a5426" opacity=".7"/>`);
+    return b + A.light();
+  },
+  huettenbrot: A => {
+    let b = A.table("wood") + A.board(14, 16, 132, 88);
+    const top = () => A.many({ cx: 0, cy: 1, r: 13 }, 30, 2.8, (x, y) => A.cottage(x, y, 2.4)) +
+      A.cucumber(-7, -6, 5.4) + A.cucumber(6, 8, 5.2) + A.tomatoSlice(7, -6, 5.4) + A.tomatoSlice(-6, 8, 5) + A.herbs(0, 0, 12, 14);
+    b += A.shadowGroup(A.bread(52, 60, -8, 1.95, top()) + A.bread(108, 60, 10, 1.95, top()));
+    return b + A.light();
+  }
 };
-const TILE = { frueh: "#fbefd9", haupt: "#e5f0e8", snack: "#efe8f8" };
 
 function recipeArt(r) {
-  const R = seeded(r.id), art = r.art || { c: "plate" };
-  const bg = TILE[r.type] || "#eee";
-  let g = `<rect width="160" height="120" fill="${bg}"/>`;
-  const cx = 80, cy = 60;
-  if (art.c === "glass") {
-    g += `<ellipse cx="${cx}" cy="108" rx="34" ry="5" fill="rgba(0,0,0,.08)"/>
-      <path d="M${cx - 22} 20 L${cx + 22} 20 L${cx + 18} 106 Q${cx} 110 ${cx - 18} 106 Z" fill="${art.base}" stroke="#e2d6b6" stroke-width="1.5"/>
-      <path d="M${cx - 22} 20 L${cx + 22} 20 L${cx + 21} 32 L${cx - 21} 32 Z" fill="#fffaf0" opacity=".85"/>
-      <path d="M${cx + 6} 30 L${cx + 20} 4" stroke="#2f7d5b" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="${cx - 22}" cy="22" r="9" fill="#f8e7a1" stroke="#e9cf72"/><circle cx="${cx - 22}" cy="22" r="1.6" fill="#c9a24a"/>
-      <path d="M${cx - 16} 50 v40" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>`;
-    return `<svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${g}</svg>`;
-  }
-  g += `<ellipse cx="${cx}" cy="${cy + 52}" rx="44" ry="5" fill="rgba(0,0,0,.07)"/>`;
-  if (art.c === "bowl") {
-    g += `<circle cx="${cx}" cy="${cy}" r="52" fill="#dfe7ea"/><circle cx="${cx}" cy="${cy}" r="48" fill="#ffffff"/><circle cx="${cx}" cy="${cy}" r="43" fill="${art.base || "#f7f5ef"}"/>`;
-  } else {
-    g += `<circle cx="${cx}" cy="${cy}" r="52" fill="#ffffff" stroke="#e4e4de"/><circle cx="${cx}" cy="${cy}" r="42" fill="#f8f8f4"/>`;
-    if (art.base) g += `<circle cx="${cx}" cy="${cy}" r="34" fill="${art.base}"/>`;
-  }
-  if (art.pancakes) {
-    g += `<circle cx="${cx + 4}" cy="${cy + 6}" r="30" fill="#c98a45"/><circle cx="${cx + 2}" cy="${cy + 3}" r="30" fill="#e0a25a"/><circle cx="${cx}" cy="${cy}" r="30" fill="#e9b46c"/><circle cx="${cx}" cy="${cy}" r="24" fill="#eebd7a"/>`;
-  }
-  const skip = new Set(["passata", "milch", "whey", "oel", "soja", "eiklar", "quark", "skyr", ...(art.skip || [])]);
-  const keys = r.ing.map(x => x[0]).filter(k => !skip.has(k) && ART[k] && !ART[k].drizzle);
-  const drizzles = r.ing.map(x => x[0]).filter(k => ART[k] && ART[k].drizzle);
-  const span = (Math.PI * 2) / Math.max(1, keys.length), start = R() * Math.PI * 2;
-  const maxR = art.c === "bowl" ? 34 : art.pancakes ? 20 : 32;
-  keys.forEach((k, i) => {
-    const def = ART[k];
-    const n = keys.length === 1 && def.n > 1 ? def.n * 2 : def.n;
-    for (let j = 0; j < n; j++) {
-      const ang = keys.length === 1 ? R() * Math.PI * 2 : start + span * i + span * (0.12 + R() * 0.76);
-      const rad = def.n === 1 ? maxR * 0.45 : 7 + R() * (maxR - 7);
-      const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
-      g += def.d(+x.toFixed(1), +y.toFixed(1), R() * 180, R);
-    }
-  });
-  for (const k of drizzles) {
-    let d = `M${cx - 22} ${cy - 8}`;
-    for (let t = 1; t <= 4; t++) d += ` Q${cx - 22 + t * 11 - 5} ${cy - 8 + (t % 2 ? -10 : 10)} ${cx - 22 + t * 11} ${cy - 8 + t * 4}`;
-    g += `<path d="${d}" fill="none" stroke="${ART[k].drizzle}" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>`;
-  }
-  return `<svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${g}</svg>`;
+  const f = DISH[r.id];
+  if (!f) return "";
+  const A = makeArt(r.id);
+  return A.svg(f(A));
 }
+
 const recipeImg = r => recipePhotos[r.id] ? `<img src="${recipePhotos[r.id]}" alt="">` : recipeArt(r);
 
 /* Eigenes Foto: verkleinert und lokal gespeichert */
@@ -2057,8 +2532,24 @@ $("calcSave").onclick = () => {
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
 ["stockSheet", "pickSheet", "calcSheet", "mealSheet", "addSheet", "recipeSheet"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("open"); }));
 
+/* ---------- Untertitel in der Kopfzeile ---------- */
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function updateSub() {
+  let t = "";
+  if (currentTab === "heute") t = new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
+  else if (currentTab === "kuehlschrank") t = plural(products.filter(inStock).length, "Produkt vorrätig", "Produkte vorrätig");
+  else if (currentTab === "mahlzeit") t = plural(templates.length, "gespeicherte Mahlzeit", "gespeicherte Mahlzeiten");
+  else if (currentTab === "produkte") t = plural(products.length, "Produkt angelegt", "Produkte angelegt");
+  else if (currentTab === "vorschlaege") {
+    const k = RECIPES.filter(r => analyzeRecipe(r).missing.length === 0).length;
+    t = k ? `${plural(k, "Rezept", "Rezepte")} kannst du jetzt kochen` : "Fitness-Rezepte für deinen Kühlschrank";
+  }
+  $("subtitle").textContent = t;
+}
+new MutationObserver(updateSub).observe($("view"), { childList: true });
+
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "11";
+const APP_VERSION = "12";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
