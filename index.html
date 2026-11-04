@@ -911,7 +911,66 @@
   .sheet { transition: transform .32s cubic-bezier(.2,.8,.2,1) !important; }
   #toast { transition: opacity .25s ease, transform .3s cubic-bezier(.2,.8,.2,1) !important; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  .add-search-row { display: flex; gap: 8px; margin-top: 12px; align-items: stretch; }
+  .add-search-row .search { flex: 1; margin: 0; min-width: 0; }
+  .add-scan { flex: none; width: 48px; border: 0; border-radius: var(--r-md); background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; cursor: pointer; }
+  .add-scan svg { width: 22px; height: 22px; }
+  /* Sporteinheiten */
+  .quick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quick-row .btn { margin: 0; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .quick-row .btn svg { width: 20px; height: 20px; }
+  .sp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 14px; }
+  .sp-opt { border: 0; background: var(--card); color: var(--text); border-radius: var(--r-md); padding: 10px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: inset 0 0 0 1.5px var(--line); }
+  .sp-opt svg { width: 24px; height: 24px; }
+  .sp-opt.on { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+  .chips button { border: 0; background: var(--card); color: var(--text); box-shadow: inset 0 0 0 1.5px var(--line); border-radius: 20px; padding: 7px 13px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .chips button.on { background: var(--accent); color: #fff; box-shadow: none; }
+  .sp-burn { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent-soft); color: var(--accent); border-radius: var(--r-md); padding: 12px 14px; margin-top: 14px; }
+  .sp-burn b { font-size: 22px; }
+  .sp-burn small { display: block; font-size: 12px; opacity: .8; font-weight: 500; }
+  .sp-burn input { width: 92px; text-align: right; font-weight: 700; }
+  .sport-line { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .sport-line svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
+  .sport-line b { color: var(--text); font-weight: 600; }
+  .week-stats.four { grid-template-columns: repeat(4, 1fr); }
+  .thumb.sport { background: var(--accent-soft); color: var(--accent); }
+  /* Rekorde */
+  .pr-list .item { cursor: pointer; }
+  .pr-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #fef3c7; color: #b45309; flex: none; }
+  .pr-ic svg { width: 22px; height: 22px; }
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .rec-grid > div { background: var(--card); border-radius: var(--r-md); padding: 12px; }
+  .rec-grid b { display: block; font-size: 18px; }
+  .rec-grid span { font-size: 12px; color: var(--muted); }
+  .rec-grid small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .fs-prs { margin-top: 12px; display: grid; gap: 6px; }
+  .fs-prs div { display: flex; align-items: center; gap: 8px; background: #fef3c7; color: #8a4b0b; border-radius: 12px; padding: 8px 12px; font-size: 14px; }
+  .fs-prs svg { width: 18px; height: 18px; flex: none; }
+  .pr-toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 14px); transform: translate(-50%, -140%); z-index: 400; background: linear-gradient(135deg, #f6c453, #e8913a); color: #3b2306; border-radius: 18px; padding: 12px 18px 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(180,100,20,.35); transition: transform .45s cubic-bezier(.2,1.3,.4,1); width: min(380px, calc(100% - 32px)); box-sizing: border-box; }
+  .pr-toast.show { transform: translate(-50%, 0); }
+  .pr-toast svg { width: 28px; height: 28px; flex: none; }
+  .pr-toast b { display: block; font-size: 15px; }
+  .pr-toast span { font-size: 13px; }
+  @media (prefers-color-scheme: dark) {
+    .pr-ic, .pr-badge { background: #3a2e1d; color: #f2c27e; }
+    .fs-prs div { background: #3a2e1d; color: #f2c27e; }
+  }
 </style>
+<script>
+/* Erscheinungsbild: Standard hell. "dark" = immer dunkel, "auto" = wie das Gerät */
+function applyTheme(t) {
+  const want = t === "dark" ? "all" : t === "auto" ? "(prefers-color-scheme: dark)" : "not all";
+  for (const sh of document.styleSheets) {
+    let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+    for (const r of rules) if (r.media && (r._dk || /prefers-color-scheme:\s*dark/.test(r.media.mediaText))) { r._dk = true; r.media.mediaText = want; }
+  }
+  const dark = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = dark ? "#0f1115" : "#ffffff";
+}
+try { applyTheme(localStorage.getItem("makro.theme") || "light"); } catch (e) { applyTheme("light"); }
+</script>
 </head>
 <body>
 <div id="splash"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="sp-logo">
@@ -1145,7 +1204,7 @@
     </div>
     <div id="addListView">
       <div class="seg" id="addSeg"><button data-v="produkte" class="on">Produkte</button><button data-v="mahlzeiten">Mahlzeiten</button></div>
-      <input class="search" id="addSearch" style="margin-top:12px" placeholder="Suchen">
+      <div class="add-search-row"><input class="search" id="addSearch" placeholder="Suchen"><button class="add-scan" id="addScan" aria-label="Barcode scannen"><span data-ic="camera"></span></button></div>
       <div id="addList"></div>
     </div>
     <div id="addAmountView" style="display:none">
@@ -1251,6 +1310,7 @@
     <label>Titel</label>
     <input id="fsName">
     <div class="fs-stats" id="fsStats"></div>
+    <div class="fs-prs" id="fsPRs"></div>
     <div class="hint" id="fsHint" style="text-align:center"></div>
     <button class="btn" id="fsSave" style="width:100%;margin-top:16px">Training speichern</button>
   </div>
@@ -1274,6 +1334,19 @@
     <div id="startList"></div>
   </div>
 </div>
+
+<div class="sheet-bg" id="sportSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="sportSheet">Abbrechen</button>
+      <h2 id="spTitle">Sport eintragen</h2>
+      <button class="link" id="spSave" style="font-weight:700">Sichern</button>
+    </div>
+    <div id="spBody"></div>
+  </div>
+</div>
+
+<div class="pr-toast" id="prToast"></div>
 
 <div class="sheet-bg" id="planSheet">
   <div class="sheet">
@@ -1343,6 +1416,16 @@ const ICONS = {
   scale: '<rect x="3" y="3.5" width="18" height="17" rx="4"/><path d="M8 10a4 4 0 0 1 8 0z"/><path d="M12 10l1.4-2"/>',
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
   calc: '<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><rect x="8" y="5.5" width="8" height="3.5" rx=".8"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 17h.01M12 17h.01M15.5 17h.01"/>',
+  run: '<circle cx="14.5" cy="4.5" r="1.8"/><path d="M8 20.5l2.6-4.6 3.2 2.1v3.5M6.5 11.5l3.2-3h4.4l2 3.6 3 .9M10.6 15.9l1.2-4.6"/>',
+  bike: '<circle cx="6" cy="16" r="3.6"/><circle cx="18" cy="16" r="3.6"/><path d="M6 16l3.8-7h5.4l2.8 7M9.8 9L8.6 6H6.5M12 16l3.2-7"/>',
+  swim: '<circle cx="16.5" cy="6" r="1.8"/><path d="M3 18.5c2 1.4 4 1.4 6 0s4-1.4 6 0 4 1.4 6 0M4.5 13.5l5.5-4.2 3.2 3.2 3-2"/>',
+  ball: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.6l3.4 2.5-1.3 4H9.9l-1.3-4zM12 3.5v4.1M15.4 10.1l4.4-1.4M14.1 14.1l2.7 3.7M9.9 14.1l-2.7 3.7M8.6 10.1L4.2 8.7"/>',
+  glove: '<path d="M7 11V7.5A3.5 3.5 0 0 1 10.5 4H14a4 4 0 0 1 4 4v5a4 4 0 0 1-4 4H9a2 2 0 0 1-2-2v-1.5a2 2 0 0 1 2-2h3.5M8 17v3.5h8.5V17"/>',
+  wrestle: '<circle cx="7" cy="4.8" r="2"/><circle cx="17" cy="4.8" r="2"/><path d="M7 8v5l-2.6 7M7 13l2.8 7M17 8v5l2.6 7M17 13l-2.8 7M7 10.2h10"/>',
+  mountain: '<path d="M2.5 20l6.5-11 4 6.2 2.2-3.2 6.3 8zM9 9l1.8-3 2 3.2"/>',
+  yoga: '<circle cx="12" cy="4.8" r="2"/><path d="M12 8v6M4.5 10.5l7.5 2.3 7.5-2.3M5.5 18.5c2-1.8 4.2-2.7 6.5-2.7s4.5.9 6.5 2.7M4 20.5h16"/>',
+  racket: '<ellipse cx="14.5" cy="8.5" rx="5" ry="6" transform="rotate(45 14.5 8.5)"/><path d="M10.6 12.4L4 19M11.5 6l6 6M10 9.5l5-5"/>',
+  medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11.4L5.5 3.5h4l2.5 5 2.5-5h4l-3 7.9M12 13v4"/>',
   trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5.2a3 3 0 0 0 3 4.2M16 6h2.8a3 3 0 0 1-3 4.2M12 13v3.5M8.5 20.5h7M9.5 16.5h5v4h-5z"/>',
   swap: '<path d="M7 4 3 8l4 4M3 8h14M17 12l4 4-4 4M21 16H7"/>',
   clipboard: '<rect x="5.5" y="4" width="13" height="17.5" rx="2"/><path d="M9 4V2.8h6V4M9 10h6M9 14h6M9 18h3"/>',
@@ -1834,6 +1917,9 @@ async function fetchOFF(code, fields) {
 async function lookup(code) {
   if (!code) { toast("Bitte Barcode eingeben"); return; }
   const my = ++lookupSeq;
+  const known = products.find(x => sameCode(x.barcode, code) && x.id !== editingId);
+  if (known) { $("scanStatus").textContent = `Hast du schon gespeichert: ${known.name}`; return; }
+  if (!navigator.onLine) { $("scanStatus").textContent = "Offline – trag die Nährwerte selbst ein oder scanne später nochmal."; return; }
   $("scanStatus").textContent = "Suche Produkt …";
   try {
     const fields = "product_name,product_name_de,brands,image_front_small_url,image_front_url,nutriments,product_quantity,quantity,categories_tags";
@@ -2774,8 +2860,9 @@ function renderToday() {
 
   if (targets) {
     const r = 56, C = 2 * Math.PI * r;
-    const share = targets.kcal ? m.kcal / targets.kcal : 0;
-    const over = share > 1.02, rest = targets.kcal - m.kcal;
+    const goal = targets.kcal + (profile.addBurn ? burnedOn(day) : 0);
+    const share = goal ? m.kcal / goal : 0;
+    const over = share > 1.02, rest = goal - m.kcal;
     html += `<div class="card">
       <div class="ring-wrap">
         <div class="ring">
@@ -2785,7 +2872,7 @@ function renderToday() {
             <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "url(#ringGrad)"}" stroke-width="13"
               stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.min(1, share))}" style="--c0:${C}"/>
           </svg>
-          <div class="ring-center"><b>${fmt(m.kcal)}</b><small>von ${fmt(targets.kcal)} kcal</small></div>
+          <div class="ring-center"><b>${fmt(m.kcal)}</b><small>von ${fmt(goal)} kcal</small></div>
         </div>
         <div class="ring-side">
           <div class="rem" style="color:${over ? "var(--danger)" : "inherit"}">${rest >= 0 ? `Noch ${fmt(rest)} kcal` : `${fmt(-rest)} kcal drüber`}</div>
@@ -2795,6 +2882,7 @@ function renderToday() {
       ${barHTML("Eiweiß", m.p, targets.p, "var(--p)")}
       ${barHTML("Kohlenhydrate", m.c, targets.c, "var(--c)")}
       ${barHTML("Fett", m.f, targets.f, "var(--f)")}
+      ${sportLineHTML(day)}
     </div>`;
   } else {
     html += `<div class="card">
@@ -2893,6 +2981,16 @@ function renderAddList() {
 }
 $("addSeg").querySelectorAll("button").forEach(b => b.onclick = () => { addMode = b.dataset.v; showAddList(); });
 $("addSearch").oninput = renderAddList;
+// Scannen im Tracker: erst in deinen gespeicherten Produkten suchen (klappt offline)
+$("addScan").onclick = () => Cam.open("single", code => {
+  const p = products.find(x => sameCode(x.barcode, code));
+  if (p) { Cam.close(); addMode = "produkte"; showAmount(p.id); if (navigator.vibrate) navigator.vibrate(40); return; }
+  Cam.close();
+  if (!navigator.onLine) { toast("Dieses Produkt hast du noch nicht gespeichert – zum Nachschlagen brauchst du Internet"); return; }
+  $("addSheet").classList.remove("open");
+  openSheet(); $("fBarcode").value = code; lookup(code);
+  toast("Neues Produkt – einmal speichern, dann kannst du es eintragen");
+}, "Produkt scannen");
 $("addBack").onclick = showAddList;
 
 function showAmount(id) {
@@ -5797,7 +5895,7 @@ function renderTraining() {
     const on = workouts.some(w => w.day === d) || (activeWk && activeWk.day === d);
     return `<div class="wd${on ? " on" : ""}${d === todayKey() ? " today" : ""}"><span>${names[i]}</span><i>${on ? "✓" : ""}</i></div>`;
   }).join("")}</div>
-    <div class="week-stats"><div><b>${wkWeek.length}</b><span>Einheiten</span></div><div><b>${wkWeek.reduce((a, w) => a + setsOf(w), 0)}</b><span>Sätze</span></div><div><b>${de(Math.round(wkWeek.reduce((a, w) => a + volumeOf(w), 0) / 100) / 10)} t</b><span>Volumen</span></div></div></div>`;
+    <div class="week-stats four"><div><b>${wkWeek.length}</b><span>Einheiten</span></div><div><b>${wkWeek.reduce((a, w) => a + setsOf(w), 0)}</b><span>Sätze</span></div><div><b>${de(Math.round(wkWeek.reduce((a, w) => a + volumeOf(w), 0) / 100) / 10)} t</b><span>Volumen</span></div><div><b>${hm(wkWeek.reduce((a, w) => a + (isSport(w) ? w.min : 0), 0))}</b><span>Sport</span></div></div></div>`;
 
   html += `<div class="sec-head"><div class="cat-title">Meine Trainingspläne</div>${plans.length ? `<button class="link" id="newPlan2">＋ Neuer Plan</button>` : ""}</div>`;
   if (!plans.length) html += `<div class="card plan-empty"><div class="big">${ic("clipboard")}</div><b>Noch keine Trainingspläne</b>
@@ -5810,16 +5908,23 @@ function renderTraining() {
       <button class="btn" data-go="${p.id}" style="width:100%;margin-top:12px">Plan starten</button></div>`).join("");
 
   html += `<div class="cat-title">Schnellstart</div>
-    <button class="btn ghost quick" id="quickStart">＋ Leeres Training starten</button>`;
+    <div class="quick-row"><button class="btn ghost quick" id="quickStart">＋ Krafttraining</button><button class="btn ghost quick" id="quickSport">${ic("run")} Sport</button></div>`;
   const recent = sortedWorkouts().reverse().slice(0, 8);
   html += `<div class="cat-title">Letzte Einheiten</div>`;
   html += recent.length ? `<div class="list">${recent.map(w => {
+    if (isSport(w)) { const sp = sportById(w.sport); return `<div class="item" data-spw="${w.id}"><div class="thumb sport">${ic(sp.icon)}</div><div class="item-main">
+      <div class="item-name">${esc(w.name)}</div><div class="item-sub">${dayLabel(w.day)} · ${hm(w.min)} · ${INTENS[w.int][1]}${w.kcal ? ` · ≈ ${fmt(w.kcal)} kcal` : ""}</div></div></div>`; }
     const prs = w.prs || 0, min = Math.max(1, Math.round((w.end - w.start) / 60000));
     return `<div class="item" data-wk="${w.id}"><div class="thumb">${ic("dumbbell")}</div><div class="item-main">
       <div class="item-name">${esc(w.name)}${prs ? ` <span class="pr-badge">${ic("trophy")} ${prs}</span>` : ""}</div>
       <div class="item-sub">${dayLabel(w.day)} · ${min} min · ${plural(setsOf(w), "Satz", "Sätze")}${volumeOf(w) ? ` · ${de(Math.round(volumeOf(w)))} kg` : ""}</div></div></div>`;
   }).join("")}</div>` : `<p class="hint" style="margin:0 4px 8px">Noch keine Einheit gespeichert.</p>`;
 
+  const recentPRs = sortedWorkouts().reverse().flatMap(w => (w.prList || []).map(r => ({ ...r, day: w.day }))).slice(0, 5);
+  if (recentPRs.length) html += `<div class="cat-title">Neue Rekorde</div><div class="list pr-list">${recentPRs.map(r => {
+    const ex = exById(r.exId);
+    return `<div class="item" data-ex="${r.exId}"><div class="pr-ic">${ic("trophy")}</div><div class="item-main"><div class="item-name">${esc(ex.name)}</div><div class="item-sub">${esc(r.label)} · ${dayLabel(r.day)}</div></div><div class="kcal">${esc(r.val)}</div></div>`;
+  }).join("")}</div>`;
   const doneEx = [...new Set(sortedWorkouts().reverse().flatMap(w => w.items.map(i => i.exId)))];
   html += `<div class="cat-title">Fortschritt</div>`;
   html += doneEx.length ? `<div class="list">${doneEx.slice(0, 12).map(id => {
@@ -5832,6 +5937,8 @@ function renderTraining() {
 
   if ($("wkResume")) $("wkResume").onclick = () => openWk(activeWk, "live");
   $("quickStart").onclick = () => startWorkout(null);
+  $("quickSport").onclick = () => openSport(null);
+  view.querySelectorAll("[data-spw]").forEach(c => c.onclick = () => openSport(c.dataset.spw));
   view.querySelectorAll("[data-go]").forEach(b => b.onclick = () => startWorkout(plans.find(p => p.id === b.dataset.go)));
   view.querySelectorAll("[data-plan]").forEach(c => c.onclick = () => openPlan(c.dataset.plan));
   view.querySelectorAll("[data-wk]").forEach(c => c.onclick = () => { const w = workouts.find(x => x.id === c.dataset.wk); openWk(JSON.parse(JSON.stringify(w)), "edit"); });
@@ -5839,6 +5946,140 @@ function renderTraining() {
   if ($("newPlan")) $("newPlan").onclick = () => openPlan(null);
   if ($("newPlan2")) $("newPlan2").onclick = () => openPlan(null);
   $("allEx").onclick = () => openExPick(null, "Übungen");
+}
+/* ---------- Sporteinheiten ---------- */
+const SPORTS = [
+  { id: "ringen", name: "Ringen", icon: "wrestle", met: [4.5, 6, 8.5] },
+  { id: "laufen", name: "Laufen", icon: "run", met: [7, 9.8, 11.5] },
+  { id: "rad", name: "Radfahren", icon: "bike", met: [5.5, 7.5, 10] },
+  { id: "schwimmen", name: "Schwimmen", icon: "swim", met: [6, 8, 10] },
+  { id: "kampf", name: "Boxen / MMA", icon: "glove", met: [5.5, 7.8, 10.3] },
+  { id: "ball", name: "Ballsport", icon: "ball", met: [6, 7, 9] },
+  { id: "hiit", name: "HIIT / Zirkel", icon: "bolt", met: [6, 8, 10] },
+  { id: "racket", name: "Tennis & Co.", icon: "racket", met: [5, 7, 8] },
+  { id: "wandern", name: "Wandern", icon: "mountain", met: [4, 5.3, 6.5] },
+  { id: "yoga", name: "Yoga / Mobility", icon: "yoga", met: [2.5, 3, 4] },
+  { id: "cardio", name: "Cardio-Gerät", icon: "trend", met: [5, 7, 9] },
+  { id: "sonst", name: "Sonstiges", icon: "flame", met: [4, 6, 8] }
+];
+const INTENS = [["leicht", "Locker"], ["mittel", "Mittel"], ["hart", "Hart"]].map((x, i) => [i, x[1]]);
+const sportById = id => SPORTS.find(x => x.id === id) || SPORTS[SPORTS.length - 1];
+const isSport = w => w.kind === "sport";
+const hm = min => { min = Math.round(min || 0); return min < 60 ? `${min} min` : `${Math.floor(min / 60)}:${String(min % 60).padStart(2, "0")} h`; };
+const bodyKg = () => num(profile.weight) || 75;
+const sportKcal = (sid, int, min) => Math.round((sportById(sid).met[int] - 1) * bodyKg() * (min / 60) / 5) * 5;
+const burnedOn = day => workouts.filter(w => isSport(w) && w.day === day).reduce((a, w) => a + (w.kcal || 0), 0);
+function sportLineHTML(day) {
+  const list = workouts.filter(w => isSport(w) && w.day === day);
+  if (!list.length) return "";
+  const kc = list.reduce((a, w) => a + (w.kcal || 0), 0);
+  return `<div class="sport-line">${ic(sportById(list[0].sport).icon)}<span><b>${list.map(w => `${esc(w.name)} ${hm(w.min)}`).join(", ")}</b> · ≈ ${fmt(kc)} kcal verbrannt${profile.addBurn ? " (im Ziel)" : ""}</span></div>`;
+}
+let spEd = null;
+function openSport(id) {
+  const old = id && workouts.find(w => w.id === id);
+  spEd = old ? { ...old, manual: old.manual || false } : { id: null, kind: "sport", sport: profile.lastSport || "ringen", min: 90, int: 1, day: todayKey(), note: "", kcal: 0, manual: false };
+  $("spTitle").textContent = old ? "Sporteinheit" : "Sport eintragen";
+  renderSport();
+  $("sportSheet").classList.add("open");
+  document.querySelector("#sportSheet .sheet").scrollTop = 0;
+}
+function renderSport() {
+  const e = spEd, auto = sportKcal(e.sport, e.int, e.min);
+  if (!e.manual) e.kcal = auto;
+  const days = [[todayKey(), "Heute"], [dayShift(todayKey(), -1), "Gestern"], [dayShift(todayKey(), -2), "Vorgestern"]];
+  $("spBody").innerHTML = `<label>Sportart</label>
+    <div class="sp-grid">${SPORTS.map(x => `<button class="sp-opt${x.id === e.sport ? " on" : ""}" data-sp="${x.id}">${ic(x.icon)}${x.name}</button>`).join("")}</div>
+    <label>Dauer (Minuten)</label>
+    <div class="stepper"><button id="spMinus">−</button><input id="spMin" type="number" inputmode="numeric" value="${e.min}"><button id="spPlus">+</button></div>
+    <div class="chips">${[30, 45, 60, 90, 120].map(m => `<button data-min="${m}" class="${e.min === m ? "on" : ""}">${hm(m)}</button>`).join("")}</div>
+    <label style="margin-top:12px">Intensität</label>
+    <div class="seg" id="spInt">${INTENS.map(([i, n]) => `<button data-int="${i}" class="${e.int === i ? "on" : ""}">${n}</button>`).join("")}</div>
+    <label style="margin-top:12px">Wann?</label>
+    <div class="chips">${days.map(([d, n]) => `<button data-day="${d}" class="${e.day === d ? "on" : ""}">${n}</button>`).join("")}${days.some(([d]) => d === e.day) ? "" : `<button class="on">${dayLabel(e.day)}</button>`}</div>
+    <label style="margin-top:12px">Notiz</label>
+    <input id="spNote" value="${esc(e.note || "")}" placeholder="z. B. Sparring, 5 × 6 min">
+    <div class="sp-burn"><div><small>Geschätzt verbrannt</small><b>≈ ${fmt(e.kcal)} kcal</b><small>${e.manual ? "selbst eingetragen" : `bei ${de(bodyKg())} kg Körpergewicht`}</small></div>
+      <input id="spKcal" type="number" inputmode="numeric" value="${e.kcal}" aria-label="Kalorien anpassen"></div>
+    ${e.id ? `<button class="btn danger" id="spDel" style="width:100%;margin-top:16px">Einheit löschen</button>` : ""}`;
+  const b = $("spBody");
+  b.querySelectorAll("[data-sp]").forEach(x => x.onclick = () => { e.sport = x.dataset.sp; renderSport(); });
+  b.querySelectorAll("[data-min]").forEach(x => x.onclick = () => { e.min = +x.dataset.min; renderSport(); });
+  b.querySelectorAll("[data-int]").forEach(x => x.onclick = () => { e.int = +x.dataset.int; renderSport(); });
+  b.querySelectorAll("[data-day]").forEach(x => x.onclick = () => { e.day = x.dataset.day; renderSport(); });
+  $("spMinus").onclick = () => { e.min = Math.max(5, e.min - 5); renderSport(); };
+  $("spPlus").onclick = () => { e.min = e.min + 5; renderSport(); };
+  $("spMin").onchange = () => { e.min = Math.max(1, Math.round(num($("spMin").value)) || e.min); renderSport(); };
+  $("spNote").oninput = () => { e.note = $("spNote").value; };
+  $("spKcal").onchange = () => { const v = Math.round(num($("spKcal").value)); e.manual = v > 0 && v !== auto; e.kcal = v > 0 ? v : auto; renderSport(); };
+  if ($("spDel")) $("spDel").onclick = () => {
+    if (!confirm("Sporteinheit löschen?")) return;
+    workouts = workouts.filter(w => w.id !== e.id); saveJSON(WK_KEY, workouts);
+    $("sportSheet").classList.remove("open"); afterSport("Gelöscht");
+  };
+}
+$("spSave").onclick = () => {
+  const e = spEd; e.note = $("spNote").value.trim();
+  const sp = sportById(e.sport), t = new Date(e.day + "T12:00").getTime();
+  const rec = { id: e.id || uid(), kind: "sport", sport: e.sport, name: sp.name, day: e.day, min: e.min, int: e.int, kcal: e.kcal, manual: e.manual, note: e.note,
+    start: e.start && e.day === (workouts.find(w => w.id === e.id) || {}).day ? e.start : (e.day === todayKey() ? Date.now() - e.min * 60000 : t), items: [] };
+  rec.end = rec.start + rec.min * 60000;
+  if (e.id) workouts = workouts.map(w => w.id === e.id ? rec : w); else workouts.push(rec);
+  profile.lastSport = e.sport; saveJSON(PROFILE_KEY, profile);
+  saveJSON(WK_KEY, workouts);
+  $("sportSheet").classList.remove("open");
+  afterSport(`${sp.name} gespeichert · ≈ ${fmt(rec.kcal)} kcal`);
+};
+$("sportSheet").addEventListener("click", ev => { if (ev.target.id === "sportSheet") $("sportSheet").classList.remove("open"); });
+function afterSport(msg) {
+  if (currentTab === "training") renderTraining();
+  if (currentTab === "heute") renderToday();
+  if (typeof updateSub === "function") updateSub();
+  toast(msg);
+}
+
+/* ---------- Persönliche Rekorde ---------- */
+const e1rm = s => num(s.w) > 0 && num(s.r) > 0 ? num(s.w) * (1 + Math.min(num(s.r), 15) / 30) : 0;
+function prMetrics(ex) {
+  if (isTime(ex)) return [{ key: "time", label: "Längste Zeit", of: s => num(s.r), fmt: v => `${de(v)} s` }];
+  const m = [];
+  m.push({ key: "w", label: isBW(ex) ? "Meistes Zusatzgewicht" : "Schwerstes Gewicht", of: s => num(s.w), fmt: v => `${de(v)} kg` });
+  m.push({ key: "1rm", label: "Bestes 1RM", of: s => Math.round(e1rm(s) * 2) / 2, fmt: v => `${de(v)} kg` });
+  m.push({ key: "reps", label: isBW(ex) ? "Meiste Wiederholungen" : "Meiste Wdh.", of: s => (isBW(ex) || num(s.w) > 0) ? num(s.r) : 0, fmt: v => `${de(v)} Wdh`, onlyBW: !isBW(ex) });
+  m.push({ key: "vol", label: "Bestes Satzvolumen", of: s => num(s.w) * num(s.r), fmt: v => `${de(Math.round(v))} kg` });
+  return m;
+}
+function prevBest(exId, metric, excludeId) {
+  let best = 0, day = null, cnt = 0;
+  for (const w of sortedWorkouts()) {
+    if (w.id === excludeId) continue;
+    for (const it of w.items) if (it.exId === exId) for (const s of it.sets) if (s.type !== "w") { cnt++; const v = metric.of(s); if (v > best) { best = v; day = w.day; } }
+  }
+  return { best, day, cnt };
+}
+/* Welche Rekorde schlägt dieser Satz? (Erstes Mal = kein Rekord; "Meiste Wdh." bei Gewichtsübungen nur, wenn das Gewicht nicht leichter ist) */
+function prHits(exId, s, excludeId) {
+  const ex = exById(exId), out = [];
+  for (const m of prMetrics(ex)) {
+    if (m.onlyBW) continue;
+    const v = m.of(s); if (!(v > 0)) continue;
+    const pb = prevBest(exId, m, excludeId);
+    if (pb.cnt && pb.best > 0 && v > pb.best + 1e-9) out.push({ key: m.key, label: m.label, v, val: m.fmt(v), of: m.of, prev: m.fmt(pb.best) });
+  }
+  const order = ["1rm", "w", "time", "reps", "vol"];
+  return out.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+}
+function exRecords(exId) {
+  const ex = exById(exId);
+  return prMetrics(ex).filter(m => !m.onlyBW).map(m => { const pb = prevBest(exId, m, null); return pb.best > 0 ? { label: m.label, val: m.fmt(pb.best), day: pb.day } : null; }).filter(Boolean);
+}
+let prT = null;
+function showPR(name, h) {
+  const el = $("prToast");
+  el.innerHTML = `${ic("trophy")}<div><b>Neuer Rekord!</b><span>${esc(name)} · ${esc(h.label)}: ${esc(h.val)} <span style="opacity:.7;white-space:nowrap">(vorher ${esc(h.prev)})</span></span></div>`;
+  el.classList.add("show");
+  if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
+  clearTimeout(prT); prT = setTimeout(() => el.classList.remove("show"), 3200);
 }
 function bestSetOf(exId) {
   const ex = exById(exId); let best = null, sc = 0;
@@ -5851,7 +6092,9 @@ function openStart() {
   if (activeWk) { openWk(activeWk, "live"); return; }
   $("startList").innerHTML = `<button class="start-item free" data-sp=""><b>＋ Leeres Training</b><span>Übungen selbst wählen</span></button>` +
     plans.map(p => `<button class="start-item" data-sp="${p.id}"><b>${esc(p.name)}</b><span>${plural(p.items.length, "Übung", "Übungen")}</span></button>`).join("") +
-    `<button class="start-item" data-newplan="1"><b>＋ Neuen Plan erstellen</b><span></span></button>`;
+    `<button class="start-item" data-newplan="1"><b>＋ Neuen Plan erstellen</b><span></span></button>` +
+    `<button class="start-item" data-sport="1"><b>${ic("run")} Sport eintragen</b><span>Ringen, Laufen, Rad …</span></button>`;
+  $("startList").querySelector("[data-sport]").onclick = () => { $("startSheet").classList.remove("open"); openSport(null); };
   $("startList").querySelectorAll("[data-sp]").forEach(b => b.onclick = () => { $("startSheet").classList.remove("open"); startWorkout(plans.find(p => p.id === b.dataset.sp) || null); });
   $("startList").querySelector("[data-newplan]").onclick = () => { $("startSheet").classList.remove("open"); openPlan(null); };
   $("startSheet").classList.add("open");
@@ -5951,8 +6194,14 @@ function renderWk() {
         if (s.r === "" || num(s.r) <= 0) { s.w = w && w.value.trim() === "" ? "" : s.w; toast(isTime(exById(it.exId)) ? "Bitte Sekunden eintragen" : "Bitte Wiederholungen eintragen"); return; }
         s.done = true;
         if (wkMode === "live" && (it.rest ?? restDefault) > 0) startRest(it.rest ?? restDefault);
+        if (s.type !== "w") {
+          const others = it.sets.filter((x, k) => k !== j && x.done && x.type !== "w");
+          const hits = prHits(it.exId, s, wk.id).filter(h => others.every(o => h.of(o) < h.v - 1e-9));
+          if (hits.length) showPR(exById(it.exId).name, hits[0]);
+        }
       } else s.done = false;
       saveWk(); renderWk();
+      const nb = $("wkList").querySelector(`.set-row[data-i="${row.dataset.i}"][data-j="${j}"] .chk`); if (nb && s.done) nb.classList.add("pop");
     };
   });
   list.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
@@ -6010,12 +6259,16 @@ $("wkDiscard").onclick = () => discardWk(true);
 
 function buildRecord() {
   const items = wk.items.map(it => ({ exId: it.exId, note: it.note || "", rest: it.rest, weighted: !!it.weighted, sets: it.sets.filter(s => s.done).map(s => ({ w: s.w === "" ? 0 : num(s.w), r: num(s.r), done: true, type: s.type || "n" })) })).filter(it => it.sets.length);
-  let prs = 0;
+  const prList = [];
   for (const it of items) {
-    const ex = exById(it.exId), best = bestScore(it.exId, wk.id), work = it.sets.filter(s => s.type !== "w");
-    if (best > 0 && work.length && Math.max(...work.map(s => setScore(ex, s))) > best + 1e-9) prs++;
+    const seen = new Set();
+    for (const st of it.sets) if (st.type !== "w") for (const h of prHits(it.exId, st, wk.id)) {
+      const better = it.sets.some(o => o !== st && o.type !== "w" && h.of(o) > h.v + 1e-9);
+      if (!better && !seen.has(h.key)) { seen.add(h.key); prList.push({ exId: it.exId, key: h.key, label: h.label, val: h.val }); }
+    }
   }
-  const rec = { id: wk.id, day: wk.day, start: wk.start, end: wkMode === "live" ? Date.now() : (wk.end || Date.now()), name: (wk.name || "").trim() || "Training", planId: wk.planId || null, items, prs };
+  const prs = new Set(prList.map(r => r.exId)).size;
+  const rec = { id: wk.id, day: wk.day, start: wk.start, end: wkMode === "live" ? Date.now() : (wk.end || Date.now()), name: (wk.name || "").trim() || "Training", planId: wk.planId || null, items, prs, prList };
   return rec;
 }
 $("wkFinish").onclick = () => {
@@ -6031,6 +6284,7 @@ $("wkFinish").onclick = () => {
     <div class="stat"><b>${de(Math.round(volumeOf(rec)))} kg</b><span>Volumen</span></div>
     <div class="stat"><b>${setsOf(rec)}</b><span>Sätze</span></div>
     <div class="stat"><b>${rec.prs ? ic("trophy") + " " + rec.prs : "–"}</b><span>Rekorde</span></div>`;
+  $("fsPRs").innerHTML = rec.prList.length ? rec.prList.map(r => `<div>${ic("trophy")}<span><b>${esc(exById(r.exId).name)}</b> · ${esc(r.label)}: ${esc(r.val)}</span></div>`).join("") : "";
   $("fsHint").textContent = open ? `${plural(open, "Satz ist", "Sätze sind")} nicht abgehakt und ${open === 1 ? "wird" : "werden"} nicht gespeichert.` : "";
   $("finishSheet").classList.add("open");
 };
@@ -6225,6 +6479,8 @@ function openExDetail(id) {
       <div class="stat"><b>${best ? fmtSet(ex, best) : "–"}</b><span>Bester Satz</span></div>
       ${!t && !useReps ? `<div class="stat"><b>${de(Math.round(bestE * 2) / 2)} kg</b><span>1RM geschätzt</span></div>` : ""}
       <div class="stat"><b>${hist.length}</b><span>Einheiten</span></div></div>`;
+    const recs = exRecords(id);
+    if (recs.length) html += `<div class="card-title" style="margin:16px 4px 0">${ic("trophy")} Persönliche Rekorde</div><div class="rec-grid">${recs.map(r => `<div><span>${r.label}</span><b>${r.val}</b><small>${dayLabel(r.day)}</small></div>`).join("")}</div>`;
     html += `<div class="card" style="margin-top:12px"><div class="card-title">${t ? "Längste Zeit (s)" : useReps ? "Meiste Wiederholungen" : "Höchstes Gewicht (kg)"} pro Einheit</div>${chartSVG(pts.slice(-20))}</div>`;
     html += `<div class="card-title" style="margin:16px 4px 8px">Verlauf</div><div class="list">${hist.slice().reverse().map(({ w, it }) => `<div class="item" style="cursor:default"><div class="item-main"><div class="item-name">${dayLabel(w.day)}</div><div class="item-sub">${it.sets.map(s => (s.type === "w" ? "W " : "") + fmtSet(ex, s)).join(" · ")}</div></div></div>`).join("")}</div>`;
   }
@@ -6282,7 +6538,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "43";
+const APP_VERSION = "46";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
@@ -6529,6 +6785,8 @@ function renderSettings() {
     <div class="set-group">
       ${row("user", "Profil & Kalorienziel", targets ? `${fmt(targets.kcal)} kcal · ${Math.round(targets.p)} g Eiweiß` : "Noch nicht berechnet", "setProfile")}
       ${row("leaf", "Ernährungsweise", (DIETS.find(x => x[0] === (profile.diet || "alle")) || DIETS[0])[1], "setDiet")}
+      ${row("run", "Sport-Kalorien zum Tagesziel", profile.addBurn ? "An – verbrannte kcal kommen dazu" : "Aus – dein Ziel enthält schon deine Aktivität", "setBurn")}
+      ${row("moon", "Erscheinungsbild", THEMES.find(x => x[0] === curTheme())[1], "setTheme")}
       ${row("sparkles", "Einführung ansehen", "Die kurze Tour vom ersten Start", "setOnb")}
     </div>
     <div class="set-group">${row("trash", "Alle Daten löschen", "Setzt die App komplett zurück", "setWipe", "danger")}</div>
@@ -6537,6 +6795,8 @@ function renderSettings() {
   $("setLoad").onclick = () => { $("restoreIn").value = ""; $("restoreIn").click(); };
   $("setProfile").onclick = () => { $("setSheet").classList.remove("open"); openCalc(); };
   $("setDiet").onclick = () => { const i = DIETS.findIndex(x => x[0] === (profile.diet || "alle")); profile.diet = DIETS[(i + 1) % DIETS.length][0]; dietFilter = null; saveJSON(PROFILE_KEY, profile); renderSettings(); if (currentTab === "vorschlaege") renderIdeas(); };
+  $("setBurn").onclick = () => { profile.addBurn = !profile.addBurn; saveJSON(PROFILE_KEY, profile); renderSettings(); if (currentTab === "heute") renderToday(); };
+  $("setTheme").onclick = () => { const i = THEMES.findIndex(x => x[0] === curTheme()); const t = THEMES[(i + 1) % THEMES.length][0]; localStorage.setItem("makro.theme", t); applyTheme(t); renderSettings(); };
   $("setOnb").onclick = () => { $("setSheet").classList.remove("open"); openOnboarding(); };
   $("setWipe").onclick = () => {
     if (!confirm("Wirklich ALLE Daten löschen? Produkte, Kühlschrank, Mahlzeiten, Einträge, Gewicht und Trainings sind dann weg.")) return;
@@ -6547,6 +6807,8 @@ function renderSettings() {
   };
 }
 function openSettings() { renderSettings(); $("setSheet").classList.add("open"); document.querySelector("#setSheet .sheet").scrollTop = 0; }
+const THEMES = [["light", "Hell"], ["dark", "Dunkel"], ["auto", "Wie das Gerät"]];
+const curTheme = () => { const t = localStorage.getItem("makro.theme"); return THEMES.some(x => x[0] === t) ? t : "light"; };
 $("setBtn").onclick = openSettings;
 $("setClose").onclick = () => $("setSheet").classList.remove("open");
 $("setSheet").addEventListener("click", e => { if (e.target.id === "setSheet") $("setSheet").classList.remove("open"); });
