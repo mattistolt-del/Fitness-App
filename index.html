@@ -824,6 +824,93 @@
   .stepper.sm { display: flex; align-items: center; gap: 10px; }
   .stepper.sm button { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 20px; font-weight: 700; cursor: pointer; }
   .stepper.sm b { min-width: 22px; text-align: center; font-size: 18px; }
+
+  /* ---------- Rezeptfilter Ernährung ---------- */
+  .filters.diet { align-items: center; margin-top: -4px; }
+  .filters.diet > svg.i { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; margin: 0 2px 0 4px; }
+  .filters.diet button { font-size: 13px; padding: 5px 11px; }
+  .filters.diet button.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .tag.veg { background: #e3f1ec; color: #2b6e57; }
+  /* ---------- Einführung ---------- */
+  .onb { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: none; flex-direction: column; padding: calc(10px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom)); }
+  .onb.open { display: flex; }
+  .onb-top { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+  .onb-dots { display: flex; gap: 6px; } .onb-dots i { width: 8px; height: 8px; border-radius: 4px; background: var(--line); transition: all .3s; } .onb-dots i.on { width: 24px; background: var(--accent); } .onb-dots i.done { background: var(--accent); opacity: .5; }
+  .onb-body { flex: 1; overflow-y: auto; max-width: 520px; width: 100%; margin: 0 auto; padding: 10px 0 20px; }
+  .onb-body.anim { animation: onbIn .35s ease both; }
+  .onb-body h1 { font-size: 30px; letter-spacing: -.6px; margin: 8px 0 6px; text-align: center; }
+  .onb-body h2 { font-size: 22px; letter-spacing: -.3px; margin: 8px 0 12px; }
+  .onb-lead { text-align: center; color: var(--muted); font-size: 17px; margin: 0 0 20px; }
+  .onb-note { color: var(--muted); font-size: 14px; }
+  .onb-hero { display: flex; justify-content: center; margin: 14px 0 10px; }
+  .onb-logo { width: 96px; height: 96px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+  .onb-hero.big svg.i { width: 64px; height: 64px; padding: 18px; border-radius: 50%; background: var(--accent); color: #fff; stroke-width: 2.6; }
+  .onb-feats { display: grid; gap: 10px; }
+  .onb-feats > div { display: flex; gap: 14px; align-items: center; background: var(--card); border-radius: var(--r-md); padding: 12px 14px; }
+  .onb-feats svg.i { width: 26px; height: 26px; color: var(--accent); flex-shrink: 0; }
+  .onb-feats b { display: block; font-size: 16px; } .onb-feats small { display: block; color: var(--muted); font-size: 13px; }
+  .onb-opt { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 10px; border: 2px solid var(--line); border-radius: var(--r-md); background: var(--card); color: var(--text); text-align: left; cursor: pointer; }
+  .onb-opt .oi svg.i { width: 26px; height: 26px; color: var(--accent); }
+  .onb-opt span:nth-child(2) { flex: 1; } .onb-opt b { display: block; font-size: 17px; } .onb-opt small { display: block; color: var(--muted); font-size: 13px; }
+  .onb-opt .ock { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; color: transparent; }
+  .onb-opt .ock svg.i { width: 14px; height: 14px; stroke-width: 3.2; }
+  .onb-opt.on { border-color: var(--accent); background: var(--accent-soft); } .onb-opt.on .ock { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .onb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .onb-chips button { border: 2px solid var(--line); background: var(--card); color: var(--text); border-radius: 20px; padding: 9px 15px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .onb-chips button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .onb-result { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 18px; }
+  .onb-result > div { background: var(--card); border-radius: var(--r-sm); padding: 10px 6px; text-align: center; }
+  .onb-result b { display: block; font-size: 18px; } .onb-result small { font-size: 11px; color: var(--muted); }
+  .onb-result > span { grid-column: 1 / -1; text-align: center; }
+  .onb-foot { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; max-width: 520px; width: 100%; margin: 0 auto; }
+  @keyframes onbIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Dunkelmodus: überall sauber ---------- */
+  @media (prefers-color-scheme: dark) {
+    body[data-tab] { --accent-soft: color-mix(in srgb, var(--accent) 20%, #1a1d23); }
+    body { --danger: #f07171; }
+    .kitchen.flat .fridge { background: #2a313c; box-shadow: inset 0 0 0 6px #39424f, 0 6px 14px rgba(0,0,0,.35); --shelf: #4a5666; }
+    .kitchen.flat .comp.drawer { background: rgba(255,255,255,.04); border-color: #4a5666; }
+    .kitchen.flat .comp.freezer { background: #243444; border-color: #3d5770; }
+    .kitchen.flat .cupboard { background: #4a3a2a; box-shadow: inset 0 0 0 6px #6e4c2c, 0 6px 14px rgba(0,0,0,.35); --shelf: #7d5631; }
+    .kitchen.flat .fcnt { background: #f1f1ee; color: #111; }
+    .kitchen.flat .xdot { border-color: #2a313c; }
+    .exp-chip.soon, .tag.exp, .set-status.warn, .backup-nudge { background: #3a2e1d; color: #f2c27e; }
+    .exp-chip.bad { background: #3d2222; color: #f3a3a3; }
+    .tag.veg, .set-status.ok { background: #1f3530; color: #8fd4b6; }
+    .backup-nudge #nudgeGo { background: #f2c27e; color: #2a1f10; }
+    .set-row.danger .set-ic { background: #3d2222; color: #f07171; }
+    .hint.soon { color: #f2c27e; }
+    .exp-quick button, .onb-chips button, .onb-opt, .filters button { background: var(--card); color: var(--text); border-color: var(--line); }
+    .sl-chk { background: transparent; border-color: #4a4f5a; }
+    .fi-thumb, .thumb { background: #262a31; }
+    .wt-toggle:not(.on) { color: var(--accent); }
+    .onb-hero.big svg.i { color: #111; }
+    select, input, textarea { color-scheme: dark; }
+  }
+  /* ---------- Sanfte Übergänge ---------- */
+  @keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+  @keyframes ringIn { from { stroke-dashoffset: var(--c0); } }
+  #view.anim { animation: viewIn .28s cubic-bezier(.2,.8,.2,1) both; }
+  #view.anim > .card, #view.anim > .list, #view.anim > .fr-bar, #view.anim .lib-cols > .lib-col > div > .card { animation: cardIn .38s cubic-bezier(.2,.8,.2,1) both; }
+  #view.anim > :nth-child(2) { animation-delay: .03s; } #view.anim > :nth-child(3) { animation-delay: .06s; } #view.anim > :nth-child(4) { animation-delay: .09s; }
+  #view.anim > :nth-child(5) { animation-delay: .12s; } #view.anim > :nth-child(6) { animation-delay: .15s; } #view.anim > :nth-child(n+7) { animation-delay: .18s; }
+  .ring svg circle:last-child { transition: stroke-dashoffset .7s cubic-bezier(.2,.8,.2,1); }
+  #view.anim .ring svg circle:last-child { animation: ringIn .9s cubic-bezier(.2,.8,.2,1) both; }
+  .bar i { transition: width .6s cubic-bezier(.2,.8,.2,1); }
+  #view.anim .bar i { animation: barIn .8s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes barIn { from { width: 0 !important; } }
+  .btn, .gear, .fr-list, .set-row, .onb-opt, .shop-item, .item, .card.recipe, .fgrp, nav button, .chk, .sl-chk, .filters button, .seg button { transition: transform .12s ease, background-color .2s ease, color .2s ease, opacity .2s; }
+  .btn:active, .gear:active, .fr-list:active, .set-row:active, .onb-opt:active, .shop-item:active, .item:active, .card.recipe:active, .filters button:active, .sl-chk:active { transform: scale(.97); }
+  nav button:active .ic { transform: scale(.88); }
+  nav button .ic { transition: background .25s ease, transform .15s ease; }
+  .chk.pop, .sl-chk.pop { animation: pop .35s ease; }
+  .sheet-bg { transition: background-color .25s ease; }
+  .sheet { transition: transform .32s cubic-bezier(.2,.8,.2,1) !important; }
+  #toast { transition: opacity .25s ease, transform .3s cubic-bezier(.2,.8,.2,1) !important; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
@@ -860,6 +947,12 @@
 </nav>
 
 <!-- Produkt anlegen / bearbeiten -->
+<div id="onb" class="onb">
+  <div class="onb-top"><div class="onb-dots" id="onbDots"></div><button class="link" id="onbSkip">Überspringen</button></div>
+  <div class="onb-body" id="onbBody"></div>
+  <div class="onb-foot"><button class="btn ghost" id="onbBack">Zurück</button><button class="btn" id="onbNext">Los geht's</button></div>
+</div>
+
 <div class="sheet-bg" id="setSheet">
   <div class="sheet">
     <div class="sheet-head"><span></span><h2>Einstellungen</h2><button class="link" id="setClose"><b>Fertig</b></button></div>
@@ -1386,9 +1479,13 @@ function showTab(tab) {
   if (tab === "kuehlschrank") { ab.className = "btn pill"; ab.innerHTML = `${ic("cart")} Einkaufen`; }
   else if (tab === "training") { ab.className = "btn pill"; ab.innerHTML = activeWk ? `${ic("flame")} Weiter` : `${ic("play")} Starten`; }
   else { ab.className = "btn round"; ab.textContent = "+"; }
+  const v = $("view"); v.classList.remove("anim");
   TABS[tab].render();
+  if (lastTab !== tab) { void v.offsetWidth; v.classList.add("anim"); window.scrollTo({ top: 0 }); clearTimeout(v._at); v._at = setTimeout(() => v.classList.remove("anim"), 900); }
+  lastTab = tab;
   if (typeof updateSub === "function") updateSub();
 }
+let lastTab = null;
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
 function soon(icon, text) {
@@ -2686,7 +2783,7 @@ function renderToday() {
             <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--t1)"/><stop offset="1" style="stop-color:var(--t2)"/></linearGradient></defs>
             <circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="13"/>
             <circle cx="66" cy="66" r="${r}" fill="none" stroke="${over ? "var(--danger)" : "url(#ringGrad)"}" stroke-width="13"
-              stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.min(1, share))}"/>
+              stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - Math.min(1, share))}" style="--c0:${C}"/>
           </svg>
           <div class="ring-center"><b>${fmt(m.kcal)}</b><small>von ${fmt(targets.kcal)} kcal</small></div>
         </div>
@@ -4642,6 +4739,19 @@ $("rPhotoIn").onchange = () => {
   img.src = url;
 };
 const RTYPES = { frueh: "Frühstück", haupt: "Hauptgericht", snack: "Snack", dessert: "Dessert" };
+/* Ernährungsweise aus den Zutaten ableiten (optionale Zutaten kann man weglassen) */
+const DIET_ING = {
+  meat: ["haehnchen", "pute", "hack", "rind"], fish: ["lachs", "thunfisch", "garnelen", "fisch"],
+  dairy: ["quark", "skyr", "huettenkaese", "whey", "milch", "mozzarella", "parmesan"], egg: ["eier", "eiklar", "lasagne"], honey: ["honig"]
+};
+function recipeDiet(r) {
+  const keys = r.ing.filter(i => i[2] !== "o").map(i => i[0]), has = t => keys.some(k => DIET_ING[t].includes(k));
+  const veg = !has("meat") && !has("fish");
+  return { veg, vegan: veg && !has("dairy") && !has("egg") && !has("honey"), lf: !has("dairy"), nofish: !has("fish") };
+}
+const DIETS = [["alle", "Alles"], ["veg", "Vegetarisch"], ["vegan", "Vegan"], ["lf", "Laktosefrei"], ["nofish", "Ohne Fisch"]];
+let dietFilter = null;
+const curDiet = () => dietFilter ?? (profile.diet || "alle");
 let ideaFilter = "alle";
 let openRecipeId = null;
 
@@ -4670,7 +4780,9 @@ function analyzeRecipe(r) {
 
 function renderIdeas() {
   const view = $("view");
+  const dF = curDiet();
   const list = RECIPES.map(r => ({ r, a: analyzeRecipe(r) }))
+    .filter(({ r }) => dF === "alle" || recipeDiet(r)[dF])
     .filter(({ r, a }) =>
       ideaFilter === "alle" ? true :
       ideaFilter === "kochbar" ? a.missing.length === 0 :
@@ -4678,7 +4790,8 @@ function renderIdeas() {
     .sort((x, y) => (x.a.missing.length - y.a.missing.length) || (y.a.urgent.length - x.a.urgent.length) || (y.a.totals.p / y.a.totals.kcal - x.a.totals.p / x.a.totals.kcal));
 
   const filters = [["alle", "Alle"], ["kochbar", "✓ Kann ich kochen"], ["frueh", "Frühstück"], ["haupt", "Hauptgericht"], ["dessert", "Dessert"], ["snack", "Snack"]];
-  let html = `<div class="filters">${filters.map(([k, t]) => `<button data-f="${k}" class="${ideaFilter === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
+  let html = `<div class="filters">${filters.map(([k, t]) => `<button data-f="${k}" class="${ideaFilter === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    <div class="filters diet">${ic("leaf")}${DIETS.map(([k, t]) => `<button data-df="${k}" class="${dF === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
   html += list.length ? list.map(({ r, a }) => `<div class="card recipe rc" data-r="${r.id}">
       <div class="rimg">${recipeImg(r)}</div>
       <div class="rmain">
@@ -4686,7 +4799,7 @@ function renderIdeas() {
       <div class="tags">
         <span class="tag">${ic("bolt")} ${Math.round(a.totals.p)} g Eiweiß</span>
         <span class="tag grey">${Math.round(a.totals.c)} g K · ${Math.round(a.totals.f)} g F</span>
-        <span class="tag grey">${RTYPES[r.type]}</span>${a.urgent.length ? `<span class="tag exp">${ic("timer")} verbraucht ${esc(a.urgent.join(", "))}</span>` : ""}
+        <span class="tag grey">${RTYPES[r.type]}</span>${(d => d.vegan ? `<span class="tag veg">vegan</span>` : d.veg ? `<span class="tag veg">vegetarisch</span>` : "")(recipeDiet(r))}${a.urgent.length ? `<span class="tag exp">${ic("timer")} verbraucht ${esc(a.urgent.join(", "))}</span>` : ""}
       </div>
       ${a.missing.length ? `<div class="miss">Fehlt: ${a.missing.map(x => x.name).join(", ")}</div>` : `<div class="have">✓ Alles da</div>`}
       </div>
@@ -4695,6 +4808,7 @@ function renderIdeas() {
   html += `<p class="hint" style="text-align:center;margin:4px 0 10px">Werte pro Portion – mit deinen Produkten berechnet, sonst mit Richtwerten.</p>`;
   view.innerHTML = html;
   view.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { ideaFilter = b.dataset.f; renderIdeas(); });
+  view.querySelectorAll("[data-df]").forEach(b => b.onclick = () => { dietFilter = b.dataset.df; renderIdeas(); if (typeof updateSub === "function") updateSub(); });
   view.querySelectorAll("[data-r]").forEach(c => c.onclick = () => openRecipe(c.dataset.r));
 }
 
@@ -6160,7 +6274,7 @@ function updateSub() {
     t = activeWk ? "Training läuft – weiter geht's" : `${plural(wkN, "Einheit", "Einheiten")} diese Woche`;
   }
   else if (currentTab === "vorschlaege") {
-    const k = RECIPES.filter(r => analyzeRecipe(r).missing.length === 0).length;
+    const k = RECIPES.filter(r => (curDiet() === "alle" || recipeDiet(r)[curDiet()]) && analyzeRecipe(r).missing.length === 0).length;
     t = k ? `${plural(k, "Rezept", "Rezepte")} kannst du jetzt kochen` : "Fitness-Rezepte für deinen Kühlschrank";
   }
   $("subtitle").textContent = t;
@@ -6168,7 +6282,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "42";
+const APP_VERSION = "43";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
@@ -6268,6 +6382,93 @@ function eatLeftover(id, slot) {
   if (currentTab === "kuehlschrank") renderFridge(); else if (currentTab === "heute") renderToday();
 }
 
+/* ---------- Einführung beim ersten Start ---------- */
+const ONB_KEY = "makro.onboarded";
+let onbStep = 0, onbData = {}, onbShown = -1;
+const LOGO_SVG = (document.querySelector(".sp-logo") || { outerHTML: "" }).outerHTML;
+const ONB_STEPS = 4;
+function shouldOnboard() { return !localStorage.getItem(ONB_KEY) && !targets && !products.length && !log.length && !workouts.length; }
+function openOnboarding() {
+  onbStep = 0; onbShown = -1;
+  onbData = { goal: profile.goal || "halten", diet: profile.diet || "alle", sex: profile.sex || "m", age: profile.age || "", height: profile.height || "", weight: profile.weight || "", act: profile.act || 1.55 };
+  $("onb").classList.add("open"); renderOnb();
+}
+function closeOnboarding() { localStorage.setItem(ONB_KEY, "1"); $("onb").classList.remove("open"); TABS[currentTab].render(); if (typeof updateSub === "function") updateSub(); }
+function renderOnb() {
+  const d = onbData, B = $("onbBody");
+  $("onbDots").innerHTML = Array.from({ length: ONB_STEPS }, (_, i) => `<i class="${i === onbStep ? "on" : i < onbStep ? "done" : ""}"></i>`).join("");
+  $("onbBack").style.visibility = onbStep ? "visible" : "hidden";
+  $("onbSkip").style.visibility = onbStep < ONB_STEPS - 1 ? "visible" : "hidden";
+  const opt = (name, val, title, sub, icon) => `<button class="onb-opt${d[name] == val ? " on" : ""}" data-o="${name}" data-v="${val}">${icon ? `<span class="oi">${ic(icon)}</span>` : ""}<span><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span><span class="ock">${ic("check")}</span></button>`;
+  if (onbStep === 0) {
+    B.innerHTML = `<div class="onb-hero">${LOGO_SVG.replace('class="sp-logo"', 'class="onb-logo"').replace(/id="sp/g, 'id="ob').replace(/url\(#sp/g, "url(#ob").replace(' class="sp-ring"', "")}</div>
+      <h1>Willkommen bei Makro</h1>
+      <p class="onb-lead">Deine Ernährung, dein Vorrat und dein Training – in einer App.</p>
+      <div class="onb-feats">
+        <div>${ic("flame")}<span><b>Kalorien & Makros</b><small>Barcode scannen, Mahlzeiten speichern, Ziel im Blick</small></span></div>
+        <div>${ic("fridge")}<span><b>Kühlschrank</b><small>Weiß, was du hast – und was bald abläuft</small></span></div>
+        <div>${ic("pot")}<span><b>Rezepte</b><small>Fitness-Gerichte aus dem, was da ist</small></span></div>
+        <div>${ic("dumbbell")}<span><b>Training</b><small>Pläne, Sätze, Rekorde</small></span></div>
+      </div>`;
+    $("onbNext").textContent = "Los geht's";
+  } else if (onbStep === 1) {
+    B.innerHTML = `<h2>Was ist dein Ziel?</h2>
+      ${opt("goal", "diaet", "Abnehmen", "Leichtes Kaloriendefizit, viel Eiweiß", "trend")}
+      ${opt("goal", "halten", "Gewicht halten", "Fit bleiben, gesund essen", "scale")}
+      ${opt("goal", "aufbau", "Muskeln aufbauen", "Leichter Überschuss, viel Eiweiß", "dumbbell")}
+      <h2 style="margin-top:22px">Wie isst du?</h2>
+      <div class="onb-chips">${DIETS.map(([k, t]) => `<button class="${d.diet === k ? "on" : ""}" data-diet="${k}">${k === "alle" ? "Alles" : t}</button>`).join("")}</div>
+      <p class="onb-note">Danach richten sich die Rezeptvorschläge. Änderbar jederzeit in den Rezepten.</p>`;
+    $("onbNext").textContent = "Weiter";
+  } else if (onbStep === 2) {
+    B.innerHTML = `<h2>Ein paar Daten für dein Tagesziel</h2>
+      <p class="onb-note" style="margin-top:-6px">Damit berechnen wir Kalorien und Makros. Bleibt alles auf deinem Gerät.</p>
+      <div class="seg" id="oSex"><button data-v="m" class="${d.sex === "m" ? "on" : ""}">Männlich</button><button data-v="w" class="${d.sex === "w" ? "on" : ""}">Weiblich</button></div>
+      <div class="grid2" style="grid-template-columns:1fr 1fr 1fr;margin-top:12px">
+        <div><label>Alter</label><input id="oAge" inputmode="numeric" type="text" placeholder="25" value="${d.age}"></div>
+        <div><label>Größe (cm)</label><input id="oH" inputmode="numeric" type="text" placeholder="178" value="${d.height}"></div>
+        <div><label>Gewicht (kg)</label><input id="oW" inputmode="decimal" type="text" placeholder="75" value="${d.weight}"></div>
+      </div>
+      <label>Wie aktiv bist du?</label>
+      <select id="oAct">${ACTIVITIES.map(a => `<option value="${a.v}" ${String(a.v) === String(d.act) ? "selected" : ""}>${a.t}</option>`).join("")}</select>
+      <div class="onb-result" id="oRes"></div>`;
+    const upd = () => {
+      d.age = $("oAge").value; d.height = $("oH").value; d.weight = $("oW").value.replace(",", "."); d.act = $("oAct").value;
+      const r = calcNeeds({ sex: d.sex, age: d.age, height: d.height, weight: d.weight, act: d.act, goal: d.goal });
+      $("oRes").innerHTML = r ? `<div><b>${fmt(r.kcal)}</b><small>kcal am Tag</small></div><div><b>${r.p} g</b><small>Eiweiß</small></div><div><b>${r.c} g</b><small>Kohlenh.</small></div><div><b>${r.f} g</b><small>Fett</small></div>` : `<span class="onb-note">Trag Alter, Größe und Gewicht ein.</span>`;
+      d.calc = r;
+    };
+    ["oAge", "oH", "oW"].forEach(i => $(i).oninput = upd); $("oAct").onchange = upd;
+    $("oSex").querySelectorAll("button").forEach(b => b.onclick = () => { d.sex = b.dataset.v; $("oSex").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); upd(); });
+    upd();
+    $("onbNext").textContent = "Weiter";
+  } else {
+    B.innerHTML = `<div class="onb-hero big">${ic("check")}</div><h1>Alles bereit!</h1>
+      <p class="onb-lead">${d.calc ? `Dein Tagesziel: <b>${fmt(d.calc.kcal)} kcal</b> und <b>${d.calc.p} g Eiweiß</b>.` : "Dein Tagesziel kannst du jederzeit im Kalorien-Tab berechnen."}</p>
+      <div class="onb-feats">
+        <div>${ic("camera")}<span><b>1. Erstes Lebensmittel scannen</b><small>Produkte › + › Barcode scannen</small></span></div>
+        <div>${ic("cart")}<span><b>2. Einkauf einräumen</b><small>Kühlschrank › Einkaufen</small></span></div>
+        <div>${ic("shield")}<span><b>3. Ab und zu ein Backup</b><small>Zahnrad oben rechts</small></span></div>
+      </div>`;
+    $("onbNext").textContent = "App starten";
+  }
+  B.querySelectorAll("[data-o]").forEach(b => b.onclick = () => { d[b.dataset.o] = b.dataset.v; renderOnb(); });
+  B.querySelectorAll("[data-diet]").forEach(b => b.onclick = () => { d.diet = b.dataset.diet; renderOnb(); });
+  if (onbShown !== onbStep) { B.classList.remove("anim"); void B.offsetWidth; B.classList.add("anim"); B.scrollTop = 0; onbShown = onbStep; }
+}
+$("onbNext").onclick = () => {
+  if (onbStep === 2 && onbData.calc) {
+    profile = { ...profile, sex: onbData.sex, age: onbData.age, height: onbData.height, weight: onbData.weight, act: Number(onbData.act), goal: onbData.goal };
+    targets = { kcal: onbData.calc.kcal, p: onbData.calc.p, c: onbData.calc.c, f: onbData.calc.f };
+    saveJSON(TARGET_KEY, targets);
+    const w = num(onbData.weight); if (w > 25 && w < 300 && !Object.keys(weights).length) { weights[todayKey()] = Math.round(w * 10) / 10; saveJSON(WEIGHT_KEY, weights); }
+  }
+  profile.diet = onbData.diet; profile.goal = onbData.goal; saveJSON(PROFILE_KEY, profile);
+  if (onbStep < ONB_STEPS - 1) { onbStep++; renderOnb(); } else closeOnboarding();
+};
+$("onbBack").onclick = () => { if (onbStep) { onbStep--; renderOnb(); } };
+$("onbSkip").onclick = () => { profile.diet = onbData.diet; profile.goal = onbData.goal; saveJSON(PROFILE_KEY, profile); closeOnboarding(); };
+
 /* ---------- Einstellungen & Backup ---------- */
 const BACKUP_KEY = "makro.lastBackup";
 const allKeys = () => { const k = []; for (let i = 0; i < localStorage.length; i++) { const n = localStorage.key(i); if (n && n.startsWith("makro.") && n !== BACKUP_KEY) k.push(n); } return k.sort(); };
@@ -6327,12 +6528,16 @@ function renderSettings() {
     </div>
     <div class="set-group">
       ${row("user", "Profil & Kalorienziel", targets ? `${fmt(targets.kcal)} kcal · ${Math.round(targets.p)} g Eiweiß` : "Noch nicht berechnet", "setProfile")}
+      ${row("leaf", "Ernährungsweise", (DIETS.find(x => x[0] === (profile.diet || "alle")) || DIETS[0])[1], "setDiet")}
+      ${row("sparkles", "Einführung ansehen", "Die kurze Tour vom ersten Start", "setOnb")}
     </div>
     <div class="set-group">${row("trash", "Alle Daten löschen", "Setzt die App komplett zurück", "setWipe", "danger")}</div>
     <p class="set-foot">Makro · Version ${APP_VERSION}<br>Alle Daten bleiben auf deinem Gerät – nichts wird hochgeladen.</p>`;
   $("setSave").onclick = saveBackup;
   $("setLoad").onclick = () => { $("restoreIn").value = ""; $("restoreIn").click(); };
   $("setProfile").onclick = () => { $("setSheet").classList.remove("open"); openCalc(); };
+  $("setDiet").onclick = () => { const i = DIETS.findIndex(x => x[0] === (profile.diet || "alle")); profile.diet = DIETS[(i + 1) % DIETS.length][0]; dietFilter = null; saveJSON(PROFILE_KEY, profile); renderSettings(); if (currentTab === "vorschlaege") renderIdeas(); };
+  $("setOnb").onclick = () => { $("setSheet").classList.remove("open"); openOnboarding(); };
   $("setWipe").onclick = () => {
     if (!confirm("Wirklich ALLE Daten löschen? Produkte, Kühlschrank, Mahlzeiten, Einträge, Gewicht und Trainings sind dann weg.")) return;
     if (!confirm("Letzte Sicherheitsabfrage: Hast du ein Backup? Löschen kann nicht rückgängig gemacht werden.")) return;
@@ -6357,6 +6562,11 @@ function updateBackupNudge() {
   $("nudgeGo").onclick = () => { openSettings(); };
   $("nudgeX").onclick = () => { localStorage.setItem("makro.nudgeSnooze", String(Date.now() + 3 * 864e5)); el.classList.remove("show"); };
 }
+/* Offline: Service Worker (Datei sw.js liegt neben index.html) */
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+window.addEventListener("offline", () => toast("Offline – deine Daten funktionieren weiter, nur die Produktsuche braucht Internet"));
 /* Safari bitten, die Daten nicht automatisch zu löschen */
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
@@ -6364,7 +6574,8 @@ try { if (navigator.storage && navigator.storage.persist) navigator.storage.pers
 fillIcons();
 updateBackupNudge();
 showTab("heute");
-setTimeout(() => { const sp = $("splash"); sp.classList.add("hide"); setTimeout(() => sp.remove(), 500); }, 1100);
+if (shouldOnboard()) openOnboarding();
+setTimeout(() => { const sp = $("splash"); if (!sp) return; sp.classList.add("hide"); setTimeout(() => sp.remove(), 500); }, 1100);
 </script>
 </body>
 </html>
