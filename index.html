@@ -915,6 +915,12 @@
   .add-search-row .search { flex: 1; margin: 0; min-width: 0; }
   .add-scan { flex: none; width: 48px; border: 0; border-radius: var(--r-md); background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; cursor: pointer; }
   .add-scan svg { width: 22px; height: 22px; }
+  .thumb.dish { background: #fff3e6; color: #d9771f; }
+  .thumb.dish svg { width: 22px; height: 22px; }
+  .dish-note { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); background: var(--card); border-radius: var(--r-md); padding: 10px 12px; margin: 10px 0 2px; line-height: 1.4; }
+  .dish-note svg { width: 16px; height: 16px; flex: none; margin-top: 1px; color: #d9771f; }
+  .avg-tag { font-size: 11px; font-weight: 700; color: #d9771f; background: #fff3e6; border-radius: 8px; padding: 1px 6px; margin-left: 4px; vertical-align: 1px; }
+  @media (prefers-color-scheme: dark) { .thumb.dish, .avg-tag { background: #3a2a1a; color: #f2a65a; } }
   /* Sporteinheiten */
   .quick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .quick-row .btn { margin: 0; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -1203,7 +1209,7 @@ try { applyTheme(localStorage.getItem("makro.theme") || "light"); } catch (e) { 
       <span style="width:70px"></span>
     </div>
     <div id="addListView">
-      <div class="seg" id="addSeg"><button data-v="produkte" class="on">Produkte</button><button data-v="mahlzeiten">Mahlzeiten</button></div>
+      <div class="seg" id="addSeg"><button data-v="produkte" class="on">Produkte</button><button data-v="mahlzeiten">Mahlzeiten</button><button data-v="gerichte">Unterwegs</button></div>
       <div class="add-search-row"><input class="search" id="addSearch" placeholder="Suchen"><button class="add-scan" id="addScan" aria-label="Barcode scannen"><span data-ic="camera"></span></button></div>
       <div id="addList"></div>
     </div>
@@ -1426,6 +1432,9 @@ const ICONS = {
   yoga: '<circle cx="12" cy="4.8" r="2"/><path d="M12 8v6M4.5 10.5l7.5 2.3 7.5-2.3M5.5 18.5c2-1.8 4.2-2.7 6.5-2.7s4.5.9 6.5 2.7M4 20.5h16"/>',
   racket: '<ellipse cx="14.5" cy="8.5" rx="5" ry="6" transform="rotate(45 14.5 8.5)"/><path d="M10.6 12.4L4 19M11.5 6l6 6M10 9.5l5-5"/>',
   medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11.4L5.5 3.5h4l2.5 5 2.5-5h4l-3 7.9M12 13v4"/>',
+  pizza: '<path d="M12 3.5c3.6 0 6.9 1.4 9 3.6L12 20.5 3 7.1c2.1-2.2 5.4-3.6 9-3.6z"/><path d="M4.6 9.3c2-1.5 4.6-2.4 7.4-2.4s5.4.9 7.4 2.4"/><circle cx="10" cy="11" r="1.1"/><circle cx="14" cy="13.5" r="1.1"/><circle cx="12" cy="16.5" r=".9"/>',
+  burger: '<path d="M4 10.5a8 6 0 0 1 16 0zM3.5 13.5h17M4 16.5h16v.5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M9 7.5h.01M12 6.5h.01M15 7.5h.01"/>',
+  glass: '<path d="M6 3.5h12l-1.6 15.2a2 2 0 0 1-2 1.8H9.6a2 2 0 0 1-2-1.8zM6.6 9h10.8"/>',
   trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5.2a3 3 0 0 0 3 4.2M16 6h2.8a3 3 0 0 1-3 4.2M12 13v3.5M8.5 20.5h7M9.5 16.5h5v4h-5z"/>',
   swap: '<path d="M7 4 3 8l4 4M3 8h14M17 12l4 4-4 4M21 16H7"/>',
   clipboard: '<rect x="5.5" y="4" width="13" height="17.5" rx="2"/><path d="M9 4V2.8h6V4M9 10h6M9 14h6M9 18h3"/>',
@@ -2708,6 +2717,7 @@ function barHTML(label, val, goal, color) {
 function amountText(e) {
   if (e.kind === "product") return `${fmt(e.amount)} g`;
   if (e.kind === "recipe") return "1 Portion (Rezept)";
+  if (e.kind === "dish") return `${e.amount === 1 ? "1 Portion" : `${String(e.amount).replace(".", ",")} Portionen`} · Ø-Wert`;
   if (e.kind === "meal") return e.amount === 1 ? "1 Portion" : `${String(e.amount).replace(".", ",")} Portionen`;
   return "";
 }
@@ -2924,7 +2934,7 @@ function renderToday() {
 
 function removeEntry(id) {
   const e = log.find(x => x.id === id);
-  if (!e || !confirm(`„${e.name}“ entfernen? Die Zutaten kommen zurück in den Bestand.`)) return;
+  if (!e || !confirm(e.items && e.items.length ? `„${e.name}“ entfernen? Die Zutaten kommen zurück in den Bestand.` : `„${e.name}“ entfernen?`)) return;
   for (const i of e.items || []) if (prod(i.id) && i.deducted > 0) stock[i.id] = (stock[i.id] || 0) + i.deducted;
   log = log.filter(x => x.id !== id);
   saveJSON(LOG_KEY, log); saveStock(); renderToday();
@@ -2951,6 +2961,13 @@ function showAddList() {
 function renderAddList() {
   const term = $("addSearch").value.toLowerCase();
   const list = $("addList");
+  if (addMode === "gerichte") {
+    const hits = DISHES.filter(d => dishMatch(d, term));
+    list.innerHTML = hits.length ? DISH_CATS.map(([c, n, icn]) => { const g = hits.filter(d => d.cat === c); return g.length ? `<div class="cat-title">${ic(icn)} ${n}</div>${dishRowsHTML(g)}` : ""; }).join("")
+      : `<div class="empty" style="padding:30px 10px">Nichts gefunden.<br>Leg es als eigenes Produkt oder als Mahlzeit an.</div>`;
+    list.querySelectorAll("[data-dish]").forEach(r => r.onclick = () => showDish(r.dataset.dish));
+    return;
+  }
   if (addMode === "produkte") {
     const items = products.filter(p => p.name.toLowerCase().includes(term))
       .sort((a, b) => (inStock(b) - inStock(a)) || a.name.localeCompare(b.name, "de"));
@@ -2959,7 +2976,10 @@ function renderAddList() {
         <div class="item-main"><div class="item-name">${esc(p.name)}</div>
           <div class="item-sub">${inStock(p) ? `Noch ${fmt(stock[p.id])} g da` : `<span class="warn">Nicht im Bestand</span>`}</div></div>
         <span class="item-sub">${Math.round(p.kcal)} kcal/100 g</span></div>`).join("")}</div>`
-      : `<div class="empty" style="padding:30px 10px">${products.length ? "Nichts gefunden." : "Noch keine Produkte angelegt."}</div>`;
+      : (term.length >= 2 && DISHES.some(d => dishMatch(d, term)) ? "" : `<div class="empty" style="padding:30px 10px">${products.length ? "Nichts gefunden." : "Noch keine Produkte angelegt."}</div>`);
+    const dh = term.length >= 2 ? DISHES.filter(d => dishMatch(d, term)).slice(0, 6) : [];
+    if (dh.length) list.innerHTML += `<div class="cat-title">Unterwegs · Durchschnittswerte</div>${dishRowsHTML(dh)}`;
+    list.querySelectorAll("[data-dish]").forEach(r => r.onclick = () => showDish(r.dataset.dish));
   } else {
     const items = templates.filter(t => t.name.toLowerCase().includes(term)).sort((a, b) => a.name.localeCompare(b.name, "de"));
     const rests = leftovers.filter(l => l.name.toLowerCase().includes(term));
@@ -2992,6 +3012,100 @@ $("addScan").onclick = () => Cam.open("single", code => {
   toast("Neues Produkt – einmal speichern, dann kannst du es eintragen");
 }, "Produkt scannen");
 $("addBack").onclick = showAddList;
+
+/* ---------- Gerichte mit Durchschnittswerten (pro Portion: kcal, Eiweiß, Kohlenhydrate, Fett) ---------- */
+const DISH_CATS = [["imbiss", "Imbiss & Fast Food", "burger"], ["pizza", "Pizza & Pasta", "pizza"], ["asia", "Asiatisch & Bowls", "bowl"], ["deftig", "Restaurant & Mensa", "utensils"], ["baecker", "Bäcker & Snacks", "wheat"], ["suess", "Süßes", "candy"], ["drinks", "Getränke", "glass"]];
+const DISHES = [
+  ["doener", "imbiss", "Döner Kebab", "1 Döner im Fladenbrot (~400 g)", [700, 35, 70, 30], ["doner", "kebab"]],
+  ["duerum", "imbiss", "Dürüm / Yufka", "1 Dürüm (~400 g)", [750, 37, 72, 34], ["durum", "yufka", "doener", "wrap"]],
+  ["doenerteller", "imbiss", "Dönerteller mit Pommes", "1 Teller (~600 g)", [1100, 50, 95, 55], ["doener", "teller"]],
+  ["doenerbox", "imbiss", "Dönerbox", "1 Box mit Pommes (~400 g)", [800, 30, 65, 45], ["doener", "box"]],
+  ["lahmacun", "imbiss", "Lahmacun mit Salat", "1 Stück gerollt (~300 g)", [450, 18, 60, 14], ["türkische pizza"]],
+  ["falafel", "imbiss", "Falafel im Brot", "1 Stück (~350 g)", [650, 18, 85, 26], ["falafel"]],
+  ["currywurst", "imbiss", "Currywurst", "1 Portion ohne Pommes (~200 g)", [450, 15, 20, 34], ["wurst"]],
+  ["curryp", "imbiss", "Currywurst mit Pommes", "1 Portion (~400 g)", [900, 22, 85, 52], ["wurst", "pommes"]],
+  ["pommes", "imbiss", "Pommes", "mittlere Portion (~150 g)", [450, 5, 55, 22], ["fritten", "fries"], [["Klein", .65], ["Mittel", 1], ["Groß", 1.45]]],
+  ["bratwurst", "imbiss", "Bratwurst im Brötchen", "1 Stück", [480, 18, 30, 31], ["wurst", "rostbratwurst"]],
+  ["cheeseburger", "imbiss", "Cheeseburger (Fast Food)", "1 kleiner Burger (~120 g)", [300, 15, 32, 12], ["burger"]],
+  ["bigburger", "imbiss", "Großer Burger (Fast Food)", "1 Doppel-Burger (~220 g)", [550, 27, 45, 29], ["burger"]],
+  ["restburger", "imbiss", "Burger mit Pommes (Restaurant)", "1 Teller", [1200, 50, 100, 65], ["burger", "pommes"]],
+  ["nuggets", "imbiss", "Chicken Nuggets", "6 Stück", [270, 15, 16, 16], ["nuggets", "chicken"], [["6 Stück", 1], ["9 Stück", 1.5], ["20 Stück", 3.33]]],
+  ["hotdog", "imbiss", "Hot Dog", "1 Stück", [400, 13, 38, 22], ["hotdog"]],
+  ["wrap", "imbiss", "Wrap mit Hähnchen", "1 Stück (~300 g)", [550, 30, 55, 22], ["wrap", "chicken"]],
+  ["margherita", "pizza", "Pizza Margherita", "ganze Pizza (~30 cm)", [850, 35, 110, 28], ["pizza"], [["1 Stück (⅛)", .125], ["Halbe", .5], ["Ganze", 1]]],
+  ["salami", "pizza", "Pizza Salami", "ganze Pizza (~30 cm)", [1000, 42, 108, 44], ["pizza"], [["1 Stück (⅛)", .125], ["Halbe", .5], ["Ganze", 1]]],
+  ["tonno", "pizza", "Pizza Tonno", "ganze Pizza (~30 cm)", [950, 50, 105, 36], ["pizza", "thunfisch"], [["1 Stück (⅛)", .125], ["Halbe", .5], ["Ganze", 1]]],
+  ["funghi", "pizza", "Pizza Funghi", "ganze Pizza (~30 cm)", [880, 37, 110, 30], ["pizza", "pilze"], [["1 Stück (⅛)", .125], ["Halbe", .5], ["Ganze", 1]]],
+  ["hawaii", "pizza", "Pizza Hawaii", "ganze Pizza (~30 cm)", [920, 40, 118, 30], ["pizza"], [["1 Stück (⅛)", .125], ["Halbe", .5], ["Ganze", 1]]],
+  ["tkpizza", "pizza", "Tiefkühlpizza", "ganze Pizza (~350 g)", [850, 32, 95, 36], ["pizza", "tk"], [["Halbe", .5], ["Ganze", 1]]],
+  ["bolo", "pizza", "Spaghetti Bolognese", "1 Teller (Restaurant)", [750, 32, 95, 24], ["pasta", "nudeln"]],
+  ["carbonara", "pizza", "Pasta Carbonara", "1 Teller (Restaurant)", [900, 33, 95, 42], ["pasta", "nudeln"]],
+  ["lasagne_r", "pizza", "Lasagne", "1 Portion (Restaurant)", [700, 35, 50, 38], ["pasta"]],
+  ["sushi", "asia", "Sushi (Maki & Nigiri)", "8 Stück", [350, 14, 62, 4], ["sushi"], [["8 Stück", 1], ["12 Stück", 1.5], ["16 Stück", 2]]],
+  ["bratnudeln", "asia", "Gebratene Nudeln mit Hähnchen", "1 Box / Teller", [750, 32, 95, 25], ["nudeln", "asia", "wok"]],
+  ["bratreis", "asia", "Gebratener Reis mit Hähnchen", "1 Box / Teller", [750, 30, 100, 24], ["reis", "asia", "wok"]],
+  ["ente", "asia", "Ente kross mit Reis", "1 Teller", [1100, 45, 100, 55], ["ente", "asia"]],
+  ["curry", "asia", "Curry mit Reis", "1 Teller (Hähnchen, Kokos)", [850, 38, 95, 33], ["curry", "thai", "indisch"]],
+  ["pho", "asia", "Pho / Nudelsuppe", "1 Schüssel", [450, 28, 60, 8], ["suppe", "pho"]],
+  ["ramen", "asia", "Ramen", "1 Schüssel", [600, 25, 70, 22], ["suppe", "ramen"]],
+  ["poke", "asia", "Poke Bowl", "1 Bowl", [600, 30, 75, 18], ["bowl", "poke"]],
+  ["schnitzel", "deftig", "Schnitzel mit Pommes", "1 Teller", [1100, 45, 90, 60], ["schnitzel"]],
+  ["mensa", "deftig", "Mensa-Essen (Hauptgericht)", "1 Portion, Durchschnitt", [750, 30, 80, 32], ["mensa", "kantine"]],
+  ["mensaveg", "deftig", "Mensa-Essen vegetarisch", "1 Portion, Durchschnitt", [650, 20, 85, 24], ["mensa", "kantine", "vegetarisch"]],
+  ["salathaehnchen", "deftig", "Salat mit Hähnchen", "1 große Schüssel mit Dressing", [450, 35, 15, 27], ["salat"]],
+  ["kartoffelsalat", "deftig", "Würstchen mit Kartoffelsalat", "1 Teller", [750, 22, 50, 50], ["wurst", "kartoffel"]],
+  ["broetchen", "baecker", "Belegtes Brötchen", "1 Stück (Käse/Schinken)", [350, 16, 40, 13], ["brötchen", "semmel", "sandwich"]],
+  ["brezel", "baecker", "Butterbrezel", "1 Stück", [330, 8, 45, 13], ["brezel", "breze"]],
+  ["croissant", "baecker", "Croissant", "1 Stück", [230, 5, 25, 12], ["croissant"]],
+  ["laugen", "baecker", "Laugenstange mit Käse", "1 Stück", [380, 14, 45, 15], ["laugen"]],
+  ["kuchen", "baecker", "Stück Kuchen", "1 Stück", [350, 5, 45, 17], ["kuchen", "torte"]],
+  ["berliner", "baecker", "Berliner / Krapfen", "1 Stück", [300, 5, 40, 13], ["pfannkuchen", "krapfen"]],
+  ["muffin", "baecker", "Muffin", "1 Stück", [400, 5, 50, 20], ["muffin"]],
+  ["eis", "suess", "Eis", "2 Kugeln", [220, 4, 28, 10], ["eis", "eiscreme"], [["1 Kugel", .5], ["2 Kugeln", 1], ["3 Kugeln", 1.5]]],
+  ["riegel", "suess", "Schokoriegel", "1 Riegel (~50 g)", [250, 3, 32, 12], ["schoko", "riegel"]],
+  ["waffel", "suess", "Waffel mit Puderzucker", "1 Stück", [300, 6, 38, 14], ["waffel"]],
+  ["crepe", "suess", "Crêpe mit Nutella", "1 Stück", [450, 8, 60, 20], ["crepe"]],
+  ["bier", "drinks", "Bier", "0,5 l", [210, 2, 16, 0], ["bier", "pils"], [["0,33 l", .66], ["0,5 l", 1], ["1 l", 2]]],
+  ["wein", "drinks", "Wein", "0,2 l", [160, 0, 5, 0], ["wein"]],
+  ["longdrink", "drinks", "Longdrink / Mischgetränk", "1 Glas (0,3 l)", [220, 0, 30, 0], ["vodka", "cocktail", "mische"]],
+  ["cola", "drinks", "Cola / Limo", "0,5 l", [210, 0, 53, 0], ["cola", "limo", "fanta", "sprite"], [["0,33 l", .66], ["0,5 l", 1], ["1 l", 2]]],
+  ["energy", "drinks", "Energy Drink", "0,25 l", [115, 0, 27, 0], ["energy"], [["0,25 l", 1], ["0,5 l", 2]]],
+  ["cappu", "drinks", "Cappuccino / Latte", "1 großer Becher (~300 ml)", [130, 7, 10, 7], ["kaffee", "latte", "cappuccino"]],
+  ["smoothie", "drinks", "Smoothie", "0,25 l", [130, 1, 30, 0], ["smoothie", "saft"]]
+].map(([id, cat, name, por, r, k, sizes]) => ({ id, cat, name, por, r, k: k || [], sizes: sizes || null }));
+const dishById = id => DISHES.find(d => d.id === id);
+const norm = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const dishMatch = (d, term) => !term || norm(d.name + " " + d.k.join(" ")).includes(norm(term));
+const dishIcon = d => (DISH_CATS.find(c => c[0] === d.cat) || DISH_CATS[0])[2];
+const dishFactor = () => { const d = dishById(addSel.id); return d.sizes ? d.sizes[addSel.size][1] : 1; };
+function dishRowsHTML(list) {
+  return `<div class="shop-list">${list.map(d => `<div class="shop-item" data-dish="${d.id}" style="cursor:pointer">
+    <div class="thumb dish">${ic(dishIcon(d))}</div>
+    <div class="item-main"><div class="item-name">${esc(d.name)}</div><div class="item-sub">${esc(d.por)} · ${d.r[1]} g Eiweiß</div></div>
+    <span class="item-sub">≈ ${d.r[0]} kcal</span></div>`).join("")}</div>`;
+}
+function showDish(id) {
+  const d = dishById(id);
+  addSel = { kind: "dish", id, size: d.sizes ? Math.max(0, d.sizes.findIndex(x => x[1] === 1)) : 0 };
+  $("addListView").style.display = "none";
+  $("addAmountView").style.display = "block";
+  $("aPreview").style.display = "none";
+  $("aName").innerHTML = `${esc(d.name)}<span class="avg-tag">Ø-Wert</span>`;
+  $("aLabel").textContent = "Portionen";
+  $("aAmount").value = 1;
+  renderDishOpts();
+  updateAmount();
+}
+function renderDishOpts() {
+  const d = dishById(addSel.id);
+  $("aIngs").innerHTML = (d.sizes ? `<label style="margin-top:12px">Größe</label><div class="chips">${d.sizes.map((x, i) => `<button data-dsz="${i}" class="${i === addSel.size ? "on" : ""}">${x[0]}</button>`).join("")}</div>` : "") +
+    `<div class="dish-note">${ic("sparkles")}<span>Durchschnittswerte, Basis: ${esc(d.por)}. Je nach Laden und Portion kann es deutlich abweichen.</span></div>`;
+  $("aIngs").querySelectorAll("[data-dsz]").forEach(b => b.onclick = () => { addSel.size = +b.dataset.dsz; renderDishOpts(); updateAmount(); });
+}
+function dishTotals() {
+  const d = dishById(addSel.id), k = dishFactor() * Math.max(0, num($("aAmount").value));
+  return { kcal: d.r[0] * k, p: d.r[1] * k, c: d.r[2] * k, f: d.r[3] * k };
+}
 
 function showAmount(id) {
   addSel = { kind: addMode === "produkte" ? "product" : "meal", id };
@@ -3040,6 +3154,7 @@ function selectedItems() {
 }
 
 function updateAmount() {
+  if (addSel.kind === "dish") { $("aTotals").innerHTML = totalsHTML(dishTotals()); $("aStock").innerHTML = ""; return; }
   const items = selectedItems();
   $("aTotals").innerHTML = totalsHTML(itemsMacros(items));
   $("aStock").innerHTML = addSel.kind === "product"
@@ -3054,6 +3169,17 @@ $("aPlus").onclick = () => { $("aAmount").value = num($("aAmount").value) + amou
 $("aAdd").onclick = () => {
   const amount = num($("aAmount").value);
   if (!(amount > 0)) { toast("Bitte eine Menge eingeben"); return; }
+  if (addSel.kind === "dish") {
+    const d = dishById(addSel.id), totals = dishTotals(), now = new Date();
+    const name = d.name + (d.sizes && d.sizes[addSel.size][1] !== 1 ? ` (${d.sizes[addSel.size][0]})` : "");
+    log.push({ id: now.getTime().toString(36), day: viewDay || todayKey(), slot: addSlot, time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
+      kind: "dish", refId: d.id, name, amount, items: [], totals });
+    saveJSON(LOG_KEY, log);
+    $("addSheet").classList.remove("open");
+    renderToday();
+    toast(`≈ ${Math.round(totals.kcal)} kcal eingetragen ✓`);
+    return;
+  }
   let short = false;
   const logged = selectedItems().filter(i => i.g > 0).map(i => {
     const p = prod(i.id), have = stock[i.id] || 0, deducted = Math.min(have, i.g);
@@ -6538,7 +6664,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "46";
+const APP_VERSION = "47";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
