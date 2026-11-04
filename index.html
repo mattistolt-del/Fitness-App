@@ -643,7 +643,7 @@
     .lib-cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
     .lib-cols .lib-col { display: block !important; }
     .lib-cols .lib-head { display: flex; }
-    body[data-tab="produkte"] #addBtn { visibility: hidden !important; }
+    body[data-tab="produkte"] #addBtn { display: none !important; }
   }
 
   /* ---------- Gewicht ---------- */
@@ -737,6 +737,93 @@
   #calcOpen { white-space: nowrap; }
   .ring-side .rem { font-size: 22px; }
   .ring-wrap { gap: 16px; }
+
+  /* ---------- Einstellungen ---------- */
+  .h-btns { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  header .h-text { flex: 1; min-width: 0; }
+  header h1 { font-size: clamp(26px, 7.3vw, 34px) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header .btn.pill { white-space: nowrap; padding: 0 14px; min-height: 40px; font-size: 15px; display: inline-flex; align-items: center; gap: 5px; }
+  .gear { width: 38px !important; height: 38px !important; }
+  .gear { width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,.22); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .gear svg.i { width: 22px; height: 22px; }
+  .set-status { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--r-md); margin: 4px 0 14px; }
+  .set-status svg.i { width: 26px; height: 26px; flex-shrink: 0; margin-top: 1px; }
+  .set-status b { display: block; font-size: 16px; } .set-status small { font-size: 13px; opacity: .85; line-height: 1.35; display: block; margin-top: 2px; }
+  .set-status.ok { background: #e3f1ec; color: #2b6e57; } .set-status.warn { background: #fbefdd; color: #8a5a1c; }
+  .set-group { background: var(--card); border-radius: var(--r-md); overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
+  .set-row { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: none; padding: 12px 14px; text-align: left; cursor: pointer; color: var(--text); border-bottom: 1px solid var(--line); }
+  .set-row:last-child { border-bottom: 0; }
+  .set-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .set-ic svg.i { width: 19px; height: 19px; }
+  .set-main { flex: 1; min-width: 0; } .set-main b { display: block; font-size: 16px; } .set-main small { display: block; font-size: 13px; color: var(--muted); }
+  .set-ch { color: var(--muted); font-size: 20px; }
+  .set-row.danger b { color: var(--danger); } .set-row.danger .set-ic { background: #fbe7e7; color: var(--danger); }
+  .set-cap { font-size: 13px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin: 6px 4px 8px; }
+  .set-stats { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .set-stats div { padding: 10px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .set-stats div:nth-child(3n) { border-right: 0; } .set-stats div:nth-child(n+4) { border-bottom: 0; }
+  .set-stats b { display: block; font-size: 18px; } .set-stats small { font-size: 12px; color: var(--muted); }
+  .set-foot { text-align: center; font-size: 12px; color: var(--muted); line-height: 1.5; margin: 6px 0 10px; }
+  .backup-nudge { display: none; align-items: center; gap: 10px; margin: -6px 16px 14px; padding: 10px 12px; border-radius: var(--r-md); background: #fbefdd; color: #8a5a1c; font-size: 14px; max-width: 688px; }
+  @media (min-width: 720px) { .backup-nudge { margin-left: auto; margin-right: auto; } }
+  .backup-nudge.show { display: flex; }
+  .backup-nudge svg.i { width: 20px; height: 20px; flex-shrink: 0; }
+  .backup-nudge span { flex: 1; }
+  .backup-nudge button { border: 0; background: none; color: inherit; font-weight: 700; font-size: 14px; cursor: pointer; padding: 4px; }
+  .backup-nudge #nudgeGo { background: #8a5a1c; color: #fff; border-radius: 10px; padding: 6px 12px; }
+
+  .a-ings-cap { font-size: 13px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin: 14px 2px 6px; }
+  .a-ings .meal-item.chg .item-sub { color: var(--accent); font-weight: 600; }
+  .a-ings .meal-item.chg .gin { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .a-keep { display: flex; align-items: center; gap: 8px; font-size: 15px; margin: 10px 2px 2px; }
+  .a-keep.hidden { display: none; }
+  .a-keep input[type=checkbox] { -webkit-appearance: checkbox; appearance: auto; width: 20px !important; height: 20px; min-height: 0; padding: 0; margin: 0; flex: none; border: 0; accent-color: var(--accent); }
+
+  /* ---------- Einkaufsliste, Haltbarkeit, Reste ---------- */
+  .fr-bar { margin: 0 0 12px; }
+  .fr-list { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 0; border-radius: var(--r-lg); background: var(--card); color: var(--text); text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 4px 14px -8px rgba(15,23,42,.10); }
+  .fr-list > svg.i { width: 26px; height: 26px; color: var(--accent); }
+  .fr-list span { flex: 1; } .fr-list b { display: block; font-size: 17px; } .fr-list small { color: var(--muted); font-size: 13px; }
+  .fr-list i { font-style: normal; background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; min-width: 24px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0 7px; }
+  .rc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } .rc-head b { font-size: 17px; } .rc-head svg.i { color: var(--accent); width: 20px; height: 20px; }
+  .rest-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .rest-row:first-of-type { border-top: 0; }
+  .exp-card .rc-head svg.i { color: #c77a2a; }
+  .exp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .exp-chip { border: 0; border-radius: 12px; padding: 7px 11px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .exp-chip small { font-weight: 500; opacity: .8; }
+  .exp-chip.soon { background: #fbefdd; color: #8a5a1c; } .exp-chip.bad { background: #fbe4e4; color: #a33a3a; }
+  .exp-go { margin-top: 8px; padding-left: 0; }
+  .kitchen.flat .xdot { position: absolute; bottom: 9px; left: -1px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; background: #e6a23c; }
+  .kitchen.flat .fgrp.exp-bad .xdot { background: #d9534f; }
+  .exp-row { display: flex; align-items: center; gap: 10px; } .exp-row input { flex: 1; }
+  .hint.soon { color: #b0701f; font-weight: 600; } .hint.bad { color: var(--danger); font-weight: 600; }
+  .exp-quick { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .exp-quick button { border: 1px solid var(--line); background: var(--card); border-radius: 16px; padding: 6px 11px; font-size: 13px; color: var(--text); cursor: pointer; }
+  .tag.exp { background: #fbefdd; color: #8a5a1c; }
+  .sl-add { display: flex; gap: 8px; margin-bottom: 8px; } .sl-add input { flex: 1; } .sl-add .btn { min-width: 50px; font-size: 22px; padding: 0; }
+  .sl-cap { font-size: 13px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin: 10px 4px 6px; }
+  .sl-sugg { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .sl-sugg button { border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--accent); border-radius: 16px; padding: 6px 11px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .sl-sugg small { font-weight: 500; opacity: .75; }
+  .sl-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .sl-item:last-child { border-bottom: 0; }
+  .sl-item .item-name { white-space: normal; line-height: 1.2; }
+  .sl-item .mini button { width: 30px; height: 30px; }
+  .sl-item .thumb { width: 40px; height: 40px; }
+  .sl-chk { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); background: var(--card); display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; cursor: pointer; color: #fff; }
+  .sl-chk svg.i { width: 16px; height: 16px; stroke-width: 3; }
+  .sl-item.done .sl-chk { background: var(--accent); border-color: var(--accent); }
+  .sl-item.done .item-name { text-decoration: line-through; color: var(--muted); }
+  .sl-item.done .thumb { opacity: .5; }
+  .sl-actions { display: grid; gap: 8px; margin-top: 16px; }
+  .sl-actions .btn[disabled] { opacity: .45; }
+  .cook { margin-top: 14px; padding: 12px 14px; }
+  .cook-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; }
+  .cook-row b { display: block; font-size: 16px; } .cook-row small { display: block; font-size: 13px; color: var(--muted); }
+  .stepper.sm { display: flex; align-items: center; gap: 10px; }
+  .stepper.sm button { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 20px; font-weight: 700; cursor: pointer; }
+  .stepper.sm b { min-width: 22px; text-align: center; font-size: 18px; }
 </style>
 </head>
 <body>
@@ -758,8 +845,9 @@
 
 <header>
   <div class="h-text"><h1 id="title">Produkte</h1><div class="subtitle" id="subtitle"></div></div>
-  <button class="btn round" id="addBtn" aria-label="Produkt hinzufügen">+</button>
+  <div class="h-btns"><button class="gear" id="setBtn" aria-label="Einstellungen" data-ic="gear"></button><button class="btn round" id="addBtn" aria-label="Produkt hinzufügen">+</button></div>
 </header>
+<div class="backup-nudge" id="backupNudge"></div>
 
 <main id="view"></main>
 
@@ -772,6 +860,14 @@
 </nav>
 
 <!-- Produkt anlegen / bearbeiten -->
+<div class="sheet-bg" id="setSheet">
+  <div class="sheet">
+    <div class="sheet-head"><span></span><h2>Einstellungen</h2><button class="link" id="setClose"><b>Fertig</b></button></div>
+    <div id="setBody"></div>
+  </div>
+</div>
+<input type="file" id="restoreIn" accept=".json,application/json,text/plain" hidden>
+
 <div class="sheet-bg" id="productSheet">
   <div class="sheet">
     <div class="sheet-head">
@@ -837,12 +933,22 @@
       <button class="btn ghost" id="shopScanBtn"><span data-ic="camera"></span> Scannen</button>
       <button class="btn ghost" id="shopNewBtn">＋ Neues Produkt</button>
     </div>
+    <button class="btn ghost" id="shopFromList" style="width:100%;margin-top:10px;display:none"></button>
     <input class="search" id="shopSearch" placeholder="Produkt suchen" style="margin-top:14px">
     <div id="shopList"></div>
   </div>
 </div>
 
 <!-- Bestand bearbeiten -->
+<div class="sheet-bg" id="listSheet">
+  <div class="sheet">
+    <div class="sheet-head"><button class="link" data-close="listSheet">Fertig</button><h2><span data-ic="clipboard"></span> Einkaufsliste</h2><span style="width:60px"></span></div>
+    <div class="sl-add"><input id="slIn" placeholder="Was brauchst du? z. B. Quark" autocomplete="off"><button class="btn" id="slAddBtn">+</button></div>
+    <div id="slMatch"></div>
+    <div id="slBody"></div>
+  </div>
+</div>
+
 <div class="sheet-bg" id="stockSheet">
   <div class="sheet">
     <div class="sheet-head">
@@ -862,7 +968,11 @@
       <input id="sGrams" type="number" inputmode="decimal">
       <button class="btn ghost" id="sSet">Übernehmen</button>
     </div>
+    <label>Haltbar bis</label>
+    <div class="exp-row"><input id="sExp" type="date"><span id="sExpHint" class="hint"></span></div>
+    <div class="exp-quick" id="sExpQuick"></div>
     <div class="row">
+      <button class="btn ghost" id="sToList"><span data-ic="clipboard"></span> Auf die Einkaufsliste</button>
       <button class="btn danger" id="sEmpty">Alles aufgebraucht</button>
     </div>
   </div>
@@ -955,6 +1065,7 @@
         <input id="aAmount" type="number" inputmode="decimal">
         <button id="aPlus">+</button>
       </div>
+      <div id="aIngs"></div>
       <div class="hint" id="aStock"></div>
       <div class="totals" id="aTotals"></div>
       <button class="btn" id="aAdd" style="width:100%;margin-top:16px">Hinzufügen</button>
@@ -977,11 +1088,18 @@
     </div>
     <input type="file" id="rPhotoIn" accept="image/*" style="display:none">
     <div id="rBody"></div>
-    <label>Eintragen bei</label>
-    <select id="rSlot"></select>
+    <div class="cook card">
+      <div class="cook-row"><span><b>Portionen gekocht</b><small>Zutaten werden dafür abgezogen</small></span>
+        <div class="stepper sm"><button data-ck="-1">−</button><b id="rCooked">1</b><button data-ck="1">+</button></div></div>
+      <div class="cook-row"><span><b>Davon jetzt essen</b><small id="rRestHint">Keine Reste</small></span>
+        <div class="stepper sm"><button data-ce="-1">−</button><b id="rEaten">1</b><button data-ce="1">+</button></div></div>
+      <label style="margin-top:6px">Eintragen bei</label>
+      <select id="rSlot"></select>
+    </div>
+    <button class="btn ghost" id="rToList" style="width:100%;margin-top:10px;display:none"></button>
     <div class="row">
       <button class="btn ghost" id="rSave">Als Mahlzeit speichern</button>
-      <button class="btn" id="rAdd">Eintragen ✓</button>
+      <button class="btn" id="rAdd">Gekocht ✓</button>
     </div>
   </div>
 </div>
@@ -1157,6 +1275,12 @@ const ICONS = {
   bowl: '<path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M7.5 11c0-3 2-5 4.5-5s4.5 2 4.5 5M12 6V3.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   leaf: '<path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15z"/><path d="M5 19 13 11"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  download: '<path d="M12 3v12M7 10l5 5 5-5M4 19h16"/>',
+  upload: '<path d="M12 15V3M7 8l5-5 5 5M4 19h16"/>',
+  shield: '<path d="M12 3 4.5 6v6c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 13h11l1-13M9 7V4h6v3"/>',
   pretzel: '<path d="M12 20c-4 0-8-3-8-7.5S7 5 9.5 5 13 8 12 11c-1-3 .5-6 2.5-6S20 8 20 12.5 16 20 12 20z"/><path d="M8 16l8-6M16 16l-8-6"/>'
 };
 document.addEventListener("DOMContentLoaded", () => {});
@@ -1202,7 +1326,29 @@ let products = loadProducts();
 /* Bestand: Produkt-ID -> Menge in g/ml */
 const STOCK_KEY = "makro.stock";
 let stock = (() => { try { return JSON.parse(localStorage.getItem(STOCK_KEY)) || {}; } catch (e) { return {}; } })();
+/* ---------- Haltbarkeit ---------- */
+const EXP_KEY = "makro.expiry";
+let expiry = (() => { try { return JSON.parse(localStorage.getItem(EXP_KEY)) || {}; } catch (e) { return {}; } })();
+const EXP_DAYS = {
+  chicken: 3, turkey: 3, mince: 1, steak: 4, salmon: 2, fish: 2, shrimp: 2, ham: 7, bacon: 10, sausage: 7, tuna: 730,
+  milk: 7, oatmilk: 10, cream: 10, buttermilk: 10, juice: 7, quark: 14, skyr: 14, yogurt: 14, greek: 14, cottage: 10, creamcheese: 14,
+  pudding: 14, butter: 30, cheese: 21, slices: 14, mozzarella: 10, feta: 21, eggs: 21, tofu: 10, hummus: 7,
+  broccoli: 5, cauliflower: 6, pepper: 7, pepperY: 7, pepperG: 7, tomato: 6, cucumber: 7, zucchini: 7, carrot: 21, onion: 30, redonion: 30,
+  garlic: 60, potato: 30, potatoes: 30, sweetpotato: 21, mushroom: 5, lettuce: 5, spinach: 4, avocado: 4,
+  apple: 21, greenapple: 21, pear: 7, orange: 21, lemon: 21, lime: 14, kiwi: 10, banana: 5, grapes: 7, berries: 4, strawberry: 3,
+  mango: 6, pineapple: 5, melon: 7, dates: 90, bread: 5, toast: 7, rolls: 2, wraps: 21
+};
+const EXP_CAT = { milch: 10, fleisch: 3, gemuese: 7, obst: 7, tiefkuehl: 180 };
+function defaultExpDays(p) { const k = typeof foodIconKey === "function" ? foodIconKey(p) : ""; return EXP_DAYS[k] ?? EXP_CAT[p.cat] ?? 365; }
+const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString("sv-SE"); };
+function daysLeft(pid) { const e = expiry[pid]; if (!e) return null; return Math.round((new Date(e + "T12:00") - new Date(new Date().toLocaleDateString("sv-SE") + "T12:00")) / 864e5); }
+function expText(d) { return d < 0 ? (d === -1 ? "seit gestern abgelaufen" : `seit ${-d} Tagen abgelaufen`) : d === 0 ? "läuft heute ab" : d === 1 ? "läuft morgen ab" : `noch ${d} Tage`; }
+/* beim Einräumen: ältere Ware zählt (frühestes Datum bleibt), sonst Standard-Haltbarkeit */
+function setExpiryOnAdd(p, hadStock) { if (!hadStock || !expiry[p.id]) expiry[p.id] = addDays(defaultExpDays(p)); }
+function saveExpiry() { for (const id of Object.keys(expiry)) if (!(stock[id] > 0.5)) delete expiry[id]; try { localStorage.setItem(EXP_KEY, JSON.stringify(expiry)); } catch (e) {} }
+
 function saveStock() {
+  saveExpiry();
   try { localStorage.setItem(STOCK_KEY, JSON.stringify(stock)); }
   catch (e) { toast("Speichern fehlgeschlagen"); }
 }
@@ -1236,7 +1382,7 @@ function showTab(tab) {
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   $("title").textContent = TABS[tab].title;
   const ab = $("addBtn");
-  ab.style.visibility = TABS[tab].add ? "visible" : "hidden";
+  ab.style.display = TABS[tab].add ? "" : "none";
   if (tab === "kuehlschrank") { ab.className = "btn pill"; ab.innerHTML = `${ic("cart")} Einkaufen`; }
   else if (tab === "training") { ab.className = "btn pill"; ab.innerHTML = activeWk ? `${ic("flame")} Weiter` : `${ic("play")} Starten`; }
   else { ab.className = "btn round"; ab.textContent = "+"; }
@@ -1950,7 +2096,8 @@ function groupHTML(p) {
   const total = full + (partial ? 1 : 0);
   const unit = CUPBOARD_CATS.includes(p.cat) ? 1.0 : (p.cat === "gemuese" || p.cat === "obst") ? .95 : 1.2;
   const badge = total > 1 ? `<span class="fcnt">${total}×</span>` : (partial && !full ? `<span class="fcnt part">½</span>` : "");
-  return `<div class="group fgrp" data-id="${p.id}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${foodSVG(foodIconKey(p), total, unit)}${badge}</div>`;
+  const d = daysLeft(p.id), ex = d === null ? "" : d <= 0 ? " exp-bad" : d <= 2 ? " exp-soon" : "";
+  return `<div class="group fgrp${ex}" data-id="${p.id}" title="${esc(p.name)}" aria-label="${esc(p.name)}">${foodSVG(foodIconKey(p), total, unit)}${badge}${ex ? `<span class="xdot"></span>` : ""}</div>`;
 }
 
 function compHTML(catId, extraClass = "") {
@@ -1963,7 +2110,17 @@ function compHTML(catId, extraClass = "") {
 function renderFridge() {
   const view = $("view");
   const anything = products.some(inStock);
+  const soon = products.filter(p => inStock(p) && daysLeft(p.id) !== null && daysLeft(p.id) <= 2).sort((a, b) => daysLeft(a.id) - daysLeft(b.id));
+  const open = shoplist.filter(x => !x.done).length;
   view.innerHTML = `
+    <div class="fr-bar">
+      <button class="fr-list" id="frList">${ic("clipboard")}<span><b>Einkaufsliste</b><small>${open ? plural(open, "Sache", "Sachen") + " offen" : "Leer – tippen zum Planen"}</small></span>${open ? `<i>${open}</i>` : ""}</button>
+    </div>
+    ${leftovers.length ? `<div class="card rest-card"><div class="rc-head">${ic("bowl")} <b>Reste</b></div>${leftovers.map(l => `<div class="rest-row">
+      <div class="item-main"><div class="item-name">${esc(l.name)}</div><div class="item-sub">${plural(l.portions, "Portion", "Portionen")} · ${Math.round(l.per.kcal)} kcal/Portion · ${expText(Math.round((new Date(l.exp + "T12:00") - new Date(todayKey() + "T12:00")) / 864e5))}</div></div>
+      <button class="btn sm" data-eat="${l.id}">1 essen</button><button class="rm" data-toss="${l.id}" aria-label="Wegwerfen">✕</button></div>`).join("")}</div>` : ""}
+    ${soon.length ? `<div class="card exp-card"><div class="rc-head">${ic("timer")} <b>Bald aufbrauchen</b></div><div class="exp-chips">${soon.map(p => { const d = daysLeft(p.id); return `<button class="exp-chip ${d <= 0 ? "bad" : "soon"}" data-sid="${p.id}">${esc(p.name)} <small>${expText(d)}</small></button>`; }).join("")}</div>
+      <button class="link exp-go" id="expGo">Passende Rezepte ›</button></div>` : ""}
     <div class="kitchen flat">
       <div class="fridge">
         <div class="unit-title">Kühlschrank</div>
@@ -1980,6 +2137,11 @@ function renderFridge() {
     ${anything ? "" : `<p class="fridge-hint">Noch leer. Tippe oben auf <b>Einkaufen</b> und trag deinen Einkauf ein.</p>`}
   `;
   view.querySelectorAll(".group").forEach(el => el.onclick = () => openStock(el.dataset.id));
+  view.querySelectorAll("[data-sid]").forEach(el => el.onclick = () => openStock(el.dataset.sid));
+  $("frList").onclick = openList;
+  if ($("expGo")) $("expGo").onclick = () => { ideaFilter = "alle"; showTab("vorschlaege"); };
+  view.querySelectorAll("[data-eat]").forEach(b => b.onclick = () => eatLeftover(b.dataset.eat, slotByTime()));
+  view.querySelectorAll("[data-toss]").forEach(b => b.onclick = () => { const l = leftovers.find(x => x.id === b.dataset.toss); if (!l || !confirm(`Reste „${l.name}“ wegwerfen?`)) return; leftovers = leftovers.filter(x => x !== l); saveJSON(LEFT_KEY, leftovers); renderFridge(); });
 }
 
 /* ---------- Einkaufen ---------- */
@@ -1994,6 +2156,10 @@ const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
 function openShop() {
   cart = {}; pendingPack = {}; shopSearch = "";
   $("shopSearch").value = "";
+  const fromList = shoplist.filter(x => x.pid && products.some(p => p.id === x.pid));
+  $("shopFromList").style.display = fromList.length ? "" : "none";
+  $("shopFromList").innerHTML = `${ic("clipboard")} Von der Einkaufsliste übernehmen (${fromList.length})`;
+  $("shopFromList").onclick = () => { for (const x of fromList) cart[x.pid] = Math.max(cart[x.pid] || 0, x.qty || 1); $("shopFromList").style.display = "none"; renderShopList(); toast(`${fromList.length} von der Liste im Wagen`); };
   renderShopList();
   $("shopSheet").classList.add("open");
 }
@@ -2065,9 +2231,12 @@ $("shopSaveBtn").onclick = () => {
     const p = products.find(x => x.id === id);
     if (!p) continue;
     if (!(p.pack > 0)) p.pack = pendingPack[id];
+    setExpiryOnAdd(p, inStock(p));
     stock[id] = (stock[id] || 0) + cart[id] * p.pack;
+    p.bought = true;
     total += cart[id];
   }
+  shoplist = shoplist.filter(x => !(x.pid && cart[x.pid])); saveList();
   saveProducts();
   saveStock();
   closeShop(true);
@@ -2121,9 +2290,22 @@ function refreshStockSheet() {
   $("sStock").textContent = t.main;
   $("sStockSub").textContent = `${t.sub} · 1 Packung = ${fmt(packOf(p))} g`;
   $("sGrams").value = Math.round(stock[p.id] || 0);
+  const d = daysLeft(p.id), has = inStock(p);
+  $("sExp").value = expiry[p.id] || "";
+  $("sExp").disabled = !has;
+  $("sExpHint").textContent = !has ? "Nicht im Bestand" : d === null ? "Kein Datum" : expText(d);
+  $("sExpHint").className = "hint " + (d !== null && d <= 0 ? "bad" : d !== null && d <= 2 ? "soon" : "");
+  $("sExpQuick").innerHTML = has ? [["Standard", defaultExpDays(p)], ["+3 Tage", 3], ["+1 Woche", 7], ["+1 Monat", 30]].map(([t, n]) => `<button data-xd="${n}">${t}</button>`).join("") : "";
+  $("sExpQuick").querySelectorAll("[data-xd]").forEach(b => b.onclick = () => { expiry[p.id] = addDays(+b.dataset.xd); saveStock(); refreshStockSheet(); renderFridge(); });
+  const onList = shoplist.some(x => x.pid === p.id && !x.done);
+  $("sToList").innerHTML = `${ic("clipboard")} ${onList ? "Steht auf der Liste ✓" : "Auf die Einkaufsliste"}`;
+  $("sToList").disabled = onList;
 }
+$("sExp").onchange = () => { if ($("sExp").value) expiry[stockId] = $("sExp").value; else delete expiry[stockId]; saveStock(); refreshStockSheet(); renderFridge(); };
+$("sToList").onclick = () => { const p = products.find(x => x.id === stockId); addToList({ pid: p.id, name: p.name, qty: 1 }); refreshStockSheet(); renderFridge(); toast("Auf die Einkaufsliste gesetzt ✓"); };
 function changeStock(delta) {
   const p = products.find(x => x.id === stockId);
+  if (delta > 0) setExpiryOnAdd(p, inStock(p));
   stock[p.id] = Math.max(0, (stock[p.id] || 0) + delta);
   if (stock[p.id] < 0.5) delete stock[p.id];
   saveStock();
@@ -2595,7 +2777,11 @@ function renderAddList() {
       : `<div class="empty" style="padding:30px 10px">${products.length ? "Nichts gefunden." : "Noch keine Produkte angelegt."}</div>`;
   } else {
     const items = templates.filter(t => t.name.toLowerCase().includes(term)).sort((a, b) => a.name.localeCompare(b.name, "de"));
-    list.innerHTML = items.length ? `<div class="shop-list">${items.map(t => {
+    const rests = leftovers.filter(l => l.name.toLowerCase().includes(term));
+    const restHTML = rests.length ? `<div class="cat-title">${ic("bowl")} Reste im Kühlschrank</div><div class="shop-list">${rests.map(l => `<div class="shop-item" data-rest="${l.id}" style="cursor:pointer">
+        <div class="thumb">${ic("bowl")}</div><div class="item-main"><div class="item-name">${esc(l.name)}</div><div class="item-sub">${plural(l.portions, "Portion", "Portionen")} übrig · ${Math.round(l.per.p)} g Eiweiß</div></div>
+        <span class="item-sub">${Math.round(l.per.kcal)} kcal</span></div>`).join("")}</div><div class="cat-title">${ic("utensils")} Meine Mahlzeiten</div>` : "";
+    list.innerHTML = restHTML + (items.length ? `<div class="shop-list">${items.map(t => {
       const m = itemsMacros(t.items);
       return `<div class="shop-item" data-sel="${t.id}" style="cursor:pointer">
         <div class="thumb">${ic("utensils")}</div>
@@ -2603,7 +2789,8 @@ function renderAddList() {
           <div class="item-sub">${Math.round(m.p)} g Eiweiß${missingSomething(t.items) ? ` · <span class="warn">fehlt was</span>` : ""}</div></div>
         <span class="item-sub">${Math.round(m.kcal)} kcal</span></div>`;
     }).join("")}</div>`
-      : `<div class="empty" style="padding:30px 10px">${templates.length ? "Nichts gefunden." : "Noch keine Mahlzeiten.<br>Leg sie im Tab „Mahlzeiten“ an."}</div>`;
+      : `<div class="empty" style="padding:30px 10px">${templates.length ? "Nichts gefunden." : "Noch keine Mahlzeiten.<br>Leg sie im Tab „Produkte“ › „Mahlzeiten“ an."}</div>`);
+    list.querySelectorAll("[data-rest]").forEach(r => r.onclick = () => { $("addSheet").classList.remove("open"); eatLeftover(r.dataset.rest, addSlot); renderToday(); });
   }
   list.querySelectorAll("[data-sel]").forEach(r => r.onclick = () => showAmount(r.dataset.sel));
 }
@@ -2622,21 +2809,39 @@ function showAmount(id) {
     $("aName").textContent = p.name;
     $("aLabel").textContent = "Menge (g)";
     $("aAmount").value = defaultGrams(p);
+    $("aIngs").innerHTML = "";
   } else {
     const t = templates.find(x => x.id === id);
     $("aPreview").style.display = "none";
     $("aName").textContent = t.name;
     $("aLabel").textContent = "Portionen";
     $("aAmount").value = 1;
+    addIngs = validItems(t.items).map(i => ({ id: i.id, g: i.g, base: i.g }));
+    renderAddIngs();
   }
   updateAmount();
+}
+/* Zutaten einer Mahlzeit beim Eintragen anpassen (nur für dieses Mal oder als neue Standardmengen) */
+let addIngs = [];
+function renderAddIngs() {
+  $("aIngs").innerHTML = `<div class="a-ings-cap">Zutaten – heute anpassen</div><div class="meal-list a-ings">${addIngs.map((i, k) => {
+    const p = prod(i.id), changed = Math.abs(i.g - i.base) > .01;
+    return `<div class="meal-item${changed ? " chg" : ""}">${thumbHTML(p)}
+      <div class="item-main"><div class="item-name">${esc(p.name)}</div><div class="item-sub">${changed ? `sonst ${fmt(i.base)} g` : `${Math.round(p.kcal)} kcal/100 g`}</div></div>
+      <div class="gwrap"><div class="gbox"><input class="gin" data-ai="${k}" type="text" inputmode="decimal" value="${dec(i.g)}">g</div></div>
+    </div>`;
+  }).join("")}</div>
+  <label class="a-keep${addIngs.some(i => Math.abs(i.g - i.base) > .01) ? "" : " hidden"}"><input type="checkbox" id="aKeep"> Als neue Standardmengen speichern</label>`;
+  $("aIngs").querySelectorAll("[data-ai]").forEach(inp => {
+    inp.oninput = () => { addIngs[inp.dataset.ai].g = Math.max(0, num(inp.value)); updateAmount(); const row = inp.closest(".meal-item"), i = addIngs[inp.dataset.ai], ch = Math.abs(i.g - i.base) > .01; row.classList.toggle("chg", ch); row.querySelector(".item-sub").textContent = ch ? `sonst ${fmt(i.base)} g` : `${Math.round(prod(i.id).kcal)} kcal/100 g`; document.querySelector(".a-keep").classList.toggle("hidden", !addIngs.some(x => Math.abs(x.g - x.base) > .01)); };
+    inp.onfocus = () => inp.select();
+  });
 }
 
 function selectedItems() {
   const a = Math.max(0, num($("aAmount").value));
   if (addSel.kind === "product") return [{ id: addSel.id, g: a }];
-  const t = templates.find(x => x.id === addSel.id);
-  return validItems(t.items).map(i => ({ id: i.id, g: i.g * a }));
+  return addIngs.map(i => ({ id: i.id, g: i.g * a }));
 }
 
 function updateAmount() {
@@ -2664,7 +2869,13 @@ $("aAdd").onclick = () => {
   });
   const totals = sumMacros(logged);
   const now = new Date();
-  const name = addSel.kind === "product" ? prod(addSel.id).name : templates.find(x => x.id === addSel.id).name;
+  const tpl = addSel.kind === "meal" ? templates.find(x => x.id === addSel.id) : null;
+  const changed = tpl && addIngs.some(i => Math.abs(i.g - i.base) > .01);
+  if (changed && $("aKeep") && $("aKeep").checked) {
+    tpl.items = addIngs.filter(i => i.g > 0).map(i => ({ id: i.id, g: i.g }));
+    saveJSON(TPL_KEY, templates);
+  }
+  const name = tpl ? tpl.name + (changed && !($("aKeep") && $("aKeep").checked) ? " (angepasst)" : "") : prod(addSel.id).name;
   log.push({
     id: now.getTime().toString(36), day: viewDay || todayKey(), slot: addSlot,
     time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
@@ -4453,7 +4664,8 @@ function analyzeRecipe(r) {
     return { key, name: d.n, g, opt: opt === "o", p, have, ok, m };
   });
   const missing = rows.filter(x => !x.opt && !x.ok);
-  return { rows, missing, totals: sumMacros(rows.map(x => x.m)) };
+  const urgent = rows.filter(x => x.p && x.have > 0.5 && daysLeft(x.p.id) !== null && daysLeft(x.p.id) <= 2).map(x => x.p.name);
+  return { rows, missing, urgent, totals: sumMacros(rows.map(x => x.m)) };
 }
 
 function renderIdeas() {
@@ -4463,7 +4675,7 @@ function renderIdeas() {
       ideaFilter === "alle" ? true :
       ideaFilter === "kochbar" ? a.missing.length === 0 :
       r.type === ideaFilter)
-    .sort((x, y) => (x.a.missing.length - y.a.missing.length) || (y.a.totals.p / y.a.totals.kcal - x.a.totals.p / x.a.totals.kcal));
+    .sort((x, y) => (x.a.missing.length - y.a.missing.length) || (y.a.urgent.length - x.a.urgent.length) || (y.a.totals.p / y.a.totals.kcal - x.a.totals.p / x.a.totals.kcal));
 
   const filters = [["alle", "Alle"], ["kochbar", "✓ Kann ich kochen"], ["frueh", "Frühstück"], ["haupt", "Hauptgericht"], ["dessert", "Dessert"], ["snack", "Snack"]];
   let html = `<div class="filters">${filters.map(([k, t]) => `<button data-f="${k}" class="${ideaFilter === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
@@ -4474,7 +4686,7 @@ function renderIdeas() {
       <div class="tags">
         <span class="tag">${ic("bolt")} ${Math.round(a.totals.p)} g Eiweiß</span>
         <span class="tag grey">${Math.round(a.totals.c)} g K · ${Math.round(a.totals.f)} g F</span>
-        <span class="tag grey">${RTYPES[r.type]}</span>
+        <span class="tag grey">${RTYPES[r.type]}</span>${a.urgent.length ? `<span class="tag exp">${ic("timer")} verbraucht ${esc(a.urgent.join(", "))}</span>` : ""}
       </div>
       ${a.missing.length ? `<div class="miss">Fehlt: ${a.missing.map(x => x.name).join(", ")}</div>` : `<div class="have">✓ Alles da</div>`}
       </div>
@@ -4509,30 +4721,57 @@ function openRecipe(id) {
     <div class="card-title" style="margin-top:18px">So geht's</div>
     <ol class="steps">${r.steps.map(st => `<li>${st}</li>`).join("")}</ol>`;
   $("rSlot").value = r.type === "frueh" ? "fruehstueck" : slotByTime();
+  cooked = 1; eaten = 1; updateCook();
+  const miss = a.rows.filter(x => !x.opt && !x.ok);
+  $("rToList").style.display = miss.length ? "" : "none";
+  $("rToList").innerHTML = `${ic("clipboard")} Fehlendes auf die Einkaufsliste (${miss.length})`;
+  $("rToList").onclick = () => { for (const x of miss) addToList(x.p ? { pid: x.p.id, name: x.p.name } : { name: x.name }); $("rToList").innerHTML = `${ic("check")} Auf der Liste`; toast(`${plural(miss.length, "Zutat", "Zutaten")} auf der Einkaufsliste ✓`); };
   $("recipeSheet").classList.add("open");
 }
 
+let cooked = 1, eaten = 1;
+function updateCook() {
+  eaten = Math.min(eaten, cooked);
+  $("rCooked").textContent = cooked; $("rEaten").textContent = eaten;
+  const rest = cooked - eaten;
+  $("rRestHint").textContent = rest ? `${plural(rest, "Portion kommt", "Portionen kommen")} als Reste in den Kühlschrank` : "Keine Reste";
+  $("rAdd").textContent = eaten ? "Gekocht & eintragen ✓" : "Gekocht ✓";
+}
+document.querySelectorAll("[data-ck]").forEach(b => b.onclick = () => { cooked = Math.max(1, Math.min(10, cooked + Number(b.dataset.ck))); if (Number(b.dataset.ck) > 0 && eaten === cooked - 1 && cooked === 2) {} updateCook(); });
+document.querySelectorAll("[data-ce]").forEach(b => b.onclick = () => { eaten = Math.max(0, Math.min(cooked, eaten + Number(b.dataset.ce))); updateCook(); });
 $("rAdd").onclick = () => {
   const r = RECIPES.find(x => x.id === openRecipeId), a = analyzeRecipe(r);
   let short = false;
-  const logged = a.rows.filter(x => !x.opt || x.p).map(x => {
+  /* Zutaten für alle gekochten Portionen abziehen */
+  const per = a.rows.filter(x => !x.opt || x.p).map(x => {
     if (!x.p) { short = true; return { id: null, name: x.name, g: x.g, deducted: 0, ...x.m }; }
-    const have = stock[x.p.id] || 0, deducted = Math.min(have, x.g);
-    if (x.g > have + 0.5) short = true;
+    const need = x.g * cooked, have = stock[x.p.id] || 0, deducted = Math.min(have, need);
+    if (need > have + 0.5) short = true;
     stock[x.p.id] = have - deducted;
     if (stock[x.p.id] < 0.5) delete stock[x.p.id];
-    return { id: x.p.id, name: x.p.name, g: x.g, deducted, ...x.m };
+    return { id: x.p.id, name: x.p.name, g: x.g, deducted: deducted / cooked, ...x.m };
   });
-  const totals = sumMacros(logged), now = new Date();
-  log.push({
-    id: now.getTime().toString(36), day: todayKey(), slot: $("rSlot").value,
-    time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
-    kind: "recipe", refId: r.id, name: r.name, amount: 1, items: logged, totals
-  });
-  saveJSON(LOG_KEY, log); saveStock();
+  const perTotals = sumMacros(per), now = new Date();
+  if (eaten > 0) {
+    log.push({
+      id: now.getTime().toString(36), day: todayKey(), slot: $("rSlot").value,
+      time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
+      kind: "recipe", refId: r.id, name: r.name + (eaten > 1 ? ` (${eaten} Portionen)` : ""), amount: eaten,
+      items: per.map(i => ({ ...i, g: i.g * eaten, deducted: i.deducted * eaten, kcal: i.kcal * eaten, p: i.p * eaten, c: i.c * eaten, f: i.f * eaten })),
+      totals: { kcal: perTotals.kcal * eaten, p: perTotals.p * eaten, c: perTotals.c * eaten, f: perTotals.f * eaten }
+    });
+  }
+  const rest = cooked - eaten;
+  if (rest > 0) {
+    const ex = leftovers.find(l => l.rid === r.id && l.day === todayKey());
+    if (ex) ex.portions += rest;
+    else leftovers.push({ id: uid(), rid: r.id, name: r.name, portions: rest, per: perTotals, items: per.map(i => ({ id: null, name: i.name, g: i.g, kcal: i.kcal, p: i.p, c: i.c, f: i.f })), day: todayKey(), exp: addDays(3) });
+  }
+  saveJSON(LOG_KEY, log); saveJSON(LEFT_KEY, leftovers); saveStock();
   $("recipeSheet").classList.remove("open");
   renderIdeas();
-  toast(short ? "Eingetragen ✓ – fehlende Zutaten mit Richtwerten" : `${Math.round(totals.kcal)} kcal eingetragen ✓`);
+  const msg = [eaten ? `${Math.round(perTotals.kcal * eaten)} kcal eingetragen` : "Gekocht", rest ? `${plural(rest, "Portion", "Portionen")} als Reste im Kühlschrank` : ""].filter(Boolean).join(" · ");
+  toast(short ? msg + " – es fehlte etwas" : msg + " ✓");
 };
 
 $("rSave").onclick = () => {
@@ -5929,7 +6168,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "39";
+const APP_VERSION = "42";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
@@ -5945,8 +6184,185 @@ async function checkUpdate() {
 document.addEventListener("visibilitychange", () => { if (!document.hidden) checkUpdate(); });
 checkUpdate();
 
+
+/* ---------- Einkaufsliste ---------- */
+const LIST_KEY = "makro.shoplist", LEFT_KEY = "makro.leftovers";
+let shoplist = loadJSON(LIST_KEY, []);        // [{ id, pid, name, qty, done }]
+let leftovers = loadJSON(LEFT_KEY, []);       // [{ id, rid, name, portions, per, items, day, exp }]
+const saveList = () => saveJSON(LIST_KEY, shoplist);
+function addToList({ pid = null, name, qty = 1 }) {
+  const ex = shoplist.find(x => (pid && x.pid === pid) || (!pid && !x.pid && x.name.toLowerCase() === name.toLowerCase()));
+  if (ex) { ex.done = false; ex.qty = Math.max(ex.qty || 1, qty); } else shoplist.push({ id: uid(), pid, name, qty, done: false });
+  saveList();
+}
+/* Vorschläge: war schon mal gekauft und ist leer oder fast leer */
+function lowStock() {
+  return products.filter(p => (p.bought || inStock(p)) && (stock[p.id] || 0) < packOf(p) * .35 && !shoplist.some(x => x.pid === p.id && !x.done))
+    .sort((a, b) => (stock[a.id] || 0) - (stock[b.id] || 0)).slice(0, 10);
+}
+function openList() { $("slIn").value = ""; $("slMatch").innerHTML = ""; renderList(); $("listSheet").classList.add("open"); }
+function renderList() {
+  const groups = {};
+  for (const x of shoplist) { const p = x.pid && products.find(q => q.id === x.pid), c = p ? p.cat : "sonstiges"; (groups[c] = groups[c] || []).push({ x, p }); }
+  const low = lowStock();
+  let html = low.length ? `<div class="sl-cap">Wird knapp</div><div class="sl-sugg">${low.map(p => `<button data-sg="${p.id}">＋ ${esc(p.name)}${inStock(p) ? ` <small>${fmt(stock[p.id])} g</small>` : ""}</button>`).join("")}</div>` : "";
+  if (!shoplist.length) html += `<div class="empty" style="padding:26px 10px"><div class="big">${ic("clipboard")}</div>Noch nichts auf der Liste.<br>Tipp oben etwas ein oder setz fehlende Zutaten aus einem Rezept drauf.</div>`;
+  for (const cat of CATEGORIES) {
+    const g = groups[cat.id]; if (!g) continue;
+    g.sort((a, b) => a.x.done - b.x.done || a.x.name.localeCompare(b.x.name, "de"));
+    html += `<div class="cat-title">${ic(cat.icon)} ${cat.name}</div><div class="shop-list">${g.map(({ x, p }) => `<div class="sl-item${x.done ? " done" : ""}">
+      <button class="sl-chk" data-tg="${x.id}">${x.done ? ic("check") : ""}</button>
+      ${p ? thumbHTML(p) : `<div class="thumb">${ic("box")}</div>`}
+      <div class="item-main"><div class="item-name">${esc(x.name)}</div>${p ? `<div class="item-sub">${p.pack > 0 ? fmt(p.pack) + " g pro Packung" : "Packungsgröße fehlt"}</div>` : `<div class="item-sub">eigener Eintrag</div>`}</div>
+      ${p ? `<div class="mini"><button data-q="${x.id}" data-d="-1">−</button><span>${x.qty || 1}</span><button data-q="${x.id}" data-d="1">+</button></div>` : ""}
+      <button class="rm" data-rmL="${x.id}">✕</button></div>`).join("")}</div>`;
+  }
+  const done = shoplist.filter(x => x.done), doneProd = done.filter(x => x.pid);
+  if (shoplist.length) html += `<div class="sl-actions">
+    <button class="btn" id="slStore" ${doneProd.length ? "" : "disabled"}>${ic("fridge")} Abgehakte einräumen${doneProd.length ? ` (${doneProd.length})` : ""}</button>
+    <button class="btn ghost" id="slClear" ${done.length ? "" : "disabled"}>Erledigte entfernen</button></div>
+    <p class="hint" style="text-align:center">Abhaken im Laden – „Einräumen“ legt alles direkt in den Kühlschrank.</p>`;
+  $("slBody").innerHTML = html;
+  const B = $("slBody");
+  B.querySelectorAll("[data-sg]").forEach(b => b.onclick = () => { const p = products.find(q => q.id === b.dataset.sg); addToList({ pid: p.id, name: p.name }); renderList(); });
+  B.querySelectorAll("[data-tg]").forEach(b => b.onclick = () => { const x = shoplist.find(q => q.id === b.dataset.tg); x.done = !x.done; saveList(); renderList(); });
+  B.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { const x = shoplist.find(q => q.id === b.dataset.q); x.qty = Math.max(1, (x.qty || 1) + Number(b.dataset.d)); saveList(); renderList(); });
+  B.querySelectorAll("[data-rml]").forEach(b => b.onclick = () => { shoplist = shoplist.filter(q => q.id !== b.dataset.rml); saveList(); renderList(); });
+  if ($("slStore")) $("slStore").onclick = () => {
+    let n = 0, skip = [];
+    for (const x of doneProd) {
+      const p = products.find(q => q.id === x.pid); if (!p) continue;
+      if (!(p.pack > 0)) { skip.push(p.name); continue; }
+      setExpiryOnAdd(p, inStock(p)); stock[p.id] = (stock[p.id] || 0) + (x.qty || 1) * p.pack; p.bought = true; n += x.qty || 1;
+      shoplist = shoplist.filter(q => q !== x);
+    }
+    saveList(); saveProducts(); saveStock(); renderList(); if (currentTab === "kuehlschrank") renderFridge();
+    toast(skip.length ? `Packungsgröße fehlt: ${skip.join(", ")}` : `${plural(n, "Packung", "Packungen")} eingeräumt ✓`);
+  };
+  if ($("slClear")) $("slClear").onclick = () => { shoplist = shoplist.filter(x => !x.done); saveList(); renderList(); };
+}
+function slAdd() {
+  const t = $("slIn").value.trim(); if (!t) return;
+  const p = products.find(q => q.name.toLowerCase() === t.toLowerCase());
+  addToList(p ? { pid: p.id, name: p.name } : { name: t });
+  $("slIn").value = ""; $("slMatch").innerHTML = ""; renderList();
+}
+$("slAddBtn").onclick = slAdd;
+$("slIn").onkeydown = e => { if (e.key === "Enter") slAdd(); };
+$("slIn").oninput = () => {
+  const t = $("slIn").value.trim().toLowerCase();
+  const m = t ? products.filter(p => p.name.toLowerCase().includes(t)).slice(0, 6) : [];
+  $("slMatch").innerHTML = m.length ? `<div class="sl-sugg">${m.map(p => `<button data-mp="${p.id}">＋ ${esc(p.name)}</button>`).join("")}</div>` : "";
+  $("slMatch").querySelectorAll("[data-mp]").forEach(b => b.onclick = () => { const p = products.find(q => q.id === b.dataset.mp); addToList({ pid: p.id, name: p.name }); $("slIn").value = ""; $("slMatch").innerHTML = ""; renderList(); });
+};
+
+/* ---------- Reste ---------- */
+function eatLeftover(id, slot) {
+  const l = leftovers.find(x => x.id === id); if (!l) return;
+  const now = new Date();
+  log.push({ id: now.getTime().toString(36), day: viewDay || todayKey(), slot, time: now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }),
+    kind: "rest", refId: l.rid, name: l.name + " (Reste)", amount: 1, items: (l.items || []).map(i => ({ ...i, deducted: 0 })), totals: { ...l.per } });
+  l.portions--; if (l.portions <= 0) leftovers = leftovers.filter(x => x !== l);
+  saveJSON(LOG_KEY, log); saveJSON(LEFT_KEY, leftovers);
+  toast(`${Math.round(l.per.kcal)} kcal eingetragen ✓`);
+  if (currentTab === "kuehlschrank") renderFridge(); else if (currentTab === "heute") renderToday();
+}
+
+/* ---------- Einstellungen & Backup ---------- */
+const BACKUP_KEY = "makro.lastBackup";
+const allKeys = () => { const k = []; for (let i = 0; i < localStorage.length; i++) { const n = localStorage.key(i); if (n && n.startsWith("makro.") && n !== BACKUP_KEY) k.push(n); } return k.sort(); };
+const fmtDate = t => new Date(t).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
+function backupData() {
+  const data = {}; for (const k of allKeys()) data[k] = localStorage.getItem(k);
+  return { app: "Makro", format: 1, version: APP_VERSION, created: new Date().toISOString(), data };
+}
+async function saveBackup() {
+  const json = JSON.stringify(backupData());
+  const name = `Makro-Backup-${todayKey()}.json`;
+  const file = new File([json], name, { type: "application/json" });
+  let ok = false;
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Makro-Backup" }); ok = true; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  if (!ok) {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) {}
+  renderSettings(); updateBackupNudge(); toast("Backup gespeichert ✓");
+}
+function restoreBackup(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let b; try { b = JSON.parse(r.result); } catch (e) { toast("Das ist keine Backup-Datei"); return; }
+    if (!b || b.app !== "Makro" || !b.data || typeof b.data !== "object") { toast("Das ist keine Makro-Backup-Datei"); return; }
+    const n = Object.keys(b.data).length;
+    if (!confirm(`Backup vom ${fmtDate(b.created)} laden?\n\nAlle aktuellen Daten in der App werden durch das Backup ersetzt (${n} Bereiche).`)) return;
+    for (const k of allKeys()) localStorage.removeItem(k);
+    for (const [k, v] of Object.entries(b.data)) if (k.startsWith("makro.") && typeof v === "string") localStorage.setItem(k, v);
+    try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) {}
+    toast("Backup geladen – App startet neu …");
+    setTimeout(() => location.reload(), 900);
+  };
+  r.readAsText(file);
+}
+function storageSize() { let n = 0; for (const k of allKeys()) n += (localStorage.getItem(k) || "").length + k.length; return n * 2; }
+function renderSettings() {
+  const last = +(localStorage.getItem(BACKUP_KEY) || 0);
+  const days = last ? Math.floor((Date.now() - last) / 864e5) : null;
+  const kb = Math.max(1, Math.round(storageSize() / 1024));
+  const row = (icon, title, sub, id, cls = "") => `<button class="set-row ${cls}" id="${id}"><span class="set-ic">${ic(icon)}</span><span class="set-main"><b>${title}</b><small>${sub}</small></span><span class="set-ch">›</span></button>`;
+  $("setBody").innerHTML = `
+    <div class="set-status ${days === null || days > 7 ? "warn" : "ok"}">${ic("shield")}<div><b>${days === null ? "Noch kein Backup" : days === 0 ? "Backup heute gespeichert" : `Letztes Backup vor ${days} ${days === 1 ? "Tag" : "Tagen"}`}</b>
+      <small>${days === null || days > 7 ? "Deine Daten liegen nur in Safari auf diesem Gerät. Speichere ein Backup, z. B. in iCloud Drive." : "Gut so – am besten ca. einmal pro Woche."}</small></div></div>
+    <div class="set-group">
+      ${row("download", "Backup speichern", "Als Datei sichern – z. B. „In Dateien sichern“ › iCloud Drive", "setSave")}
+      ${row("upload", "Backup laden", "Daten aus einer Backup-Datei wiederherstellen", "setLoad")}
+    </div>
+    <div class="set-cap">Deine Daten</div>
+    <div class="set-group set-stats">
+      <div><b>${products.length}</b><small>Lebensmittel</small></div><div><b>${templates.length}</b><small>Mahlzeiten</small></div>
+      <div><b>${log.length}</b><small>Einträge</small></div><div><b>${Object.keys(weights).length}</b><small>Gewichte</small></div>
+      <div><b>${workouts.length}</b><small>Trainings</small></div><div><b>${kb} KB</b><small>Speicher</small></div>
+    </div>
+    <div class="set-group">
+      ${row("user", "Profil & Kalorienziel", targets ? `${fmt(targets.kcal)} kcal · ${Math.round(targets.p)} g Eiweiß` : "Noch nicht berechnet", "setProfile")}
+    </div>
+    <div class="set-group">${row("trash", "Alle Daten löschen", "Setzt die App komplett zurück", "setWipe", "danger")}</div>
+    <p class="set-foot">Makro · Version ${APP_VERSION}<br>Alle Daten bleiben auf deinem Gerät – nichts wird hochgeladen.</p>`;
+  $("setSave").onclick = saveBackup;
+  $("setLoad").onclick = () => { $("restoreIn").value = ""; $("restoreIn").click(); };
+  $("setProfile").onclick = () => { $("setSheet").classList.remove("open"); openCalc(); };
+  $("setWipe").onclick = () => {
+    if (!confirm("Wirklich ALLE Daten löschen? Produkte, Kühlschrank, Mahlzeiten, Einträge, Gewicht und Trainings sind dann weg.")) return;
+    if (!confirm("Letzte Sicherheitsabfrage: Hast du ein Backup? Löschen kann nicht rückgängig gemacht werden.")) return;
+    for (const k of allKeys()) localStorage.removeItem(k);
+    localStorage.removeItem(BACKUP_KEY);
+    toast("Alle Daten gelöscht"); setTimeout(() => location.reload(), 700);
+  };
+}
+function openSettings() { renderSettings(); $("setSheet").classList.add("open"); document.querySelector("#setSheet .sheet").scrollTop = 0; }
+$("setBtn").onclick = openSettings;
+$("setClose").onclick = () => $("setSheet").classList.remove("open");
+$("setSheet").addEventListener("click", e => { if (e.target.id === "setSheet") $("setSheet").classList.remove("open"); });
+$("restoreIn").onchange = () => { const f = $("restoreIn").files[0]; if (f) restoreBackup(f); };
+/* Hinweis, wenn lange kein Backup gemacht wurde (nur wenn es schon Daten gibt) */
+function updateBackupNudge() {
+  const el = $("backupNudge"), last = +(localStorage.getItem(BACKUP_KEY) || 0);
+  const hasData = products.length + log.length + workouts.length + Object.keys(weights).length >= 5;
+  const due = hasData && (!last || Date.now() - last > 14 * 864e5);
+  const snoozed = +(localStorage.getItem("makro.nudgeSnooze") || 0) > Date.now();
+  el.classList.toggle("show", due && !snoozed);
+  el.innerHTML = `${ic("shield")}<span>${last ? "Dein letztes Backup ist über 2 Wochen alt." : "Sichere deine Daten mit einem Backup."}</span><button id="nudgeGo">Jetzt</button><button id="nudgeX" aria-label="Später">✕</button>`;
+  $("nudgeGo").onclick = () => { openSettings(); };
+  $("nudgeX").onclick = () => { localStorage.setItem("makro.nudgeSnooze", String(Date.now() + 3 * 864e5)); el.classList.remove("show"); };
+}
+/* Safari bitten, die Daten nicht automatisch zu löschen */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
 /* ---------- Start ---------- */
 fillIcons();
+updateBackupNudge();
 showTab("heute");
 setTimeout(() => { const sp = $("splash"); sp.classList.add("hide"); setTimeout(() => sp.remove(), 500); }, 1100);
 </script>
