@@ -2964,9 +2964,24 @@ const FOOD_CAT_FALLBACK = { milch: "yogurt", fleisch: "chicken", gemuese: "peppe
 const GENERIC_TAG = /dairies|fermented|milk-products|^en:foods?$|beverages|plant-based|products|groceries|snacks$|meals|spreads$|condiments|sweeteners|^en:fats$/;
 const normName = s => String(s || "").normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
 function iconFromText(t) { for (const [re, k] of FOOD_RULES) if (re.test(t)) return k; return null; }
+/* „ohne Zucker“, „zuckerfrei“, „no added sugar“ … dürfen nicht zum Zucker-Symbol führen */
+const NEGATED = /(ohne (zusatz von |zugesetzten? )?zucker(zusatz)?|zuckerfrei|zuckerarm|zuckerreduziert|ohne zuckerzusatz|0 ?% ?zucker|sugar[- ]?free|no (added )?sugars?|without (added )?sugars?|unsweetened|ungesüßt|ohne süßungsmittel|laktosefrei(?= ?(quark|joghurt|skyr|käse|butter|sahne)))/g;
+/* eindeutige Getränke-Kategorien von Open Food Facts schlagen den Namen (z. B. „Volvic“) */
+function iconFromTags(tags) {
+  const t = (tags || []).join(" ");
+  if (/waters\b|mineral-water|spring-water|eaux|mineralwasser|wasser\b/.test(t)) return /carbonated|sparkling|gazeuse|mit-kohlensaure|sprudel/.test(t) ? "sparkling" : "water";
+  if (/energy-drinks/.test(t)) return "energy";
+  if (/\bjuices?\b|fruit-juices|nectars|smoothies/.test(t)) return "juice";
+  if (/sodas|colas|soft-drinks/.test(t) && !/teas/.test(t)) return "cola";
+  if (/iced-teas/.test(t)) return "icetea";
+  if (/\bbeers\b/.test(t)) return "beer";
+  if (/\bwines\b/.test(t)) return "wine";
+  return null;
+}
 function foodIconKey(p) {
   if (p.icon && FI[p.icon]) return p.icon;
-  const full = normName(p.name), base = full.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  const tk = iconFromTags(p.tags); if (tk) return tk;
+  const full = normName(p.name).replace(NEGATED, " "), base = full.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
   let k = base && iconFromText(base);
   if (!k && p.tags && p.tags.length) for (const tag of [...p.tags].reverse()) { if (GENERIC_TAG.test(tag)) continue; k = iconFromText(tag.replace(/^[a-z]{2}:/, "").replace(/-/g, " ")); if (k) break; }
   return k || iconFromText(full) || FOOD_CAT_FALLBACK[p.cat] || "boxGeneric";
@@ -3007,6 +3022,7 @@ const ICON_NAMES = {
 
 /* neue, spezielle Regeln – stehen vor den allgemeinen */
 FOOD_RULES.unshift(
+  [/^(?!.*(sprudel|classic|medium|kohlensäure|spritzig|sparkling|perlend)).*(volvic|evian|gerolsteiner|vittel|adelholzener|bonaqa|vio\b|christinen|rhön|apollinaris|selters|fiji|san pellegrino|aqua ?(panna|mia)|still(es)? wasser|naturelle|mineralwasser|quellwasser|tafelwasser)/, "water"],
   [/saft\b|säfte|juice|direktsaft|nektar|smoothie/, "juice"],
   [/kokosmilch|kokosnussmilch|coconut milk/, "coconutmilk"], [/eiklar|eiweiß ?flüssig|egg ?white|flüssigei/, "eggwhite"], [/milchreis/, "ricepudding"],
   [/joghurt ?drink|trinkjoghurt|yogurt ?drink/, "yogurtdrink"], [/sprühsahne|sprüh ?sahne/, "sprayCream"], [/ghee|butterschmalz/, "ghee"],
@@ -3024,7 +3040,7 @@ FOOD_RULES.unshift(
   [/chia/, "chia"], [/leinsamen|flohsamen|hanfsamen/, "linseed"], [/tortellini|ravioli|maultasche/, "tortellini"],
   [/tahin|sesammus/, "tahini"], [/sriracha|chili ?(soße|sauce)|hot ?sauce|tabasco/, "hotsauce"], [/bbq|barbecue/, "bbq"], [/salsa|dip ?sauce/, "salsa"], [/ahornsirup|maple/, "maple"],
   [/kakao ?pulver|backkakao|kakaopulver/, "cocoa"], [/\bhefe\b|trockenhefe/, "yeast"], [/vanillezucker|vanille ?schote|vanillin/, "vanilla"],
-  [/mate\b|club-mate|mate tee/, "mate"], [/eistee|ice ?tea/, "icetea"], [/sprudel|mineralwasser|medium|classic wasser/, "sparkling"], [/iso ?(drink|tonic)|isotonisch|elektrolyt/, "iso"], [/kombucha/, "kombucha"], [/\bsekt\b|prosecco|champagner|crémant/, "sekt"],
+  [/mate\b|club-mate|mate tee/, "mate"], [/eistee|ice ?tea/, "icetea"], [/sprudel|mineralwasser|medium|classic|kohlensäure|spritzig|sparkling|gerolsteiner|apollinaris|selters|pellegrino/, "sparkling"], [/iso ?(drink|tonic)|isotonisch|elektrolyt/, "iso"], [/kombucha/, "kombucha"], [/\bsekt\b|prosecco|champagner|crémant/, "sekt"],
   [/popcorn/, "popcorn"], [/müsliriegel|haferriegel|früchteriegel|granola ?bar/, "muesli_bar"], [/eis am stiel|stieleis|magnum|calippo/, "icepop"], [/bcaa|eaa|aminos/, "bcaa"],
   [/schoko.*reiswaffel|reiswaffel.*schoko/, "ricecakechoc"]
 );
@@ -7640,7 +7656,7 @@ function updateSub() {
 new MutationObserver(updateSub).observe($("view"), { childList: true });
 
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "55";
+const APP_VERSION = "56";
 async function checkUpdate() {
   if (!/^https?:/.test(location.protocol)) return;
   try {
