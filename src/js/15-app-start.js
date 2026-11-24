@@ -1,7 +1,10 @@
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "57";
+const APP_VERSION = "58";
+/* Läuft die Seite in der iOS-/Android-App (Capacitor)? Dort kommen Updates über den App Store,
+   nicht über die Webseite – Update-Hinweis und Service Worker bleiben dann aus. */
+const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 async function checkUpdate() {
-  if (!/^https?:/.test(location.protocol)) return;
+  if (IS_NATIVE || !/^https?:/.test(location.protocol)) return;
   try {
     const res = await fetch(location.pathname + "?check=" + Date.now(), { cache: "no-store" });
     const m = (await res.text()).match(/const APP_VERSION = "(\d+)"/);
@@ -288,7 +291,7 @@ function updateBackupNudge() {
   $("nudgeX").onclick = () => { localStorage.setItem("makro.nudgeSnooze", String(Date.now() + 3 * 864e5)); el.classList.remove("show"); };
 }
 /* Offline: Service Worker (Datei sw.js liegt neben index.html) */
-if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+if (!IS_NATIVE && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 }
 window.addEventListener("offline", () => toast("Offline – deine Daten funktionieren weiter, nur die Produktsuche braucht Internet"));

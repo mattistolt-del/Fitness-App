@@ -1,0 +1,11 @@
+{
+  "appId": "de.mattistolt.makro",
+  "appName": "Makro",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "never"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
