@@ -1,0 +1,57 @@
+  /* ---------- Lebensmittel: Produkte | Mahlzeiten ---------- */
+  .lib-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--card); border-radius: 16px; padding: 4px; margin: 4px 0 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .lib-seg button { border: 0; background: none; border-radius: 12px; padding: 10px 6px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .lib-seg button span { display: inline-block; min-width: 20px; padding: 1px 6px; margin-left: 4px; border-radius: 12px; background: var(--bg); font-size: 12px; }
+  .lib-seg button.on { background: var(--accent); color: #fff; }
+  .lib-seg button.on span { background: rgba(255,255,255,.25); }
+  .lib-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 10px; }
+  .lib-head b { font-size: 17px; }
+  .btn.pill.sm { padding: 7px 12px; font-size: 15px; border-radius: 16px; }
+  .lib-cols[data-show="produkte"] .lib-col[data-col="mahlzeit"], .lib-cols[data-show="mahlzeit"] .lib-col[data-col="produkte"] { display: none; }
+  .lib-cols .lib-head { display: none; }
+  .fi-thumb { display: flex; align-items: center; justify-content: center; }
+  .fi-thumb svg { width: auto; height: auto; max-width: 82%; max-height: 82%; }
+  @media (min-width: 700px) {
+    main:has(.lib-cols) { max-width: 1100px; }
+    .lib-seg { display: none; }
+    .lib-cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .lib-cols .lib-col { display: block !important; }
+    .lib-cols .lib-head { display: flex; }
+    body[data-tab="produkte"] #addBtn { display: none !important; }
+  }
+
+  /* ---------- Gewicht ---------- */
+  .w-card { padding: 12px 14px; }
+  .w-top { display: flex; align-items: center; gap: 8px; }
+  .w-top > b { font-size: 15px; white-space: nowrap; }
+  .w-top .w-in { flex: 1; }
+  .w-top .w-in input { font-size: 17px; padding: 6px 0; }
+  .btn.sm { padding: 8px 12px; font-size: 15px; border-radius: 12px; }
+  .w-chg { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .w-chg.up, .w-stats .up { color: #ea580c; } .w-chg.down, .w-stats .down { color: #16a34a; }
+  .w-entry { display: flex; gap: 8px; align-items: stretch; }
+  .w-in { flex: 1; display: flex; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+  .w-in input { flex: 1; min-width: 0; border: 0; background: none; font-size: 22px; font-weight: 700; padding: 10px 0; color: var(--text); outline: none; }
+  .w-in span { color: var(--muted); font-weight: 600; }
+  .w-entry .btn { padding: 0 18px; }
+  .w-done { font-size: 12px; color: #16a34a; margin: 5px 2px 6px; }
+  .w-done.muted { color: var(--muted); }
+  .w-done .undo { color: var(--muted); font-size: 13px; padding: 0; text-decoration: underline; }
+  .w-seg { margin: 2px 0 4px; padding: 2px; }
+  .w-seg button { font-size: 12px; padding: 4px 2px; }
+  .w-chart { width: 100%; height: auto; display: block; }
+  .w-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 18px 10px; }
+  .w-legend { display: flex; gap: 6px 12px; align-items: center; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin: 2px 4px 8px; }
+  .w-legend i { display: inline-block; width: 14px; height: 0; border-top: 2.6px solid var(--accent); margin-right: -6px; vertical-align: middle; }
+  .w-legend i.l2 { border-top: 2.4px dotted var(--t2); }
+  .w-legend i.l3 { border-top: 2px dashed #16a34a; }
+  .w-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 4px; }
+  .w-stats div { background: var(--bg); border-radius: 12px; padding: 5px 8px; }
+  .w-stats small { display: block; font-size: 11px; color: var(--muted); }
+  .w-stats b { font-size: 13px; }
+  .w-goal { margin-top: 6px; }
+  .w-goal summary { font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; list-style: none; padding: 4px 2px; }
+  .w-goal summary::-webkit-details-marker { display: none; }
+  .w-goal .w-entry { margin-top: 8px; }
+  .w-goal .w-in input { font-size: 17px; padding: 8px 0; }
+

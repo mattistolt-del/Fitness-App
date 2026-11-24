@@ -1,0 +1,126 @@
+<!-- ===== Training ===== -->
+<div class="full-sheet" id="workoutSheet">
+  <div class="wk-top">
+    <button class="link" id="wkMin">⌄ Minimieren</button>
+    <b id="wkTitleTop">Training</b>
+    <button class="btn wk-finish" id="wkFinish">Beenden</button>
+  </div>
+  <div class="wk-stats">
+    <div><span>Dauer</span><b id="wkDur">0:00</b></div>
+    <div><span>Volumen</span><b id="wkVol">0 kg</b></div>
+    <div><span>Sätze</span><b id="wkSets">0</b></div>
+  </div>
+  <div class="wk-scroll">
+    <input class="wk-name" id="wkName" placeholder="Trainingsname">
+    <div class="hint" id="wkDate" style="margin-top:0"></div>
+    <div id="wkList"></div>
+    <button class="btn wk-add" id="wkAddEx">＋ Übung hinzufügen</button>
+    <button class="btn danger" id="wkDiscard" style="width:100%;margin-top:10px">Training verwerfen</button>
+  </div>
+  <div class="rest-bar" id="restBar">
+    <span class="rest-l"><span data-ic="timer"></span> Pause</span><b id="restTime">1:30</b>
+    <button id="restMinus">−15</button><button id="restPlus">+15</button><button id="restStop">Skip</button>
+  </div>
+</div>
+
+<div class="sheet-bg" id="finishSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" id="fsResume">Zurück</button>
+      <h2>Training speichern</h2>
+      <span style="width:60px"></span>
+    </div>
+    <label>Titel</label>
+    <input id="fsName">
+    <div class="fs-stats" id="fsStats"></div>
+    <div class="fs-prs" id="fsPRs"></div>
+    <div class="hint" id="fsHint" style="text-align:center"></div>
+    <button class="btn" id="fsSave" style="width:100%;margin-top:16px">Training speichern</button>
+  </div>
+</div>
+
+<div class="sheet-bg" id="actSheet">
+  <div class="sheet act-sheet">
+    <div class="act-title" id="actTitle"></div>
+    <div id="actList"></div>
+    <button class="btn ghost" data-close="actSheet" style="width:100%;margin-top:8px">Abbrechen</button>
+  </div>
+</div>
+
+<div class="sheet-bg" id="startSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="startSheet">Abbrechen</button>
+      <h2>Training starten</h2>
+      <span style="width:70px"></span>
+    </div>
+    <div id="startList"></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="sportSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="sportSheet">Abbrechen</button>
+      <h2 id="spTitle">Sport eintragen</h2>
+      <button class="link" id="spSave" style="font-weight:700">Sichern</button>
+    </div>
+    <div id="spBody"></div>
+  </div>
+</div>
+
+<div class="pr-toast" id="prToast"></div>
+
+<div class="sheet-bg" id="planSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="planSheet">Abbrechen</button>
+      <h2 id="plTitle">Neuer Trainingsplan</h2>
+      <button class="link" id="plSave"><b>Sichern</b></button>
+    </div>
+    <input class="wk-name" id="plName" placeholder="Name des Plans, z. B. Push">
+    <div id="plList"></div>
+    <button class="btn wk-add" id="plAdd">＋ Übung hinzufügen</button>
+    <button class="btn ghost" id="plStart" style="width:100%;margin-top:10px">▶ Diesen Plan starten</button>
+    <div class="row"><button class="btn danger" id="plDelete">Plan löschen</button></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="exPickSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="exPickSheet">Schließen</button>
+      <h2 id="epTitle">Übung wählen</h2>
+      <span style="width:70px"></span>
+    </div>
+    <input class="search" id="epSearch" placeholder="Übung suchen (z. B. Bankdrücken)">
+    <div class="filters" id="epEquipF"></div>
+    <details class="ep-new" id="epNew">
+      <summary>＋ Eigene Übung anlegen</summary>
+      <label>Name</label><input id="epName" placeholder="z. B. Bulgarian Split Squats">
+      <div class="grid2">
+        <div><label>Muskelgruppe</label><select id="epGroup"></select></div>
+        <div><label>Equipment</label><select id="epEquipSel"></select></div>
+      </div>
+      <label>Erfassung</label><select id="epType"><option value="kraft">Gewicht × Wiederholungen</option><option value="zeit">Zeit (Sekunden)</option></select>
+      <button class="btn" id="epCreate" style="width:100%;margin-top:12px">Anlegen</button>
+    </details>
+    <div id="epList"></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="exSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="exSheet">Schließen</button>
+      <h2 id="exTitle">Übung</h2>
+      <span style="width:70px"></span>
+    </div>
+    <div id="exHero"></div>
+    <div class="hint" id="exEquip" style="text-align:center;margin:0 0 12px"></div>
+    <div id="exBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+

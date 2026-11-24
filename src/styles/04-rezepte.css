@@ -1,0 +1,25 @@
+  /* ---------- Ideen ---------- */
+  .filters { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 14px; padding: 2px 16px 4px; -webkit-overflow-scrolling: touch; }
+  .filters button { flex-shrink: 0; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; }
+  .filters button.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .recipe { cursor: pointer; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 3px 9px; border-radius: 12px; font-weight: 600; }
+  .tag.grey { background: var(--bg); color: var(--muted); }
+  .have { color: var(--accent); font-weight: 600; font-size: 15px; margin-top: 10px; }
+  .miss { color: var(--c); font-weight: 600; font-size: 15px; margin-top: 10px; }
+  .ing { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .ing:last-child { border-bottom: 0; }
+  .ing .g { color: var(--muted); white-space: nowrap; }
+  .steps { margin: 6px 0 0; padding-left: 20px; line-height: 1.55; font-size: 15px; }
+  .steps li { margin-bottom: 6px; }
+  /* Rezeptbilder */
+  .rc { display: flex; gap: 12px; align-items: flex-start; }
+  .rimg { width: 88px; height: 88px; border-radius: 16px; overflow: hidden; flex-shrink: 0; }
+  .rimg svg, .rimg img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .rmain { flex: 1; min-width: 0; }
+  .rmain .mc-head b { font-size: 17px; line-height: 1.25; }
+  .rmain .mc-kcal { font-size: 15px; }
+  .rhero { width: 100%; aspect-ratio: 16 / 10; border-radius: 20px; overflow: hidden; margin-bottom: 10px; }
+  .rhero svg, .rhero img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .photo-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 12px; }

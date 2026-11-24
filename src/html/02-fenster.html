@@ -1,0 +1,285 @@
+<!-- Produkt anlegen / bearbeiten -->
+<div id="onb" class="onb">
+  <div class="onb-top"><div class="onb-dots" id="onbDots"></div><button class="link" id="onbSkip">Überspringen</button></div>
+  <div class="onb-body" id="onbBody"></div>
+  <div class="onb-foot"><button class="btn ghost" id="onbBack">Zurück</button><button class="btn" id="onbNext">Los geht's</button></div>
+</div>
+
+<div class="sheet-bg" id="setSheet">
+  <div class="sheet">
+    <div class="sheet-head"><span></span><h2>Einstellungen</h2><button class="link" id="setClose"><b>Fertig</b></button></div>
+    <div id="setBody"></div>
+  </div>
+</div>
+<input type="file" id="restoreIn" accept=".json,application/json,text/plain" hidden>
+
+<div class="sheet-bg" id="productSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" id="cancelBtn">Abbrechen</button>
+      <h2 id="sheetTitle">Neues Produkt</h2>
+      <button class="link" id="saveBtn"><b>Sichern</b></button>
+    </div>
+
+    <button class="btn ghost" id="scanBtn" style="width:100%"><span data-ic="camera"></span> Barcode scannen</button>
+    <div class="grid2" style="margin-top:4px">
+      <div>
+        <label>Barcode (oder eintippen)</label>
+        <input id="fBarcode" inputmode="numeric" placeholder="z. B. 4002468...">
+      </div>
+      <div style="display:flex; align-items:flex-end">
+        <button class="btn ghost" id="lookupBtn" style="width:100%">Suchen</button>
+      </div>
+    </div>
+    <div class="status" id="scanStatus"></div>
+
+    <div class="preview" id="preview" style="display:none">
+      <img id="fImgPreview" alt="">
+      <div class="hint" style="margin:0">Produktbild von Open Food Facts</div>
+    </div>
+
+    <label>Name</label>
+    <input id="fName" placeholder="z. B. Magerquark">
+
+    <div class="grid2">
+      <div>
+        <label>Kategorie</label>
+        <select id="fCat"></select>
+      </div>
+      <div>
+        <label>Packungsgröße (g / ml)</label>
+        <input id="fPack" type="number" inputmode="decimal" placeholder="500">
+      </div>
+    </div>
+
+    <label>Symbol im Kühlschrank</label>
+    <button class="ico-row" id="fIcoBtn" type="button"><span class="ico-cur" id="fIcoCur"></span><span class="ico-txt"><b id="fIcoName"></b><small id="fIcoMode"></small></span><span class="ico-go">Ändern ›</span></button>
+
+    <label style="margin-top:18px">Nährwerte pro 100 g</label>
+    <div class="grid2">
+      <div><label>Kalorien (kcal)</label><input id="fKcal" type="number" inputmode="decimal"></div>
+      <div><label>Eiweiß (g)</label><input id="fP" type="number" inputmode="decimal"></div>
+      <div><label>Kohlenhydrate (g)</label><input id="fC" type="number" inputmode="decimal"></div>
+      <div><label>Fett (g)</label><input id="fF" type="number" inputmode="decimal"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn danger" id="deleteBtn" style="display:none">Produkt löschen</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="icoSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" id="icoBack">Zurück</button>
+      <h2>Symbol wählen</h2>
+      <button class="link" id="icoAuto"><b>Automatisch</b></button>
+    </div>
+    <input class="search" id="icoSearch" placeholder="Suchen, z. B. Quark">
+    <div id="icoGrid"></div>
+  </div>
+</div>
+
+<!-- Einkaufen -->
+<div class="sheet-bg" id="shopSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" id="shopCancel">Abbrechen</button>
+      <h2><span data-ic="cart"></span> Einkaufen</h2>
+      <button class="link" id="shopSaveBtn"><b>Einräumen</b></button>
+    </div>
+    <div class="row" style="margin-top:0">
+      <button class="btn ghost" id="shopScanBtn"><span data-ic="camera"></span> Scannen</button>
+      <button class="btn ghost" id="shopNewBtn">＋ Neues Produkt</button>
+    </div>
+    <button class="btn ghost" id="shopFromList" style="width:100%;margin-top:10px;display:none"></button>
+    <input class="search" id="shopSearch" placeholder="Produkt suchen" style="margin-top:14px">
+    <div id="shopList"></div>
+  </div>
+</div>
+
+<!-- Bestand bearbeiten -->
+<div class="sheet-bg" id="listSheet">
+  <div class="sheet">
+    <div class="sheet-head"><button class="link" data-close="listSheet">Fertig</button><h2><span data-ic="clipboard"></span> Einkaufsliste</h2><span style="width:60px"></span></div>
+    <div class="sl-add"><input id="slIn" placeholder="Was brauchst du? z. B. Quark" autocomplete="off"><button class="btn" id="slAddBtn">+</button></div>
+    <div id="slMatch"></div>
+    <div id="slBody"></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="stockSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="stockSheet">Fertig</button>
+      <h2 id="sName">Bestand</h2>
+      <span style="width:60px"></span>
+    </div>
+    <div class="preview" id="sPreview"></div>
+    <div class="big-stock" id="sStock"></div>
+    <div class="hint" id="sStockSub" style="margin-top:2px"></div>
+    <div class="row">
+      <button class="btn ghost" id="sMinus">− 1 Packung</button>
+      <button class="btn ghost" id="sPlus">+ 1 Packung</button>
+    </div>
+    <label>Genauer Bestand (g / ml)</label>
+    <div class="grid2">
+      <input id="sGrams" type="number" inputmode="decimal">
+      <button class="btn ghost" id="sSet">Übernehmen</button>
+    </div>
+    <label>Haltbar bis</label>
+    <div class="exp-row"><input id="sExp" type="date"><span id="sExpHint" class="hint"></span></div>
+    <div class="exp-quick" id="sExpQuick"></div>
+    <div class="row">
+      <button class="btn ghost" id="sToList"><span data-ic="clipboard"></span> Auf die Einkaufsliste</button>
+      <button class="btn danger" id="sEmpty">Alles aufgebraucht</button>
+    </div>
+  </div>
+</div>
+
+<!-- Zutat wählen -->
+<div class="sheet-bg" id="pickSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="pickSheet">Schließen</button>
+      <h2>Zutat wählen</h2>
+      <span style="width:70px"></span>
+    </div>
+    <input class="search" id="pickSearch" placeholder="Produkt suchen">
+    <div id="pickList"></div>
+  </div>
+</div>
+
+<!-- Kalorienrechner -->
+<div class="sheet-bg" id="calcSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="calcSheet">Abbrechen</button>
+      <h2>Kalorienrechner</h2>
+      <button class="link" id="calcSave"><b>Übernehmen</b></button>
+    </div>
+    <label>Geschlecht</label>
+    <div class="seg" id="cSex"><button data-v="m">Männlich</button><button data-v="w">Weiblich</button></div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
+      <div><label>Alter</label><input id="cAge" type="number" inputmode="numeric" placeholder="21"></div>
+      <div><label>Größe (cm)</label><input id="cHeight" type="number" inputmode="numeric" placeholder="180"></div>
+      <div><label>Gewicht (kg)</label><input id="cWeight" type="number" inputmode="decimal" placeholder="75"></div>
+    </div>
+    <label>Aktivität</label>
+    <select id="cAct"></select>
+    <label>Ziel</label>
+    <select id="cGoal"></select>
+    <div class="calc-result" id="cResult"></div>
+    <label style="margin-top:16px">Dein Tagesziel (kannst du anpassen)</label>
+    <div class="grid4">
+      <div><label>kcal</label><input id="tKcal" type="number" inputmode="numeric"></div>
+      <div><label>Eiweiß</label><input id="tP" type="number" inputmode="numeric"></div>
+      <div><label>Kohlenh.</label><input id="tC" type="number" inputmode="numeric"></div>
+      <div><label>Fett</label><input id="tF" type="number" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="tHint"></div>
+  </div>
+</div>
+
+<!-- Mahlzeit anlegen / bearbeiten -->
+<div class="sheet-bg" id="mealSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="mealSheet">Abbrechen</button>
+      <h2 id="meTitle">Neue Mahlzeit</h2>
+      <button class="link" id="meSave"><b>Sichern</b></button>
+    </div>
+    <label>Name</label>
+    <input id="meName" placeholder="z. B. Quark-Bowl">
+    <label style="margin-top:16px">Zutaten für 1 Portion</label>
+    <div id="meList"></div>
+    <button class="btn ghost" id="meAdd" style="width:100%">＋ Zutat hinzufügen</button>
+    <div class="totals" id="meTotals"></div>
+    <div class="row">
+      <button class="btn danger" id="meDelete" style="display:none">Mahlzeit löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Zu einem Slot hinzufügen -->
+<div class="sheet-bg" id="addSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="addSheet">Abbrechen</button>
+      <h2 id="addTitle">Hinzufügen</h2>
+      <span style="width:70px"></span>
+    </div>
+    <div id="addListView">
+      <div class="seg" id="addSeg"><button data-v="produkte" class="on">Produkte</button><button data-v="mahlzeiten">Mahlzeiten</button><button data-v="gerichte">Unterwegs</button></div>
+      <div class="add-search-row"><input class="search" id="addSearch" placeholder="Suchen"><button class="add-scan" id="addScan" aria-label="Barcode scannen"><span data-ic="camera"></span></button></div>
+      <div id="addList"></div>
+    </div>
+    <div id="addAmountView" style="display:none">
+      <button class="link" id="addBack" style="padding-left:0">‹ Zurück</button>
+      <div class="preview" id="aPreview" style="margin-top:8px"></div>
+      <div class="big-stock" id="aName"></div>
+      <label id="aLabel">Menge (g)</label>
+      <div class="stepper">
+        <button id="aMinus">−</button>
+        <input id="aAmount" type="number" inputmode="decimal">
+        <button id="aPlus">+</button>
+      </div>
+      <div id="aIngs"></div>
+      <div class="hint" id="aStock"></div>
+      <div class="totals" id="aTotals"></div>
+      <button class="btn" id="aAdd" style="width:100%;margin-top:16px">Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rezept -->
+<div class="sheet-bg" id="recipeSheet">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="link" data-close="recipeSheet">Schließen</button>
+      <h2 id="rTitle">Rezept</h2>
+      <span style="width:70px"></span>
+    </div>
+    <div class="rhero" id="rHero"></div>
+    <div class="photo-row">
+      <button class="undo" id="rPhotoBtn" style="color:var(--accent);font-weight:600;font-size:15px"><span data-ic="camera"></span> Eigenes Foto</button>
+      <button class="undo" id="rPhotoDel" style="display:none;font-size:15px">Foto entfernen</button>
+    </div>
+    <input type="file" id="rPhotoIn" accept="image/*" style="display:none">
+    <div id="rBody"></div>
+    <div class="cook card">
+      <div class="cook-row"><span><b>Portionen gekocht</b><small>Zutaten werden dafür abgezogen</small></span>
+        <div class="stepper sm"><button data-ck="-1">−</button><b id="rCooked">1</b><button data-ck="1">+</button></div></div>
+      <div class="cook-row"><span><b>Davon jetzt essen</b><small id="rRestHint">Keine Reste</small></span>
+        <div class="stepper sm"><button data-ce="-1">−</button><b id="rEaten">1</b><button data-ce="1">+</button></div></div>
+      <label style="margin-top:6px">Eintragen bei</label>
+      <select id="rSlot"></select>
+    </div>
+    <button class="btn ghost" id="rToList" style="width:100%;margin-top:10px;display:none"></button>
+    <div class="row">
+      <button class="btn ghost" id="rSave">Als Mahlzeit speichern</button>
+      <button class="btn" id="rAdd">Gekocht ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kamera-Scanner (Vollbild) -->
+<div id="scanOverlay">
+  <div class="scan-top"><b id="camTitle">Scannen</b><button class="scan-close" id="camDone">Fertig</button></div>
+  <div class="scan-wrap" id="camWrap"><div id="camReader"></div></div>
+  <div class="scan-info">
+    <div class="scan-status" id="camStatus"></div>
+    <div class="scan-count" id="camCount"></div>
+    <div class="scan-btns">
+      <button class="scan-close" id="camRetry" style="display:none">Nochmal versuchen</button>
+      <button class="scan-close" id="camPhoto"><span data-ic="camera"></span> Foto vom Barcode</button>
+      <button class="scan-close" id="camManual">Barcode eintippen</button>
+    </div>
+    <input type="file" id="camFile" accept="image/*" capture="environment" hidden>
+    <div id="camFileReader" style="display:none"></div>
+  </div>
+</div>
+
+<div class="update-bar" id="updateBar"><span data-ic="sparkles"></span> Neue Version verfügbar – <b>tippen zum Aktualisieren</b></div>
+

@@ -1,0 +1,67 @@
+  /* ---------- Küche: Kühlschrank 2/3 + Schrank 1/3 ---------- */
+  :root {
+    --fridge: #eef2f3; --fridge-edge: #cfd8dc; --shelf: #c3cdd2; --glass: rgba(255,255,255,.6);
+    --ice: #e4f2fa; --ice-edge: #b5d9ec; --wood: #efe6da; --wood-edge: #d6c6af;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fridge: #1f2427; --fridge-edge: #343c40; --shelf: #3d474c; --glass: rgba(255,255,255,.05);
+      --ice: #18252d; --ice-edge: #2b4352; --wood: #2a2520; --wood-edge: #43392e;
+    }
+  }
+  .kitchen { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 8px; align-items: stretch; }
+  .fridge, .cupboard { min-width: 0; display: flex; flex-direction: column; padding: 6px 8px 8px; }
+  .fridge { background: var(--fridge); border: 3px solid var(--fridge-edge); border-radius: 22px; }
+  .cupboard { background: var(--wood); border: 3px solid var(--wood-edge); border-radius: 16px; padding: 6px 6px 8px; }
+  .unit-title { font-size: 12px; font-weight: 700; text-align: center; color: var(--muted); margin: 2px 0 2px; }
+  .comp {
+    flex: 1 0 auto; min-height: 84px; min-width: 0; padding: 6px 4px 8px; display: flex; flex-direction: column;
+    border-bottom: 5px solid var(--shelf);
+  }
+  .cupboard .comp { min-height: 64px; border-bottom-color: var(--wood-edge); padding: 6px 2px 6px; }
+  .cupboard .comp:last-child { border-bottom: 0; }
+  .comp-label {
+    font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cupboard .comp-label { white-space: normal; line-height: 1.3; }
+  .comp-items { min-width: 0; margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+  .drawers { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .comp.drawer { border: 3px solid var(--shelf); border-radius: 12px; background: var(--glass); min-height: 96px; }
+  .comp.freezer { border: 3px solid var(--ice-edge); border-radius: 16px; background: var(--ice); margin-top: 8px; min-height: 96px; }
+
+  .group { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; cursor: pointer; max-width: 100%; flex: 0 0 auto; }
+  .pkgs { width: max-content; max-width: 100%; }
+  .pkgs { display: flex; flex-wrap: wrap; gap: 3px; }
+  .pkg {
+    width: 32px; height: 32px; border-radius: 8px; background: var(--card);
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    position: relative; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  .cupboard .pkg { width: 26px; height: 26px; font-size: 15px; border-radius: 8px; }
+  .pkg img { width: 100%; height: 100%; object-fit: contain; }
+  .pkg.partial > img, .pkg.partial > .e { opacity: .35; }
+  .pkg .fill { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent); opacity: .35; }
+  .pkg.more { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .group-name { font-size: 11px; color: var(--muted); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cupboard .group-name { max-width: 80px; font-size: 11px; }
+  .fridge-hint { text-align: center; color: var(--muted); font-size: 15px; margin: 14px 0 0; line-height: 1.5; }
+
+  .btn.pill { border-radius: 22px; padding: 10px 16px; font-size: 15px; }
+
+  /* Einkaufen */
+  .shop-list { background: var(--card); border-radius: var(--radius); overflow: hidden; }
+  .shop-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .shop-item:last-child { border-bottom: 0; }
+  .shop-item.on { background: var(--accent-soft); }
+  .shop-item .thumb { width: 38px; height: 38px; font-size: 17px; }
+  .shop-item .packIn { padding: 6px 10px; font-size: 15px; margin-top: 4px; max-width: 150px; }
+  .mini { display: flex; align-items: center; gap: 6px; }
+  .mini button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 20px; font-weight: 700; cursor: pointer; }
+  .shop-item.on .mini button { background: var(--accent); color: #fff; }
+  .mini span { min-width: 22px; text-align: center; font-weight: 700; }
+
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper button { width: 48px; height: 48px; border-radius: 12px; border: 0; background: var(--accent-soft); color: var(--accent); font-size: 22px; font-weight: 700; cursor: pointer; }
+  .stepper input { text-align: center; font-size: 20px; font-weight: 700; }
+  .big-stock { font-size: 28px; font-weight: 700; margin: 6px 4px 0; }

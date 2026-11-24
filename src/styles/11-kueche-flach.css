@@ -1,0 +1,58 @@
+  /* ---------- Kühlschrank & Schrank: flach & ruhig, gezeichnete Produkte ---------- */
+  .kitchen.flat { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 10px; padding: 8px 0 16px; }
+  .kitchen.flat .fridge { background: #eef3f8; border: 0; border-radius: 22px; padding: 12px 10px 12px; box-shadow: inset 0 0 0 6px #dbe4ed, 0 6px 14px rgba(30,50,80,.10); --row: 76px; --shelf: #c3d3e3; }
+  .kitchen.flat .cupboard { background: #ecd3a9; border: 0; border-radius: 12px; padding: 12px 8px 12px; box-shadow: inset 0 0 0 6px #a5713f, 0 6px 14px rgba(0,0,0,.12); --row: 64px; --shelf: #a5713f; }
+  .kitchen.flat .fridge::before, .kitchen.flat .fridge::after, .kitchen.flat .cupboard::before, .kitchen.flat .cupboard::after { display: none; }
+  .kitchen.flat .comp { padding: 4px 0 0; min-height: 0; border: 0; background: none; box-shadow: none; }
+  .kitchen.flat .comp::after { display: none; }
+  .kitchen.flat .comp-items { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 4px; padding: 0 4px; margin: 0; min-height: var(--row);
+    grid-template-columns: none; background: repeating-linear-gradient(180deg, transparent 0 calc(var(--row) - 5px), var(--shelf) calc(var(--row) - 5px) var(--row)); border-radius: 2px; }
+  .kitchen.flat .fgrp { position: relative; height: var(--row); width: auto; display: flex; flex-direction: row; align-items: flex-end; justify-content: center; padding: 0 2px 5px; gap: 0; cursor: pointer; }
+  .kitchen.flat .fgrp svg.fi { display: block; overflow: visible; }
+  .kitchen.flat .scene-wrap { padding: 7px; gap: 0; }
+  .kitchen.flat .fridge.scene-wrap { background: #dfe8f0; box-shadow: inset 0 0 0 5px #cfdbe6, 0 8px 18px rgba(30,50,80,.14); }
+  .kitchen.flat .cupboard.scene-wrap { background: #9c6a38; box-shadow: inset 0 0 0 5px #8a5a2c, 0 8px 18px rgba(0,0,0,.16); }
+  svg.scene { display: block; width: 100%; height: auto; border-radius: 12px; }
+  .kitchen.flat .scene-wrap .drawers { gap: 6px; margin-top: 6px; }
+  .freezer-wrap { margin-top: 6px; }
+  svg.scene .group { cursor: pointer; }
+  svg.scene .group:active { opacity: .7; }
+  .pstack { position: relative; display: inline-flex; align-items: flex-end; }
+  .pstack .pimg { display: block; width: auto; max-width: 74px; object-fit: contain; position: relative; z-index: 1; }
+  .pstack .pimg.back { position: absolute; left: 0; bottom: calc(var(--i) * 2px); z-index: 0; transform: translateX(calc(var(--i) * 34%)); filter: brightness(.94); }
+  .pstack .pimg.cut { filter: drop-shadow(0 2px 1.5px rgba(30,40,55,.28)); }
+  .pstack .pimg.back.cut { filter: brightness(.94) drop-shadow(0 2px 1.5px rgba(30,40,55,.22)); }
+  .pstack .pimg.raw { border-radius: 6px; background: #fff; box-shadow: 0 2px 4px rgba(30,40,55,.22), inset 0 0 0 1px rgba(0,0,0,.05); padding: 1px; }
+  .kitchen.flat .fgrp:active { transform: scale(.94); }
+  .kitchen.flat .fcnt { position: absolute; right: -8px; bottom: -3px; background: #1f2937; color: #fff; font-size: 10px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .kitchen.flat .fcnt.part { background: #64748b; }
+  .kitchen.flat .drawers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .kitchen.flat .comp.drawer { background: rgba(255,255,255,.6); border: 2px solid #c9d7e4; border-radius: 12px; padding: 4px 0 2px; --shelf: transparent; --row: 62px; min-height: 0; }
+  .kitchen.flat .comp.freezer { margin-top: 12px; background: #e3f1fb; border: 2px solid #b6d3ea; border-radius: 12px; padding: 6px 0 2px; --shelf: transparent; --row: 66px; }
+  .kitchen.flat .comp.freezer .comp-items { min-height: 70px; }
+  .kitchen.flat .comp.drawer .comp-items { min-height: 64px; }
+  /* Schubladen & Gefrierfach wie echte Auszüge: Sachen stehen dicht auf dem Boden, vorne eine Klappe mit Griff */
+  .kitchen.flat .comp.drawer, .kitchen.flat .comp.freezer { position: relative; overflow: hidden; padding: 8px 0 0; display: flex; flex-direction: column; }
+  .kitchen.flat .comp.drawer > .comp-items, .kitchen.flat .comp.freezer > .comp-items { margin-top: auto; }
+  /* Reihen überlappen: hintere Reihe schaut über die vordere – wie in einer vollen Schublade */
+  .kitchen.flat .comp.drawer .comp-items, .kitchen.flat .comp.freezer .comp-items { --row: 22px; gap: 0; padding: 46px 8px 7px; min-height: 0; align-content: flex-end; background: none; }
+  .kitchen.flat .comp.freezer .comp-items { --row: 26px; padding-top: 52px; }
+  .kitchen.flat .comp.drawer .fgrp, .kitchen.flat .comp.freezer .fgrp { margin-right: -5px; padding-bottom: 0; }
+  .kitchen.flat .comp.drawer::after, .kitchen.flat .comp.freezer::after { content: ""; display: block; position: absolute; left: 0; right: 0; top: auto; bottom: 0; height: 14px; border-radius: 0; z-index: 2; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.42), rgba(214,228,240,.62)); border: 0; border-top: 1.5px solid rgba(255,255,255,.95); box-shadow: 0 -1px 4px rgba(40,70,100,.07); }
+  .kitchen.flat .comp.freezer::after { height: 14px; background: linear-gradient(180deg, rgba(240,248,253,.5), rgba(196,222,242,.7)),
+    radial-gradient(circle at 20% 40%, rgba(255,255,255,.9) 0 1px, transparent 1.5px) 0 0 / 9px 7px; }
+  .kitchen.flat .comp.drawer::before, .kitchen.flat .comp.freezer::before { content: ""; position: absolute; left: 36%; right: 36%; bottom: 4px; height: 4px; border-radius: 3px; z-index: 3; pointer-events: none;
+    background: linear-gradient(180deg, #b7c8d8, #8fa6bb); box-shadow: 0 1px 0 rgba(255,255,255,.8); }
+  .kitchen.flat .comp.freezer { background: linear-gradient(180deg, #d6eaf8, #eaf5fc 40%); box-shadow: inset 0 6px 10px rgba(255,255,255,.7), inset 0 -10px 16px rgba(150,190,220,.25); }
+  .kitchen.flat .comp.drawer .fcnt, .kitchen.flat .comp.freezer .fcnt { z-index: 4; bottom: 10px; }
+  .kitchen.flat .comp.drawer .xdot, .kitchen.flat .comp.freezer .xdot { z-index: 4; bottom: 10px; }
+  @media (prefers-color-scheme: dark) {
+    .kitchen.flat .comp.drawer::after { background: linear-gradient(180deg, rgba(60,70,84,.75), rgba(40,48,60,.9)); border-top-color: rgba(255,255,255,.15); }
+    .kitchen.flat .comp.freezer::after { background: linear-gradient(180deg, rgba(50,72,92,.8), rgba(34,52,70,.92)); border-top-color: rgba(255,255,255,.15); }
+    .kitchen.flat .comp.freezer { background: #243444; }
+  }
+  @media (prefers-color-scheme: dark) {
+    .kitchen.flat .fridge { background: #e6edf4; }
+  }
+

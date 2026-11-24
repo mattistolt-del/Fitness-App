@@ -1,0 +1,67 @@
+  /* ---------- Training im Hevy-Stil ---------- */
+  .wk-top { padding: 10px 14px; }
+  .wk-top b { font-size: 17px; }
+  .wk-stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card); border-bottom: 1px solid var(--line); padding: 8px 16px 10px; }
+  .wk-stats span { display: block; font-size: 12px; color: var(--muted); }
+  .wk-stats b { font-size: 17px; font-variant-numeric: tabular-nums; }
+  .ex-block { padding: 14px 12px 10px; }
+  .ex-head { align-items: center; margin-bottom: 2px; }
+  .ex-name { font-size: 17px; }
+  .ex-name span { font-weight: 500; color: var(--muted); font-size: 15px; }
+  .ex-more { background: none; border: 0; font-size: 22px; color: var(--muted); padding: 0 6px; cursor: pointer; line-height: 1; }
+  .ex-note { border: 0; background: transparent; padding: 6px 2px; font-size: 15px; color: var(--text); }
+  .ex-note::placeholder { color: var(--muted); }
+  .ex-rest { display: inline-flex; align-items: center; gap: 4px; margin: 0 2px 8px; font-size: 15px; color: var(--accent); font-weight: 600; }
+  .ex-rest select { width: auto; border: 0; background: none; padding: 0; color: var(--accent); font-weight: 700; font-size: 15px; }
+  .set-row { grid-template-columns: 40px 1fr 64px 54px 42px; border-radius: 12px; padding: 3px 2px; transition: background .15s; }
+  .set-row.head { text-align: center; }
+  .set-row.head span:nth-child(2) { text-align: left; }
+  .set-row input { background: var(--bg); border: 0; }
+  .set-row input::placeholder { color: color-mix(in srgb, var(--muted) 70%, transparent); font-weight: 600; }
+  .set-row.done { background: color-mix(in srgb, var(--ok) 16%, transparent); }
+  .set-row.done input { background: transparent; }
+  .sn { width: 34px; height: 30px; border: 0; border-radius: 8px; background: none; font-weight: 800; font-size: 15px; color: var(--text); cursor: pointer; margin: 0 auto; }
+  .sn.st-w { color: #f59e0b; } .sn.st-d { color: #8b5cf6; } .sn.st-f { color: #ef4444; }
+  .chk { width: 36px; height: 32px; background: var(--line); margin: 0 auto; }
+  .set-row.done .chk { background: var(--ok); }
+  .add-set { width: 100%; border: 0; border-radius: 12px; background: var(--bg); color: var(--text); font-weight: 600; font-size: 15px; padding: 10px; margin-top: 8px; cursor: pointer; }
+  .wk-add { width: 100%; margin-top: 16px; }
+  .rest-bar.over { background: var(--ok); }
+  .fs-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+  .act-sheet { padding-top: 12px; }
+  .act-title { text-align: center; font-size: 13px; color: var(--muted); margin: 4px 0 10px; font-weight: 600; }
+  .act-btn { display: block; width: 100%; text-align: center; background: var(--card); border: 0; border-bottom: 1px solid var(--line); padding: 15px; font-size: 17px; color: var(--accent); cursor: pointer; }
+  .act-btn:first-child { border-radius: 14px 14px 0 0; } .act-btn:last-child { border-radius: 0 0 14px 14px; border-bottom: 0; }
+  .act-btn:only-child { border-radius: 16px; }
+  .act-btn.danger { color: var(--danger); font-weight: 600; }
+  #actSheet, #finishSheet { z-index: 36; }
+  .quick { width: 100%; margin-bottom: 4px; }
+  .sec-head { display: flex; justify-content: space-between; align-items: center; }
+  .sec-head .link { font-weight: 700; margin-top: 10px; }
+  .plan-card2 .pc-head { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .plan-card2 .pc-head b { font-size: 17px; }
+  .pc-more { font-size: 22px; color: var(--muted); line-height: 1; }
+  .pc-sub { margin-top: 4px; line-height: 1.4; white-space: normal; cursor: pointer; }
+  .plan-row { grid-template-columns: 40px 1fr 1fr 36px; }
+  .plan-row.head span:nth-child(2) { text-align: center; }
+  .plan-ex { box-shadow: none; border: 1px solid var(--line); }
+  #planSheet .sheet { max-height: 94vh; }
+  .sheet-head { position: sticky; top: -18px; z-index: 3; background: var(--bg); margin: -18px -16px 14px; padding: 18px 16px 10px; }
+  /* Übungsbilder */
+  .ex-thumb { width: 56px; height: 56px; border-radius: 50%; background: #fff; flex-shrink: 0; object-fit: contain; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+  .ex-thumb.sm { width: 46px; height: 46px; border-radius: 50%; }
+  .ex-hero { display: block; width: 190px; height: 190px; margin: 0 auto 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+  @media (prefers-color-scheme: dark) { .ex-thumb, .ex-hero { background: #fff; } }
+  .ex-head { justify-content: flex-start; gap: 10px; }
+  .ex-head .ex-name { flex: 1; min-width: 0; }
+  .ex-head .ex-thumb { width: 54px; height: 54px; }
+  .shop-item .ex-thumb, .item .ex-thumb { margin-right: 2px; }
+  .pc-thumbs { display: flex; gap: 6px; align-items: center; margin-top: 10px; cursor: pointer; }
+  .pc-more-n { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .ex-opts { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ex-opts .ex-rest { margin-bottom: 0; }
+  .wt-toggle { border: 1px dashed var(--accent); background: none; color: var(--accent); border-radius: 16px; padding: 5px 11px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .wt-toggle.on { background: var(--accent); color: #fff; border-style: solid; }
+  .bw-cell { text-align: center; color: var(--muted); font-weight: 700; }
+  .ex-thumb, .ex-hero { background: #fff; }
+
