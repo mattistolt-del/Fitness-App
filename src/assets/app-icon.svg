@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0b1220"/></linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset=".5" stop-color="#f43f5e"/><stop offset="1" stop-color="#a855f7"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a3e635"/><stop offset="1" stop-color="#10b981"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#ffffff" stop-opacity=".10"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#ffffff" stroke-opacity=".10" stroke-width="44"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="url(#ring)" stroke-width="44" stroke-linecap="round" stroke-dasharray="706 942" transform="rotate(-90 256 256)"/>
+  <g transform="translate(256 256) scale(1.3) translate(-260 -254)"><path d="M196 312c0-78 52-122 128-122 0 78-44 128-120 128z" fill="url(#leaf)"/>
+  <path d="M200 316 288 228" stroke="#0b1220" stroke-width="12" stroke-linecap="round" opacity=".55"/></g>
+</svg>

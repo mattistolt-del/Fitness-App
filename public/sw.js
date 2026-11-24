@@ -1,9 +1,9 @@
 /* Makro – Offline-Unterstützung
    App-Seite: erst Netz (damit Updates sofort ankommen), ohne Netz aus dem Speicher.
-   Scanner-Bibliothek & Bilder: aus dem Speicher, im Hintergrund aktualisieren.
+   Scanner-Bibliothek (liegt jetzt in vendor/) & Bilder: aus dem Speicher, im Hintergrund aktualisieren.
    Produktsuche (Open Food Facts) und Update-Check: immer direkt übers Netz. */
-const CACHE = "makro-v1";
-const CORE = ["./", "./index.html"];
+const CACHE = "makro-v2";
+const CORE = ["./", "./index.html", "./vendor/html5-qrcode.min.js"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).catch(() => {}));

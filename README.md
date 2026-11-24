@@ -14,6 +14,8 @@ src/
   js/               App-Code, nach Bereichen (01-icons … 15-app-start)
   assets/           App-Icon
 public/sw.js        Service Worker (nur Web, in der App aus)
+public/vendor/      Scanner-Bibliothek html5-qrcode 2.3.8 (lokal statt unpkg)
+assets/            Quellbilder für App-Icons & Splash (1024 px / 2732 px)
 scripts/build.mjs   Build ohne Zusatzpakete → dist/
 capacitor.config.json
 ```
@@ -31,6 +33,7 @@ weiterhin denselben Gültigkeitsbereich wie vorher. Das Aufteilen hat am Verhalt
 | `npm run serve` | zeigt `dist/` lokal unter http://localhost:5173 |
 | `npm run ios` | baut, kopiert in das iOS-Projekt und öffnet Xcode |
 | `npm run android` | dasselbe für Android Studio |
+| `npm run assets` | erzeugt alle App-Icons & Splash-Größen aus `assets/` (nach `cap add ios/android`) |
 
 ## Version erhöhen
 
@@ -46,4 +49,10 @@ Einmalig: Settings → Pages → Source: **GitHub Actions**.
 1. Xcode aus dem App Store, Node.js 22 (nodejs.org), dann im Projektordner:
 2. `npm install`
 3. `npx cap add ios` (und später `npx cap add android`)
-4. `npm run ios` → in Xcode Team (Apple Developer Account) wählen → auf dem iPhone starten
+4. `npm run assets` (Icons & Splash in alle Größen)
+5. `npm run ios` → in Xcode Team (Apple Developer Account) wählen → auf dem iPhone starten
+
+## Scanner
+- Erst die eingebaute `BarcodeDetector`-Schnittstelle, dann ZXing-WebAssembly (noch von jsdelivr),
+  sonst html5-qrcode – das liegt jetzt **lokal** in `public/vendor/`, der Scanner geht also auch ohne CDN.
+- In der App soll später ein nativer Scanner (ML Kit) dazukommen.

@@ -1,5 +1,5 @@
 /* ---------- Version & Update-Prüfung ---------- */
-const APP_VERSION = "58";
+const APP_VERSION = "59";
 /* Läuft die Seite in der iOS-/Android-App (Capacitor)? Dort kommen Updates über den App Store,
    nicht über die Webseite – Update-Hinweis und Service Worker bleiben dann aus. */
 const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());

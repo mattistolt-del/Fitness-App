@@ -1,6 +1,6 @@
 {
   "name": "makro",
-  "version": "0.58.0",
+  "version": "0.59.0",
   "private": true,
   "description": "Makro – Kalorien, Vorrat und Training. Web-App (GitHub Pages) und iOS-/Android-App (Capacitor).",
   "type": "module",
@@ -10,10 +10,12 @@
     "serve": "npx --yes serve dist -l 5173",
     "ios": "node scripts/build.mjs && npx cap sync ios && npx cap open ios",
     "android": "node scripts/build.mjs && npx cap sync android && npx cap open android",
-    "sync": "node scripts/build.mjs && npx cap sync"
+    "sync": "node scripts/build.mjs && npx cap sync",
+    "assets": "npx @capacitor/assets generate --iconBackgroundColor '#0b1220' --iconBackgroundColorDark '#0b1220' --splashBackgroundColor '#0b1220' --splashBackgroundColorDark '#0b1220'"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.0"
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/assets": "^3.0.5"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.0",
